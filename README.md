@@ -30,11 +30,11 @@ Most PDF viewers are designed for reading multiple documents simultaneously. Lea
 
 Pre-compiled **Universal Binaries** are available under the [Releases](https://github.com/munepi/Leaf/releases) section. 
 
-1. Download `Leaf.dmg`.
+1. Download `LeafPDF.dmg`.
 2. Double-click to open the disk image.
-3. Drag **Leaf.app** to the `Applications` folder shortcut.
+3. Drag **LeafPDF.app** to the `Applications` folder shortcut.
 
-> **Note**: Leaf will undergo Apple Notarization in the future. For now, if macOS warns you about an unidentified developer, simply **Right-Click** `Leaf.app` in your Applications folder and select **"Open"** to bypass Gatekeeper for the first launch.
+> **Note**: Leaf will undergo Apple Notarization in the future. For now, if macOS warns you about an unidentified developer, simply **Right-Click** `LeafPDF.app` in your Applications folder and select **"Open"** to bypass Gatekeeper for the first launch.
 
 ### Building from Source
 
@@ -55,15 +55,55 @@ make dmg
 
 Leaf is configured via macOS `UserDefaults` to keep the interface clean.
 
-### Setting your Editor (Inverse Search)
+### 1. Setting your Editor (Inverse Search)
 
-By default, Leaf looks for `emacsclient`. You can specify the path to your preferred editor client:
+By default, Leaf looks for `emacsclient` when you `Cmd + Click` on the PDF. You can specify the path to your preferred editor client:
 
 ```bash
 defaults write Leaf emacsclientPath "/usr/local/bin/emacsclient"
 ```
 
-### Debug Mode
+### 2. Emacs Setup (Forward Search)
+
+To jump from your Emacs buffer to the corresponding line in Leaf, configure your TeX environment to call Leaf's `displayline-leaf` script.
+
+#### For YaTeX Users
+Add the following to your `init.el` or `.emacs`:
+
+```elisp
+(defun YaTeX:leaf-forward-search ()
+  "Perform a Forward Search in the PDF corresponding to the current line using Leaf."
+  (interactive)
+  (let* ((line (number-to-string (save-restriction
+                                   (widen)
+                                   (count-lines (point-min) (point)))))
+         (pdf-file (expand-file-name
+                    (concat (file-name-sans-extension
+                             (or YaTeX-parent-file
+                                 (save-excursion
+                                   (YaTeX-visit-main t)
+                                   buffer-file-name)))
+                            ".pdf")))
+         (tex-file buffer-file-name)
+         (cmd "/Applications/LeafPDF.app/Contents/MacOS/displayline-leaf"))
+
+    (if (file-executable-p cmd)
+        ;; Add the -g option to perform the jump in the background without bringing Leaf to the foreground
+        (let ((proc (start-process "displayline-leaf" nil cmd "-g" line pdf-file tex-file)))
+          (if (fboundp 'set-process-query-on-exit-flag)
+              (set-process-query-on-exit-flag proc nil)
+            (process-kill-without-query proc)))
+      (message "Executable file not found. Please ensure LeafPDF.app is installed correctly."))))
+
+;; Shortcut key configuration for YaTeX (e.g., prefix + C-l)
+(add-hook 'yatex-mode-hook
+          (lambda ()
+            (YaTeX-define-key "\C-j" 'YaTeX:leaf-forward-search)
+            (YaTeX-define-key "\C-l" 'YaTeX:leaf-forward-search)
+        ))
+```
+
+### 3. Debug Mode
 
 If you need to verify SyncTeX coordinate data or troubleshoot Forward Search, you can enable the HUD (Head-Up Display):
 
@@ -74,7 +114,7 @@ defaults write com.yourdomain.Leaf debugMode -bool true
 
 * **Option 2: Temporary Enable (Terminal)**
 ```bash
-/Applications/Leaf.app/Contents/MacOS/Leaf /path/to/document.pdf -debugMode YES
+/Applications/LeafPDF.app/Contents/MacOS/Leaf /path/to/document.pdf -debugMode YES
 ```
 
 ---
@@ -83,7 +123,7 @@ defaults write com.yourdomain.Leaf debugMode -bool true
 
 | Action | Shortcut / Gesture |
 | :--- | :--- |
-| **Open File** | `Cmd + O` |
+| **Open File** | `Cmd + O` or `open -a LeafPDF document.pdf` |
 | **Zoom In/Out** | `Cmd + "+"` / `Cmd + "-"` |
 | **Actual Size** | `Cmd + 0` |
 | **Auto Resize** | `Cmd + _` |
