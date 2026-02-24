@@ -1,7 +1,7 @@
 #!/bin/bash
 # Usage: displayline-leaf [-g|--background] LINE PDFFILE [TEXSOURCEFILE]
 
-# オプションのパース
+# Parse options
 ACTIVATE="activate"
 while [[ "${1:0:1}" == "-" ]]; do
     if [[ "$1" == "-g" || "$1" == "-background" || "$1" == "--background" ]]; then
@@ -19,19 +19,19 @@ LINE=$1
 PDF=$2
 SRC=$3
 
-# 相対パスを絶対パスに展開
+# Expand relative path to absolute path
 [[ "${PDF:0:1}" == "/" ]] || PDF="${PWD}/${PDF}"
 
-# ソースファイルが指定されている場合の引数組み立て
+# Construct arguments if a source file is specified
 if [ -n "$SRC" ]; then
     [[ "${SRC:0:1}" == "/" ]] || SRC="${PWD}/${SRC}"
-    # AppleScript のキーワードパラメータ 'srcF' として追加
+    # Add as an AppleScript keyword parameter 'srcF'
     SRC_ARG=", «class srcF»:\"${SRC}\""
 else
     SRC_ARG=""
 fi
 
-# 独自イベント 'LFWDfwdj' に名前付きパラメータを添えて送信
+# Send custom event 'LFWDfwdj' with named parameters
 /usr/bin/osascript << EOF
 tell application "LeafPDF"
     ${ACTIVATE}
