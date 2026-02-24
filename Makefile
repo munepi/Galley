@@ -1,11 +1,11 @@
 APP_NAME = Leaf
-BUNDLE_NAME = $(APP_NAME).app
+BUNDLE_NAME = LeafPDF.app
 BUILD_PATH = .build/apple/Products/Release/$(APP_NAME)
 CONTENTS_DIR = $(BUNDLE_NAME)/Contents
 MACOS_DIR = $(CONTENTS_DIR)/MacOS
 RESOURCES_DIR = $(CONTENTS_DIR)/Resources
-DMG_NAME = $(APP_NAME).dmg
-VOL_NAME = $(APP_NAME)
+DMG_NAME = LeafPDF.dmg
+VOL_NAME = LeafPDF
 
 .PHONY: all build app clean install uninstall dmg
 
