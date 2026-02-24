@@ -1,11 +1,11 @@
-APP_NAME = Leaf
-BUNDLE_NAME = LeafPDF.app
+APP_NAME = LeafPDF
+BUNDLE_NAME = $(APP_NAME).app
 BUILD_PATH = .build/apple/Products/Release/$(APP_NAME)
 CONTENTS_DIR = $(BUNDLE_NAME)/Contents
 MACOS_DIR = $(CONTENTS_DIR)/MacOS
 RESOURCES_DIR = $(CONTENTS_DIR)/Resources
-DMG_NAME = LeafPDF.dmg
-VOL_NAME = LeafPDF
+DMG_NAME = $(APP_NAME).dmg
+VOL_NAME = $(APP_NAME)
 
 .PHONY: all build app clean install uninstall dmg
 
@@ -20,7 +20,8 @@ build:
 app $(APP_NAME).app: build
 	@echo "Packaging $(BUNDLE_NAME)..."
 	mkdir -p $(MACOS_DIR)
-	mkdir -p $(RESOURCES_DIR)
+	mkdir -p $(RESOURCES_DIR)/en.lproj
+	echo 'CFBundleName = "Leaf";\nCFBundleDisplayName = "Leaf";' > $(RESOURCES_DIR)/en.lproj/InfoPlist.strings
 	cp $(BUILD_PATH) $(MACOS_DIR)/
 	cp Info.plist $(CONTENTS_DIR)/
 	cp displayline-leaf.bash $(MACOS_DIR)/displayline-leaf
