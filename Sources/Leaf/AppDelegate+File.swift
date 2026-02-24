@@ -36,7 +36,9 @@ extension AppDelegate {
         guard let document = PDFDocument(url: url) else { return }
 
         self.activePDFView.document = document
-        self.window?.title = url.lastPathComponent
+
+        self.updateWindowTitle()
+
         self.timer?.invalidate()
         startMonitoring(url: url)
     }
@@ -118,11 +120,33 @@ extension AppDelegate {
                     self.window?.makeFirstResponder(hiddenView)
 
                     CATransaction.commit()
+
+                    self.updateWindowTitle()
                 }
                 self.swapWorkItem = swapItem
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: swapItem)
             }
         }
+    }
+
+    @objc func handlePageChanged(_ notification: Notification) {
+        updateWindowTitle()
+    }
+
+    func updateWindowTitle() {
+        guard let window = self.window,
+              let url = self.fileURL,
+              let document = activePDFView.document else { return }
+
+        let fileName = url.lastPathComponent
+        let totalPages = document.pageCount
+
+        // 現在表示されているページ番号を取得 (0始まりなので+1する)
+        // currentPageが取得できない場合は暫定で1ページ目とする
+        let currentPage = activePDFView.currentPage ?? document.page(at: 0)
+        let pageNumber = (currentPage != nil) ? (document.index(for: currentPage!) + 1) : 1
+
+        window.title = "\(fileName) - Page \(pageNumber) of \(totalPages)"
     }
 }

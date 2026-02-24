@@ -144,6 +144,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             view!.addGestureRecognizer(clickRecognizer)
         }
 
+        // ページ移動イベントを監視してタイトルを更新するように設定
+        NotificationCenter.default.addObserver(self, selector: #selector(handlePageChanged(_:)), name: .PDFViewPageChanged, object: nil)
+
         container = NSView(frame: NSRect(x: 0, y: 0, width: 800, height: 1000))
         container.wantsLayer = true
 
