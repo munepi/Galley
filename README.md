@@ -40,14 +40,14 @@ Pre-compiled **Universal Binaries** are available under the [Releases](https://g
 
 If you prefer to build it yourself, ensure you have the Swift compiler installed (via Xcode or Command Line Tools).
 
-```bash
+~~~bash
 # Clone the repository
 git clone https://github.com/munepi/Leaf.git
 cd Leaf
 
 # Build Universal Binary and create a DMG
 make dmg
-```
+~~~
 
 ---
 
@@ -59,9 +59,9 @@ Leaf is configured via macOS `UserDefaults` to keep the interface clean.
 
 By default, Leaf looks for `emacsclient` when you `Cmd + Click` on the PDF. You can specify the path to your preferred editor client using your bundle identifier:
 
-```bash
+~~~bash
 defaults write com.github.munepi.leaf emacsclientPath "/usr/local/bin/emacsclient"
-```
+~~~
 
 ### 2. Emacs Setup (Forward Search)
 
@@ -70,7 +70,7 @@ To jump from your Emacs buffer to the corresponding line in Leaf, configure your
 #### For YaTeX Users
 Add the following to your `init.el` or `.emacs`:
 
-```elisp
+~~~elisp
 (defun YaTeX:leaf-forward-search ()
   "Perform a Forward Search in the PDF corresponding to the current line using Leaf."
   (interactive)
@@ -101,21 +101,21 @@ Add the following to your `init.el` or `.emacs`:
             (YaTeX-define-key "\C-j" 'YaTeX:leaf-forward-search)
             (YaTeX-define-key "\C-l" 'YaTeX:leaf-forward-search)
         ))
-```
+~~~
 
 ### 3. Debug Mode
 
 If you need to verify SyncTeX coordinate data or troubleshoot Forward Search, you can enable the HUD (Head-Up Display):
 
 * **Option 1: Permanent Enable**
-```bash
+~~~bash
 defaults write com.github.munepi.leaf debugMode -bool true
-```
+~~~
 
 * **Option 2: Temporary Enable (Terminal)**
-```bash
+~~~bash
 /Applications/LeafPDF.app/Contents/MacOS/LeafPDF /path/to/document.pdf -debugMode YES
-```
+~~~
 
 ---
 
@@ -127,10 +127,18 @@ defaults write com.github.munepi.leaf debugMode -bool true
 | **Zoom In/Out** | `Cmd + "+"` / `Cmd + "-"` |
 | **Actual Size** | `Cmd + 0` |
 | **Auto Resize** | `Cmd + _` |
-| **Next/Prev Page** | `Space` / `Shift + Space` (or `Opt + J/K`) |
+| **Next Page** | `Space` or `Opt + J` |
+| **Previous Page** | `Shift + Space` or `Opt + K` |
+| **Jump to Page** | Type page number or label (e.g., `123`, `iv`, `cover`) |
+| **Clear Selection / Cancel Jump** | `Esc` |
 | **Inverse Search** | `Cmd + Click` on PDF |
 | **Measure Area** | `Shift + Drag` |
 | **Copy Selection** | `Cmd + C` (while area is selected) |
+
+### Page Navigation & Interface Notes
+* **Direct Jump**: When you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly.
+* **Window Title Info**: To keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page X of Y` instead of using a bulky status bar.
+* **Display Modes**: You can switch between Single Page, Two Pages, Continuous, Book Mode, and Right-To-Left (RTL) layouts from the **View** menu in the macOS menu bar.
 
 ---
 
