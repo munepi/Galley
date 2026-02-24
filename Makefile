@@ -23,9 +23,9 @@ app $(APP_NAME).app: build
 	mkdir -p $(RESOURCES_DIR)
 	cp $(BUILD_PATH) $(MACOS_DIR)/
 	cp Info.plist $(CONTENTS_DIR)/
-	cp displayline-leaf.bash $(CONTENTS_DIR)/displayline-leaf
+	cp displayline-leaf.bash $(MACOS_DIR)/displayline-leaf
 	chmod +x $(MACOS_DIR)/$(APP_NAME)
-	chmod +x $(CONTENTS_DIR)/displayline-leaf
+	chmod +x $(MACOS_DIR)/displayline-leaf
 	touch $(BUNDLE_NAME)
 	@echo "Done! You can find $(BUNDLE_NAME) in the current directory."
 
