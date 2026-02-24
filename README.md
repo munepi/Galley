@@ -57,10 +57,10 @@ Leaf is configured via macOS `UserDefaults` to keep the interface clean.
 
 ### 1. Setting your Editor (Inverse Search)
 
-By default, Leaf looks for `emacsclient` when you `Cmd + Click` on the PDF. You can specify the path to your preferred editor client:
+By default, Leaf looks for `emacsclient` when you `Cmd + Click` on the PDF. You can specify the path to your preferred editor client using your bundle identifier:
 
 ```bash
-defaults write Leaf emacsclientPath "/usr/local/bin/emacsclient"
+defaults write com.github.munepi.leaf emacsclientPath "/usr/local/bin/emacsclient"
 ```
 
 ### 2. Emacs Setup (Forward Search)
@@ -109,12 +109,12 @@ If you need to verify SyncTeX coordinate data or troubleshoot Forward Search, yo
 
 * **Option 1: Permanent Enable**
 ```bash
-defaults write com.yourdomain.Leaf debugMode -bool true
+defaults write com.github.munepi.leaf debugMode -bool true
 ```
 
 * **Option 2: Temporary Enable (Terminal)**
 ```bash
-/Applications/LeafPDF.app/Contents/MacOS/Leaf /path/to/document.pdf -debugMode YES
+/Applications/LeafPDF.app/Contents/MacOS/LeafPDF /path/to/document.pdf -debugMode YES
 ```
 
 ---
@@ -141,6 +141,8 @@ Leaf is actively being developed with the following features planned for future 
 * **Enhanced Inverse Search**:
   * Out-of-the-box support for **Visual Studio Code (VSCode)**.
   * Support for **Custom Editors**: Allowing users to define arbitrary commands and arguments (e.g., using `%line` and `"%file"` placeholders) to seamlessly integrate with any text editor of their choice.
+* **Text Selection HUD**: 
+  * A subtle, non-intrusive pop-up displaying text information (e.g., character/word counts for multi-character selections) and character details (e.g., Unicode, embedded font information for single-character selections) when selecting text in the PDF.
 
 ---
 
