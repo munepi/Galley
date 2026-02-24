@@ -5,6 +5,10 @@ import PDFKit
 @main
 struct LeafApp {
     static func main() {
+        // NSApplication.sharedが呼ばれて描画エンジンが起動する「前」に設定
+        UserDefaults.standard.set(0, forKey: "AppleFontSmoothing")
+        UserDefaults.standard.set(true, forKey: "CGFontRenderingFontSmoothingDisabled")
+
         let app = NSApplication.shared
         let delegate = AppDelegate()
         app.delegate = delegate
