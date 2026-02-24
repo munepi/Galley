@@ -1,0 +1,11 @@
+.DS_Store
+/Leaf.app
+Leaf.dmg
+/.build
+/Packages
+xcuserdata/
+DerivedData/
+.swiftpm/configuration/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
+TODO-munepi.md
