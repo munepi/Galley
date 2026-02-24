@@ -6,7 +6,7 @@ import PDFKit
 // ==========================================
 extension AppDelegate: NSMenuItemValidation {
 
-    // MARK: - Zoom系
+    // Zoom系
     @objc func zoomInAction(_ sender: Any?) {
         for view in [pdfViewA, pdfViewB] {
             view?.autoScales = false
@@ -35,7 +35,7 @@ extension AppDelegate: NSMenuItemValidation {
         }
     }
 
-    // MARK: - ページナビゲーション系
+    // ページナビゲーション系
     @objc func nextPageAction(_ sender: Any?) {
         for view in [pdfViewA, pdfViewB] {
             view?.goToNextPage(sender)
@@ -48,7 +48,7 @@ extension AppDelegate: NSMenuItemValidation {
         }
     }
 
-    // MARK: - 表示モード変更系
+    // 表示モード変更系
     @objc func changeDisplayMode(_ sender: NSMenuItem) {
         let mode: PDFDisplayMode
         switch sender.title {
@@ -84,7 +84,7 @@ extension AppDelegate: NSMenuItemValidation {
         }
     }
 
-    // MARK: - メニューのチェックマーク状態の管理
+    // メニューのチェックマーク状態の管理
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
         let currentView = self.activePDFView

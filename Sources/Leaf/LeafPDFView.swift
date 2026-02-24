@@ -5,7 +5,7 @@ import PDFKit
 // カスタムPDFView: 矩形選択ツール ＆ 寸法・コピー機能 ＆ ページジャンプ機能
 // ==========================================
 class LeafPDFView: PDFView {
-    // MARK: - フォーカス管理 (First Responder)
+    // フォーカス管理 (First Responder)
     // キーボード入力を受け付けることをOSに宣言
     override var acceptsFirstResponder: Bool {
         return true
@@ -30,8 +30,7 @@ class LeafPDFView: PDFView {
     private var pageInputTimer: Timer?
     private var pageInputHUD: NSTextField?
 
-    // MARK: - マウス操作 (矩形選択など)
-
+    // マウス操作 (矩形選択など)
     override func mouseDown(with event: NSEvent) {
         if event.modifierFlags.contains(.shift) {
             self.clearSelection()
@@ -82,9 +81,26 @@ class LeafPDFView: PDFView {
         }
     }
 
-    // MARK: - キーボード操作 (ページジャンプ)
-
+    // キーボード操作 (ページジャンプ ＆ Escキーでクリア)
     override func keyDown(with event: NSEvent) {
+        // Escキー (keyCode: 53) が押されたら、もろもろの選択・入力をキャンセルする
+
+        if event.keyCode == 53 {
+            // 1. PDFKit標準のテキスト選択などをクリア
+            self.clearSelection()
+
+            // 2. カスタムの矩形選択ツールをクリア
+            self.clearMarquee()
+
+            // 3. ページジャンプの入力途中であれば、それもキャンセルしてHUDを消す
+            if !pageInputBuffer.isEmpty {
+                pageInputBuffer = ""
+                pageInputTimer?.invalidate()
+                hidePageInputHUD()
+            }
+            return
+        }
+
         // Command, Control, Option などの修飾キーが押されている場合は、
         // ページジャンプの入力とはみなさず、通常のショートカット処理へ譲る
         if event.modifierFlags.intersection([.command, .control, .option]).isEmpty == false {
@@ -222,8 +238,7 @@ class LeafPDFView: PDFView {
         }
     }
 
-    // MARK: - 描画とコピー処理
-
+    // 描画とコピー処理
     private func setupMarquee() {
         if marqueeLayer == nil {
             let layer = CAShapeLayer()
