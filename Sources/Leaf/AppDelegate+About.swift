@@ -53,13 +53,6 @@ extension AppDelegate {
         versionLabel.isBordered = false
         versionLabel.drawsBackground = false
 
-        // 開発者名
-        let devLabel = NSTextField(labelWithString: "Developed by Munehiro Yamamoto")
-        devLabel.font = NSFont.systemFont(ofSize: 14, weight: .medium)
-        devLabel.isEditable = false
-        devLabel.isBordered = false
-        devLabel.drawsBackground = false
-
         // プロジェクトURL (クリック可能)
         let urlLabel = NSTextField(labelWithString: "https://github.com/munepi/Leaf")
         urlLabel.font = NSFont.systemFont(ofSize: 12, weight: .regular)
@@ -86,7 +79,6 @@ extension AppDelegate {
         stack.addArrangedSubview(nameLabel)
         stack.addArrangedSubview(versionLabel)
         stack.setCustomSpacing(16, after: versionLabel)
-        stack.addArrangedSubview(devLabel)
         stack.addArrangedSubview(urlLabel)
         stack.setCustomSpacing(16, after: urlLabel)
         stack.addArrangedSubview(copyrightLabel)

@@ -33,7 +33,7 @@ fi
 
 # 独自イベント 'LFWDfwdj' に名前付きパラメータを添えて送信
 /usr/bin/osascript << EOF
-tell application "Leaf"
+tell application "LeafPDF"
     ${ACTIVATE}
     «event LFWDfwdj» "${LINE}" given «class pdfP»:"${PDF}"${SRC_ARG}
 end tell
