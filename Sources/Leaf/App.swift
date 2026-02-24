@@ -51,6 +51,28 @@ struct LeafApp {
 
         viewMenu.addItem(NSMenuItem.separator())
 
+        // 表示モード系
+        let singlePageItem = NSMenuItem(title: "Single Page", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
+        let singlePageContinuousItem = NSMenuItem(title: "Single Page Continuous", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
+        let twoPagesItem = NSMenuItem(title: "Two Pages", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
+        let twoPagesContinuousItem = NSMenuItem(title: "Two Pages Continuous", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
+
+        viewMenu.addItem(singlePageItem)
+        viewMenu.addItem(singlePageContinuousItem)
+        viewMenu.addItem(twoPagesItem)
+        viewMenu.addItem(twoPagesContinuousItem)
+
+        viewMenu.addItem(NSMenuItem.separator())
+
+        // トグル系
+        let bookModeItem = NSMenuItem(title: "Book Mode", action: #selector(AppDelegate.toggleBookModeAction(_:)), keyEquivalent: "")
+        let rtlItem = NSMenuItem(title: "Right-To-Left", action: #selector(AppDelegate.toggleRTLAction(_:)), keyEquivalent: "")
+
+        viewMenu.addItem(bookModeItem)
+        viewMenu.addItem(rtlItem)
+
+        viewMenu.addItem(NSMenuItem.separator())
+
         // ページナビゲーション系
         let nextPageItem = NSMenuItem(title: "Next Page", action: #selector(AppDelegate.nextPageAction(_:)), keyEquivalent: " ")
         nextPageItem.keyEquivalentModifierMask = []

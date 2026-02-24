@@ -1,10 +1,12 @@
 import AppKit
+import PDFKit
 
 // ==========================================
-// AppDelegate の拡張: View メニュー関連 (Zoom系 & ページナビゲーション系)
+// AppDelegate の拡張: View メニュー関連 (Zoom系 & ページナビゲーション系 & 表示モード)
 // ==========================================
-extension AppDelegate {
-    // Zoom系
+extension AppDelegate: NSMenuItemValidation {
+
+    // MARK: - Zoom系
     @objc func zoomInAction(_ sender: Any?) {
         for view in [pdfViewA, pdfViewB] {
             view?.autoScales = false
@@ -33,7 +35,7 @@ extension AppDelegate {
         }
     }
 
-    // ページナビゲーション系
+    // MARK: - ページナビゲーション系
     @objc func nextPageAction(_ sender: Any?) {
         for view in [pdfViewA, pdfViewB] {
             view?.goToNextPage(sender)
@@ -44,5 +46,68 @@ extension AppDelegate {
         for view in [pdfViewA, pdfViewB] {
             view?.goToPreviousPage(sender)
         }
+    }
+
+    // MARK: - 表示モード変更系
+    @objc func changeDisplayMode(_ sender: NSMenuItem) {
+        let mode: PDFDisplayMode
+        switch sender.title {
+        case "Single Page":
+            mode = .singlePage
+        case "Single Page Continuous":
+            mode = .singlePageContinuous
+        case "Two Pages":
+            mode = .twoUp
+        case "Two Pages Continuous":
+            mode = .twoUpContinuous
+        default:
+            return
+        }
+
+        // リロード時の不整合を防ぐため、A/B両方のビューに反映する
+        for view in [pdfViewA, pdfViewB] {
+            view?.displayMode = mode
+        }
+    }
+
+    @objc func toggleBookModeAction(_ sender: NSMenuItem) {
+        let newState = !(self.activePDFView.displaysAsBook)
+        for view in [pdfViewA, pdfViewB] {
+            view?.displaysAsBook = newState
+        }
+    }
+
+    @objc func toggleRTLAction(_ sender: NSMenuItem) {
+        let newState = !(self.activePDFView.displaysRTL)
+        for view in [pdfViewA, pdfViewB] {
+            view?.displaysRTL = newState
+        }
+    }
+
+    // MARK: - メニューのチェックマーク状態の管理
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
+        let currentView = self.activePDFView
+
+        switch menuItem.title {
+        case "Single Page":
+            menuItem.state = (currentView.displayMode == .singlePage) ? .on : .off
+        case "Single Page Continuous":
+            menuItem.state = (currentView.displayMode == .singlePageContinuous) ? .on : .off
+        case "Two Pages":
+            menuItem.state = (currentView.displayMode == .twoUp) ? .on : .off
+        case "Two Pages Continuous":
+            menuItem.state = (currentView.displayMode == .twoUpContinuous) ? .on : .off
+
+        case "Book Mode":
+            menuItem.state = currentView.displaysAsBook ? .on : .off
+        case "Right-To-Left":
+            menuItem.state = currentView.displaysRTL ? .on : .off
+
+        default:
+            break
+        }
+
+        return true
     }
 }
