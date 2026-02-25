@@ -97,18 +97,24 @@ extension AppDelegate {
                                                            y: docPoint.y - (dotSize / 2),
                                                            width: dotSize, height: dotSize))
                         dotView.wantsLayer = true
-                        dotView.layer?.backgroundColor = NSColor.systemRed.withAlphaComponent(0.8).cgColor
-                        dotView.layer?.cornerRadius = dotSize / 2
-                        dotView.layer?.borderColor = NSColor.white.cgColor
-                        dotView.layer?.borderWidth = 2.0
-                        dotView.layer?.shadowColor = NSColor.black.cgColor
-                        dotView.layer?.shadowOpacity = 0.5
-                        dotView.layer?.shadowRadius = 2.0
-                        dotView.layer?.shadowOffset = CGSize(width: 0, height: -1)
+
+                        let circleLayer = CAShapeLayer()
+                        let circleRect = CGRect(x: 1, y: 1, width: dotSize - 2, height: dotSize - 2)
+                        circleLayer.path = CGPath(ellipseIn: circleRect, transform: nil)
+                        circleLayer.fillColor = NSColor.systemRed.withAlphaComponent(0.9).cgColor
+                        circleLayer.strokeColor = NSColor.white.cgColor
+                        circleLayer.lineWidth = 0.1
+
+                        circleLayer.shadowColor = NSColor.black.cgColor
+                        circleLayer.shadowOpacity = 0.5
+                        circleLayer.shadowRadius = 2.0
+                        circleLayer.shadowOffset = CGSize(width: 0, height: -1)
+
+                        dotView.layer?.addSublayer(circleLayer)
 
                         docView.addSubview(dotView)
 
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                             NSAnimationContext.runAnimationGroup({ context in
                                 context.duration = 0.3
                                 dotView.animator().alphaValue = 0.0
