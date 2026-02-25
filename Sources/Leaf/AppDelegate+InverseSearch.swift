@@ -78,9 +78,21 @@ extension AppDelegate {
             "/opt/homebrew/bin/emacsclient",
             "/usr/local/bin/emacsclient"
         ]
-        let executablePath = UserDefaults.standard.string(forKey: "emacsclientPath") ??
-                             searchPaths.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) ??
-                             "emacsclient"
+
+        // 空文字列かどうかの判定を追加
+        let savedPath = UserDefaults.standard.string(forKey: "emacsclientPath") ?? ""
+        let executablePath = savedPath.isEmpty
+            ? (searchPaths.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) ?? "emacsclient")
+            : savedPath
+
+        // HUD表示用のコマンド文字列
+        let commandString = "\(executablePath) --no-wait +\(line) '\(file)'"
+
+        if self.isDebugMode {
+            DispatchQueue.main.async {
+                self.showNotification("Executing Emacs Command:\n\(commandString)")
+            }
+        }
 
         process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = ["--no-wait", "+\(line)", file]
@@ -94,8 +106,14 @@ extension AppDelegate {
 
     // --- VSCode で開く ---
     func openInVSCode(file: String, line: Int32) {
-        // macOS標準のURLハンドリングを利用してVSCodeに処理を委譲
         let urlString = "vscode://file\(file):\(line)"
+
+        if self.isDebugMode {
+            DispatchQueue.main.async {
+                self.showNotification("Opening VSCode URL:\n\(urlString)")
+            }
+        }
+
         // パスにスペース等が含まれている場合のためのエンコーディング
         if let encodedString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
            let url = URL(string: encodedString) {
