@@ -64,6 +64,9 @@ extension AppDelegate: NSMenuItemValidation {
             return
         }
 
+        // 変更されたモードを UserDefaults に保存
+        UserDefaults.standard.set(mode.rawValue, forKey: "displayMode")
+
         // リロード時の不整合を防ぐため、A/B両方のビューに反映する
         for view in [pdfViewA, pdfViewB] {
             view?.displayMode = mode
@@ -72,6 +75,10 @@ extension AppDelegate: NSMenuItemValidation {
 
     @objc func toggleBookModeAction(_ sender: NSMenuItem) {
         let newState = !(self.activePDFView.displaysAsBook)
+
+        // Book Modeの状態を UserDefaults に保存
+        UserDefaults.standard.set(newState, forKey: "displaysAsBook")
+
         for view in [pdfViewA, pdfViewB] {
             view?.displaysAsBook = newState
         }
@@ -79,6 +86,10 @@ extension AppDelegate: NSMenuItemValidation {
 
     @objc func toggleRTLAction(_ sender: NSMenuItem) {
         let newState = !(self.activePDFView.displaysRTL)
+
+        // RTLの状態を UserDefaults に保存
+        UserDefaults.standard.set(newState, forKey: "displaysRTL")
+
         for view in [pdfViewA, pdfViewB] {
             view?.displaysRTL = newState
         }

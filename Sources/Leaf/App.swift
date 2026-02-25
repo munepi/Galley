@@ -9,6 +9,14 @@ struct LeafApp {
         UserDefaults.standard.set(0, forKey: "AppleFontSmoothing")
         UserDefaults.standard.set(true, forKey: "CGFontRenderingFontSmoothingDisabled")
 
+        // UserDefaultsの初期値
+        UserDefaults.standard.register(defaults: [
+            "displayMode": PDFDisplayMode.singlePageContinuous.rawValue,
+            "displaysAsBook": false,
+            "displaysRTL": false,
+            "debugMode": false
+        ])
+
         let app = NSApplication.shared
         let delegate = AppDelegate()
         app.delegate = delegate
@@ -139,9 +147,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         pdfViewA = LeafPDFView()
         pdfViewB = LeafPDFView()
 
+        let savedModeInt = UserDefaults.standard.integer(forKey: "displayMode")
+        let savedMode = PDFDisplayMode(rawValue: savedModeInt) ?? .singlePageContinuous
+        let savedBookMode = UserDefaults.standard.bool(forKey: "displaysAsBook")
+        let savedRTL = UserDefaults.standard.bool(forKey: "displaysRTL")
+
         for view in [pdfViewA, pdfViewB] {
             view!.autoScales = true
-            view!.displayMode = .singlePageContinuous
+            view!.displayMode = savedMode
+            view!.displaysAsBook = savedBookMode
+            view!.displaysRTL = savedRTL
             view!.backgroundColor = NSColor.windowBackgroundColor
 
             let clickRecognizer = NSClickGestureRecognizer(target: self, action: #selector(handlePageClick(_:)))
