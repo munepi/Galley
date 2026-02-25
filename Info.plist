@@ -8,6 +8,8 @@
     <string>Leaf</string>
     <key>CFBundleDisplayName</key>
     <string>Leaf</string>
+    <key>CFBundleIconFile</key>
+    <string>LeafPDF.icns</string>
     <key>CFBundleIdentifier</key>
     <string>com.github.munepi.leaf</string>
     <key>CFBundlePackageType</key>
@@ -27,7 +29,7 @@
             <key>CFBundleTypeName</key>
             <string>PDF Document</string>
             <key>CFBundleTypeRole</key>
-            <editor/>
+            <string>Viewer</string>
             <key>LSItemContentTypes</key>
             <array>
                 <string>com.adobe.pdf</string>
