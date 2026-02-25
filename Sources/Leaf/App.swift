@@ -15,7 +15,9 @@ struct LeafApp {
             "displaysAsBook": false,
             "displaysRTL": false,
             "debugMode": false,
-            "syncTexEditor": "emacs"
+            "syncTexEditor": "emacs",
+            "emacsclientPath": "",
+            "customEditorCommand": ""
         ])
 
         let app = NSApplication.shared

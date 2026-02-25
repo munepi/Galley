@@ -48,8 +48,8 @@ extension AppDelegate {
                 }
 
                 // --- 選択されているエディタに応じて処理を分岐 ---
-                let editor = UserDefaults.standard.string(forKey: "syncTexEditor") ?? "emacs"
-                switch editor {
+                let selectedEditor = UserDefaults.standard.string(forKey: "syncTexEditor") ?? "emacs"
+                switch selectedEditor {
                 case "vscode":
                     openInVSCode(file: srcPath, line: line)
                 case "custom":
@@ -103,13 +103,44 @@ extension AppDelegate {
         }
     }
 
-    // --- Customエディタ で開く (TODO) ---
+    // --- Customエディタ で開く ---
     func openInCustom(file: String, line: Int32) {
+        // UserDefaultsからカスタムコマンドのテンプレートを読み込む
+        guard let commandTemplate = UserDefaults.standard.string(forKey: "customEditorCommand"), !commandTemplate.isEmpty else {
+            DispatchQueue.main.async {
+                self.showNotification("Custom Editor is not configured.\nPlease set 'customEditorCommand' via defaults.")
+            }
+            return
+        }
+
+        // placefolder の置換 (%file と %line)
+        let command = commandTemplate
+            .replacingOccurrences(of: "%file", with: file)
+            .replacingOccurrences(of: "%line", with: "\(line)")
+
         if self.isDebugMode {
             DispatchQueue.main.async {
-                self.showNotification("Custom Editor is not implemented yet.\nTarget: \(file) at line \(line)")
+                self.showNotification("Executing Custom Command:\n\(command)")
             }
         }
-        // TODO: ここにカスタムコマンドのパースと実行処理を実装する
+
+        // /bin/sh 経由でコマンドを実行
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        process.arguments = ["-c", command]
+
+        var env = ProcessInfo.processInfo.environment
+        env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+        process.environment = env
+
+        do {
+            try process.run()
+        } catch {
+            if self.isDebugMode {
+                DispatchQueue.main.async {
+                    self.showNotification("[Error] Failed to execute custom command.")
+                }
+            }
+        }
     }
 }
