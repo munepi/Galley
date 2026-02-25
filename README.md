@@ -45,8 +45,8 @@ If you prefer to build it yourself, ensure you have the Swift compiler installed
 git clone https://github.com/munepi/Leaf.git
 cd Leaf
 
-# Build Universal Binary and create a DMG
-make dmg
+# Build Universal Binary
+make app
 ~~~
 
 
@@ -66,7 +66,11 @@ defaults write com.github.munepi.leaf emacsclientPath "/usr/local/bin/emacsclien
 ### 2. Emacs Setup (Forward Search)
 
 To jump from your Emacs buffer to the corresponding line in Leaf, configure your TeX environment to call Leaf's `displayline-leaf` script.
-Since `displayline-leaf` is highly compatible with Skim's `displayline` script, the configuration is very straightforward. 
+Since `displayline-leaf` is highly compatible with Skim's `displayline` script, the configuration is very straightforward.
+
+> **⚠️ Security Note on First Forward Search**
+> The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions:  
+> *“Emacs.app” wants access to control “LeafPDF.app”. Allowing control will provide access to documents and data in “LeafPDF.app”, and to perform actions within that app.* > Please click **OK (Allow)** to grant the necessary AppleEvents permissions for SyncTeX to function correctly. You can later manage this in **System Settings > Privacy & Security > Automation**.
 
 #### For AUCTeX Users
 Add the following to your `init.el` or `.emacs`:
