@@ -25,28 +25,42 @@ class LeafPDFView: PDFView {
     var marqueeLayer: CAShapeLayer?
     var dimensionLabel: NSTextField?
 
+    // 矩形領域の移動用のプロパティ
+    private var isDraggingMarquee: Bool = false
+    private var dragStartMousePoint: CGPoint?
+    private var dragStartMarqueeRect: NSRect?
+
     // --- ページジャンプ用のプロパティ ---
     private var pageInputBuffer: String = ""
     private var pageInputTimer: Timer?
     private var pageInputHUD: NSTextField?
 
-    // マウス操作 (矩形選択など)
+    // マウス操作 (矩形選択と移動など)
     override func mouseDown(with event: NSEvent) {
         if event.modifierFlags.contains(.shift) {
-            self.clearSelection()
-            self.clearMarquee()
-            CATransaction.flush()
-
             let location = self.convert(event.locationInWindow, from: nil)
             guard let page = self.page(for: location, nearest: true) else { return }
-            self.selectedPage = page
-
             let pagePoint = self.convert(location, to: page)
-            self.selectionStartPoint = pagePoint
-            self.currentSelectionRect = NSRect(origin: pagePoint, size: .zero)
 
-            setupMarquee()
-            updateMarquee()
+            // 1. 既存の矩形領域の内側をクリックしたか判定 (移動モード)
+            if let currentRect = currentSelectionRect, self.selectedPage == page, currentRect.contains(pagePoint) {
+                self.isDraggingMarquee = true
+                self.dragStartMousePoint = pagePoint
+                self.dragStartMarqueeRect = currentRect
+            }
+            // 2. 矩形領域の外側をクリックした場合は、新規作成モード
+            else {
+                self.clearSelection()
+                self.clearMarquee()
+                CATransaction.flush()
+
+                self.selectedPage = page
+                self.selectionStartPoint = pagePoint
+                self.currentSelectionRect = NSRect(origin: pagePoint, size: .zero)
+
+                setupMarquee()
+                updateMarquee()
+            }
         } else {
             self.clearSelection()
             self.clearMarquee()
@@ -55,28 +69,51 @@ class LeafPDFView: PDFView {
     }
 
     override func mouseDragged(with event: NSEvent) {
-        guard let startPoint = selectionStartPoint, let page = selectedPage else {
-            super.mouseDragged(with: event)
-            return
-        }
-
         let location = self.convert(event.locationInWindow, from: nil)
-        let pagePoint = self.convert(location, to: page)
 
-        let rect = NSRect(
-            x: min(startPoint.x, pagePoint.x),
-            y: min(startPoint.y, pagePoint.y),
-            width: abs(pagePoint.x - startPoint.x),
-            height: abs(pagePoint.y - startPoint.y)
-        )
-        self.currentSelectionRect = rect
-        updateMarquee()
+        // 1. 移動モード中の処理
+        if isDraggingMarquee, let startMouse = dragStartMousePoint, let startRect = dragStartMarqueeRect, let page = selectedPage {
+            let pagePoint = self.convert(location, to: page)
+
+            // マウスの移動量(差分)を計算して、元の矩形を移動させる
+            let dx = pagePoint.x - startMouse.x
+            let dy = pagePoint.y - startMouse.y
+            self.currentSelectionRect = startRect.offsetBy(dx: dx, dy: dy)
+
+            updateMarquee()
+        }
+        // 2. 新規作成モード中の処理
+        else if let startPoint = selectionStartPoint, let page = selectedPage {
+            let pagePoint = self.convert(location, to: page)
+
+            let rect = NSRect(
+                x: min(startPoint.x, pagePoint.x),
+                y: min(startPoint.y, pagePoint.y),
+                width: abs(pagePoint.x - startPoint.x),
+                height: abs(pagePoint.y - startPoint.y)
+            )
+            self.currentSelectionRect = rect
+
+            updateMarquee()
+        }
+        // 3. どちらでもない場合はPDFKit標準の処理へ
+        else {
+            super.mouseDragged(with: event)
+        }
     }
 
     override func mouseUp(with event: NSEvent) {
-        if selectionStartPoint != nil {
+        // 移動モードの終了
+        if isDraggingMarquee {
+            isDraggingMarquee = false
+            dragStartMousePoint = nil
+            dragStartMarqueeRect = nil
+        }
+        // 新規作成モードの終了
+        else if selectionStartPoint != nil {
             selectionStartPoint = nil
-        } else {
+        }
+        else {
             super.mouseUp(with: event)
         }
     }
