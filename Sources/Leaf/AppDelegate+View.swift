@@ -97,6 +97,11 @@ extension AppDelegate: NSMenuItemValidation {
 
     // メニューのチェックマーク状態の管理
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(changeSyncTexEditor(_:)) {
+            return self.validateSyncTexMenuItem(menuItem)
+        }
+
+        // 以降は既存のViewメニューの処理
         // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
         let currentView = self.activePDFView
 

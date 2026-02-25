@@ -4,7 +4,7 @@ import CSynctex
 
 // ==========================================
 // AppDelegate の拡張: Inverse Search 関連の処理
-// (PDF上の Cmd + クリック で Emacs にジャンプする機能)
+// (PDF上の Cmd + クリック で エディタ にジャンプする機能)
 // ==========================================
 extension AppDelegate {
 
@@ -47,7 +47,16 @@ extension AppDelegate {
                     }
                 }
 
-                openInEmacs(file: srcPath, line: line)
+                // --- 選択されているエディタに応じて処理を分岐 ---
+                let editor = UserDefaults.standard.string(forKey: "syncTexEditor") ?? "emacs"
+                switch editor {
+                case "vscode":
+                    openInVSCode(file: srcPath, line: line)
+                case "custom":
+                    openInCustom(file: srcPath, line: line)
+                default:
+                    openInEmacs(file: srcPath, line: line)
+                }
 
             } else {
                 if self.isDebugMode {
@@ -61,6 +70,7 @@ extension AppDelegate {
         }
     }
 
+    // --- Emacs で開く ---
     func openInEmacs(file: String, line: Int32) {
         let process = Process()
         let searchPaths = [
@@ -80,5 +90,26 @@ extension AppDelegate {
         process.environment = env
 
         try? process.run()
+    }
+
+    // --- VSCode で開く ---
+    func openInVSCode(file: String, line: Int32) {
+        // macOS標準のURLハンドリングを利用してVSCodeに処理を委譲
+        let urlString = "vscode://file\(file):\(line)"
+        // パスにスペース等が含まれている場合のためのエンコーディング
+        if let encodedString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+           let url = URL(string: encodedString) {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    // --- Customエディタ で開く (TODO) ---
+    func openInCustom(file: String, line: Int32) {
+        if self.isDebugMode {
+            DispatchQueue.main.async {
+                self.showNotification("Custom Editor is not implemented yet.\nTarget: \(file) at line \(line)")
+            }
+        }
+        // TODO: ここにカスタムコマンドのパースと実行処理を実装する
     }
 }

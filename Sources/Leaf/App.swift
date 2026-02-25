@@ -14,7 +14,8 @@ struct LeafApp {
             "displayMode": PDFDisplayMode.singlePageContinuous.rawValue,
             "displaysAsBook": false,
             "displaysRTL": false,
-            "debugMode": false
+            "debugMode": false,
+            "syncTexEditor": "emacs"
         ])
 
         let app = NSApplication.shared
@@ -107,10 +108,25 @@ struct LeafApp {
         viewMenu.addItem(prevPageItem)
         viewMenu.addItem(prevPageAltItem)
 
+        // --- 5. SyncTeX メニュー ---
+        let syncTexMenu = NSMenu(title: "SyncTeX")
+        let syncTexMenuItem = NSMenuItem()
+        syncTexMenuItem.submenu = syncTexMenu
+
+        let emacsItem = NSMenuItem(title: "Emacs", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
+        let vscodeItem = NSMenuItem(title: "Visual Studio Code", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
+        let customItem = NSMenuItem(title: "Custom...", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
+
+        syncTexMenu.addItem(emacsItem)
+        syncTexMenu.addItem(vscodeItem)
+        syncTexMenu.addItem(NSMenuItem.separator())
+        syncTexMenu.addItem(customItem)
+
         mainMenu.addItem(appMenuItem)
         mainMenu.addItem(fileMenuItem)
         mainMenu.addItem(editMenuItem)
         mainMenu.addItem(viewMenuItem)
+        mainMenu.addItem(syncTexMenuItem)
 
         app.mainMenu = mainMenu
         app.setActivationPolicy(.regular)
