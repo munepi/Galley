@@ -17,7 +17,7 @@ Most PDF viewers are designed for reading multiple documents simultaneously. Lea
 * **🎯 Precise SyncTeX Integration**:
   * **Forward Search**: Jump from your editor to the exact line in the PDF with a soft-fading red dot highlight, automatically centered in the window for better visibility.
   * **Inverse Search**: Command-Click anywhere in the PDF to jump back to the corresponding source line in your editor (Emacs supported out-of-the-box).
-* **📏 Precision Measurements**: Hold **Shift + Drag** to create a rectangular selection. Real-time dimensions are displayed in millimeters at the point of selection, and the area can be copied as a high-fidelity vector PDF object.
+* **📏 Precision Measurements**: Hold **Shift + Drag** to create a rectangular selection. You can also reposition an existing selection by holding **Shift** and dragging inside the marquee. Real-time dimensions are displayed in millimeters at the point of selection, and the area can be copied as a high-fidelity vector PDF object.
 * **🍃 Featherweight & Zero-Distraction**:
   * An incredibly small footprint (~600KB), leveraging native macOS frameworks.
   * A truly minimalist interface that gives 100% of the window space to your PDF, keeping you in the flow of writing and editing.
@@ -132,7 +132,7 @@ defaults write com.github.munepi.leaf debugMode -bool true
 | **Jump to Page** | Type page number or label (e.g., `123`, `iv`, `cover`) |
 | **Clear Selection / Cancel Jump** | `Esc` |
 | **Inverse Search** | `Cmd + Click` on PDF |
-| **Measure Area** | `Shift + Drag` |
+| **Measure / Move Area** | `Shift + Drag` (drag inside an existing marquee to move it) |
 | **Copy Selection** | `Cmd + C` (while area is selected) |
 
 ### Page Navigation & Interface Notes
