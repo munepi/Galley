@@ -143,10 +143,18 @@ extension AppDelegate {
         let totalPages = document.pageCount
 
         // 現在表示されているページ番号を取得 (0始まりなので+1する)
-        // currentPageが取得できない場合は暫定で1ページ目とする
+        // currentPageが取得できない場合(nilの場合)は暫定で1ページ目とする
         let currentPage = activePDFView.currentPage ?? document.page(at: 0)
-        let pageNumber = (currentPage != nil) ? (document.index(for: currentPage!) + 1) : 1
+        let physicalPage = (currentPage != nil) ? (document.index(for: currentPage!) + 1) : 1
 
-        window.title = "\(fileName) - Page \(pageNumber) of \(totalPages)"
+        // 論理ページ(label)の取得と表示の分岐
+        if let page = currentPage, let label = page.label, label != "\(physicalPage)" {
+            // 論理ページが存在し、かつ物理ページと異なる場合 (例: iv, cover, ☃ など)
+            window.title = "\(fileName) - Page \(label) (\(physicalPage)/\(totalPages))"
+        } else {
+            // 論理ページが設定されていない、または物理ページと一致する場合
+            window.title = "\(fileName) - Page \(physicalPage)/\(totalPages)"
+        }
     }
+
 }
