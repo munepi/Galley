@@ -134,7 +134,7 @@ struct LeafApp {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var window: NSWindow?
 
     var container: NSView!
@@ -153,6 +153,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var isDebugMode: Bool {
         return UserDefaults.standard.bool(forKey: "debugMode")
+    }
+
+    // ==========================================
+    // メニューのチェックマーク状態の管理 (View & SyncTeX)
+    // ==========================================
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(changeSyncTexEditor(_:)) {
+            return self.validateSyncTexMenuItem(menuItem)
+        }
+
+        // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
+        let currentView = self.activePDFView
+
+        switch menuItem.title {
+        case "Single Page":
+            menuItem.state = (currentView.displayMode == .singlePage) ? .on : .off
+        case "Single Page Continuous":
+            menuItem.state = (currentView.displayMode == .singlePageContinuous) ? .on : .off
+        case "Two Pages":
+            menuItem.state = (currentView.displayMode == .twoUp) ? .on : .off
+        case "Two Pages Continuous":
+            menuItem.state = (currentView.displayMode == .twoUpContinuous) ? .on : .off
+
+        case "Book Mode":
+            menuItem.state = currentView.displaysAsBook ? .on : .off
+        case "Right-To-Left":
+            menuItem.state = currentView.displaysRTL ? .on : .off
+
+        default:
+            break
+        }
+
+        return true
     }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
