@@ -22,7 +22,7 @@ Most PDF viewers are designed for reading multiple documents simultaneously. Lea
   * An incredibly small footprint (~600KB), leveraging native macOS frameworks.
   * A truly minimalist interface that gives 100% of the window space to your PDF, keeping you in the flow of writing and editing.
 
----
+
 
 ## Installation
 
@@ -49,7 +49,7 @@ cd Leaf
 make dmg
 ~~~
 
----
+
 
 ## Configuration
 
@@ -66,6 +66,24 @@ defaults write com.github.munepi.leaf emacsclientPath "/usr/local/bin/emacsclien
 ### 2. Emacs Setup (Forward Search)
 
 To jump from your Emacs buffer to the corresponding line in Leaf, configure your TeX environment to call Leaf's `displayline-leaf` script.
+Since `displayline-leaf` is highly compatible with Skim's `displayline` script, the configuration is very straightforward. 
+
+#### For AUCTeX Users
+Add the following to your `init.el` or `.emacs`:
+
+~~~elisp
+;; Enable SyncTeX correlation
+(setq TeX-source-correlate-mode t)
+(setq TeX-source-correlate-start-server t)
+
+;; Register Leaf as a custom PDF viewer
+(add-to-list 'TeX-view-program-list
+             '("Leaf" "/Applications/LeafPDF.app/Contents/MacOS/displayline-leaf -g %n %o %b"))
+
+;; Set Leaf as the default viewer for PDF output
+(setq TeX-view-program-selection '((output-pdf "Leaf")))
+~~~
+*To execute Forward Search in AUCTeX, simply press `C-c C-v` (or `C-c C-c` and select `View`).*
 
 #### For YaTeX Users
 Add the following to your `init.el` or `.emacs`:
@@ -117,7 +135,7 @@ defaults write com.github.munepi.leaf debugMode -bool true
 /Applications/LeafPDF.app/Contents/MacOS/LeafPDF /path/to/document.pdf -debugMode YES
 ~~~
 
----
+
 
 ## Usage & Shortcuts
 
@@ -140,7 +158,7 @@ defaults write com.github.munepi.leaf debugMode -bool true
 * **Window Title Info**: To keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page X of Y` instead of using a bulky status bar.
 * **Display Modes**: You can switch between Single Page, Two Pages, Continuous, Book Mode, and Right-To-Left (RTL) layouts from the **View** menu in the macOS menu bar.
 
----
+
 
 ## Roadmap
 
@@ -152,7 +170,7 @@ Leaf is actively being developed with the following features planned for future 
 * **Text Selection HUD**: 
   * A subtle, non-intrusive pop-up displaying text information (e.g., character/word counts for multi-character selections) and character details (e.g., Unicode, embedded font information for single-character selections) when selecting text in the PDF.
 
----
+
 
 ## Why Leaf?
 
@@ -160,7 +178,7 @@ Most PDF viewers are designed for reading books, not for the rigorous, iterative
 
 It doesn't try to be everything for everyone. Instead, it aims to be the perfect companion for your text editor, quietly and flawlessly updating your document in the background—whether you are drafting an academic paper or professionally typesetting a multi-volume book.
 
----
+
 
 ## License
 
@@ -171,4 +189,4 @@ Copyright © 2026 Munehiro Yamamoto. All rights reserved.
 --------------------
 
 Munehiro Yamamoto
-https://github.com/munepi
+[https://github.com/munepi](https://github.com/munepi)
