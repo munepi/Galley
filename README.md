@@ -34,7 +34,8 @@ Pre-compiled **Universal Binaries** are available under the [Releases](https://g
 2. Double-click to open the disk image.
 3. Drag **LeafPDF.app** to the `Applications` folder shortcut.
 
-> **Note**: Leaf will undergo Apple Notarization in the future. For now, if macOS warns you about an unidentified developer, simply **Right-Click** `LeafPDF.app` in your Applications folder and select **"Open"** to bypass Gatekeeper for the first launch.
+> [!NOTE]
+> Leaf will undergo Apple Notarization in the future. For now, if macOS warns you about an unidentified developer, simply **Right-Click** `LeafPDF.app` in your Applications folder and select **"Open"** to bypass Gatekeeper for the first launch.
 
 ### Building from Source
 
@@ -68,6 +69,7 @@ defaults write com.github.munepi.leaf emacsclientPath "/usr/local/bin/emacsclien
 To jump from your Emacs buffer to the corresponding line in Leaf, configure your TeX environment to call Leaf's `displayline-leaf` script.
 Since `displayline-leaf` is highly compatible with Skim's `displayline` script, the configuration is very straightforward.
 
+> [!NOTE]
 > **⚠️ Security Note on First Forward Search**
 > The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions:  
 > *“Emacs.app” wants access to control “LeafPDF.app”. Allowing control will provide access to documents and data in “LeafPDF.app”, and to perform actions within that app.* > Please click **OK (Allow)** to grant the necessary AppleEvents permissions for SyncTeX to function correctly. You can later manage this in **System Settings > Privacy & Security > Automation**.
