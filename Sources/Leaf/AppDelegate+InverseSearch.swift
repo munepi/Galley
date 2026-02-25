@@ -21,14 +21,42 @@ extension AppDelegate {
         guard let scanner = synctex_scanner_new_with_output_file(fileURL.path, nil, 1) else { return }
         defer { synctex_scanner_free(scanner) }
 
-        // PDFKitのY座標(下起点)をSyncTeXのY座標(上起点)に反転
         let bounds = page.bounds(for: .cropBox)
         let synctexY = bounds.maxY - pagePoint.y
+
+        let pdfName = fileURL.lastPathComponent
+        let baseMessage = "Inverse Search ➔ PDF: \(pdfName)"
 
         if synctex_edit_query(scanner, Int32(pageIndex + 1), Float(pagePoint.x), Float(synctexY)) > 0 {
             if let node = synctex_scanner_next_result(scanner),
                let cName = synctex_node_get_name(node) {
-                openInEmacs(file: String(cString: cName), line: synctex_node_line(node))
+
+                let srcPath = String(cString: cName)
+                let srcName = (srcPath as NSString).lastPathComponent
+                let line = synctex_node_line(node)
+
+                if self.isDebugMode {
+                    let detailMessage = """
+                    Page: \(pageIndex + 1)
+                    Click pt: X=\(String(format: "%.1f", pagePoint.x)), Y=\(String(format: "%.1f", pagePoint.y))
+                    SyncTeX Y: \(String(format: "%.1f", synctexY))
+                    Target: \(srcName) | Line: \(line)
+                    """
+                    DispatchQueue.main.async {
+                        self.showNotification("\(baseMessage)\n⬇︎\n\(detailMessage)")
+                    }
+                }
+
+                openInEmacs(file: srcPath, line: line)
+
+            } else {
+                if self.isDebugMode {
+                    DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] SyncTeX matched no nodes.") }
+                }
+            }
+        } else {
+            if self.isDebugMode {
+                DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] SyncTeX query failed.") }
             }
         }
     }

@@ -108,11 +108,13 @@ extension AppDelegate {
 
                         docView.addSubview(dotView)
 
-                        NSAnimationContext.runAnimationGroup({ context in
-                            context.duration = 3.0
-                            dotView.animator().alphaValue = 0.0
-                        }) {
-                            dotView.removeFromSuperview()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                            NSAnimationContext.runAnimationGroup({ context in
+                                context.duration = 0.3
+                                dotView.animator().alphaValue = 0.0
+                            }) {
+                                dotView.removeFromSuperview()
+                            }
                         }
                     }
                 }
@@ -158,11 +160,13 @@ extension AppDelegate {
 
         self.container.addSubview(label)
 
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 15.0
-            label.animator().alphaValue = 0.0
-        }) {
-            label.removeFromSuperview()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) {
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = 0.3
+                label.animator().alphaValue = 0.0
+            }) {
+                label.removeFromSuperview()
+            }
         }
     }
 }
