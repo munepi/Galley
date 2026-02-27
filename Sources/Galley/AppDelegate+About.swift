@@ -31,13 +31,12 @@ extension AppDelegate {
         // --- コンテンツの構築 ---
 
         // ロゴ
-        // TODO: ロゴをGalleyPDF.pngに置き換える
-        let logoImage = NSImage(systemSymbolName: "leaf.fill", accessibilityDescription: "Galley Logo")
+        // 読み込めなかった場合のフォールバックとして doc のシンボルを指定
+        let logoImage = NSImage(named: "GalleyPDF") ?? NSImage(systemSymbolName: "doc.text", accessibilityDescription: "Galley Logo")
         let logoImageView = NSImageView(image: logoImage!)
-        logoImageView.contentTintColor = NSColor.systemGreen
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
-        logoImageView.widthAnchor.constraint(equalToConstant: 64).isActive = true
-        logoImageView.heightAnchor.constraint(equalToConstant: 64).isActive = true
+        logoImageView.widthAnchor.constraint(equalToConstant: 96).isActive = true
+        logoImageView.heightAnchor.constraint(equalToConstant: 96).isActive = true
 
         // アプリ名
         let nameLabel = NSTextField(labelWithString: "Galley")

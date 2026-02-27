@@ -33,6 +33,7 @@ app $(APP_NAME).app: build $(APP_NAME).icns
 	cp $(BUILD_PATH) $(MACOS_DIR)/
 	cp Info.plist $(CONTENTS_DIR)/
 	cp $(APP_NAME).icns $(RESOURCES_DIR)/
+	cp $(APP_NAME).png $(RESOURCES_DIR)/
 	cp displayline.bash $(MACOS_DIR)/displayline
 	chmod +x $(MACOS_DIR)/$(APP_NAME)
 	chmod +x $(MACOS_DIR)/displayline
