@@ -11,7 +11,7 @@ extension AppDelegate {
         NSAppleEventManager.shared().setEventHandler(
             self,
             andSelector: #selector(handleForwardSearchEvent(_:withReplyEvent:)),
-            forEventClass: AEEventClass(0x4c465744), // 'LFWD'
+            forEventClass: AEEventClass(0x474C4C59), // 'GLLY'
             andEventID: AEEventID(0x6677646a)        // 'fwdj'
         )
     }

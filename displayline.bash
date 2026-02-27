@@ -31,10 +31,10 @@ else
     SRC_ARG=""
 fi
 
-# Send custom event 'LFWDfwdj' with named parameters
+# Send custom event 'GLLYfwdj' with named parameters
 /usr/bin/osascript << EOF
 tell application "GalleyPDF"
     ${ACTIVATE}
-    «event LFWDfwdj» "${LINE}" given «class pdfP»:"${PDF}"${SRC_ARG}
+    «event GLLYfwdj» "${LINE}" given «class pdfP»:"${PDF}"${SRC_ARG}
 end tell
 EOF
