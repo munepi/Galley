@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Leaf",
+    name: "Galley",
     platforms: [.macOS(.v11)],
     targets: [
         .target(
@@ -11,9 +11,9 @@ let package = Package(
             publicHeadersPath: "."
         ),
         .executableTarget(
-            name: "LeafPDF",
+            name: "GalleyPDF",
             dependencies: ["CSynctex"],
-            path: "Sources/Leaf"
+            path: "Sources/Galley"
         ),
     ]
 )

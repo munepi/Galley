@@ -1,4 +1,4 @@
-APP_NAME = LeafPDF
+APP_NAME = GalleyPDF
 BUNDLE_NAME = $(APP_NAME).app
 BUILD_PATH = .build/apple/Products/Release/$(APP_NAME)
 CONTENTS_DIR = $(BUNDLE_NAME)/Contents
@@ -29,13 +29,13 @@ app $(APP_NAME).app: build $(APP_NAME).icns
 	@echo "Packaging $(BUNDLE_NAME)..."
 	mkdir -p $(MACOS_DIR)
 	mkdir -p $(RESOURCES_DIR)/en.lproj
-	echo 'CFBundleName = "Leaf";\nCFBundleDisplayName = "Leaf";' > $(RESOURCES_DIR)/en.lproj/InfoPlist.strings
+	echo 'CFBundleName = "Galley";\nCFBundleDisplayName = "Galley";' > $(RESOURCES_DIR)/en.lproj/InfoPlist.strings
 	cp $(BUILD_PATH) $(MACOS_DIR)/
 	cp Info.plist $(CONTENTS_DIR)/
 	cp $(APP_NAME).icns $(RESOURCES_DIR)/
-	cp displayline-leaf.bash $(MACOS_DIR)/displayline-leaf
+	cp displayline.bash $(MACOS_DIR)/displayline
 	chmod +x $(MACOS_DIR)/$(APP_NAME)
-	chmod +x $(MACOS_DIR)/displayline-leaf
+	chmod +x $(MACOS_DIR)/displayline
 	touch $(BUNDLE_NAME)
 	@echo "Done! You can find $(BUNDLE_NAME) in the current directory."
 

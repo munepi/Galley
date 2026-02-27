@@ -1,7 +1,24 @@
+# OS X
 .DS_Store
-/LeafPDF.app
-LeafPDF.icns
-LeafPDF.dmg
+.AppleDouble
+.LSOverride
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+*~
+*.bak*
+
+TODO-munepi.md
+
+/GalleyPDF.app
+GalleyPDF.icns
+GalleyPDF.dmg
 /.build
 /Packages
 xcuserdata/
@@ -9,4 +26,3 @@ DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
-TODO-munepi.md

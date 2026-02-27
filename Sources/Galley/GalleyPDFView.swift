@@ -4,7 +4,7 @@ import PDFKit
 // ==========================================
 // カスタムPDFView: 矩形選択ツール ＆ 寸法・コピー機能 ＆ ページジャンプ機能
 // ==========================================
-class LeafPDFView: PDFView {
+class GalleyPDFView: PDFView {
     // フォーカス管理 (First Responder)
     // キーボード入力を受け付けることをOSに宣言
     override var acceptsFirstResponder: Bool {

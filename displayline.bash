@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage: displayline-leaf [-g|--background] LINE PDFFILE [TEXSOURCEFILE]
+# Usage: displayline [-g|--background] LINE PDFFILE [TEXSOURCEFILE]
 
 # Parse options
 ACTIVATE="activate"
@@ -11,7 +11,7 @@ while [[ "${1:0:1}" == "-" ]]; do
   done
 
 if [ $# -lt 2 ]; then
-    echo "Usage: displayline-leaf [-g|--background] LINE PDFFILE [TEXSOURCEFILE]"
+    echo "Usage: displayline [-g|--background] LINE PDFFILE [TEXSOURCEFILE]"
     exit 1
 fi
 
@@ -33,7 +33,7 @@ fi
 
 # Send custom event 'LFWDfwdj' with named parameters
 /usr/bin/osascript << EOF
-tell application "LeafPDF"
+tell application "GalleyPDF"
     ${ACTIVATE}
     «event LFWDfwdj» "${LINE}" given «class pdfP»:"${PDF}"${SRC_ARG}
 end tell

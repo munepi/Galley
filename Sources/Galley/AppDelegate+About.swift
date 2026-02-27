@@ -1,7 +1,7 @@
 import AppKit
 
 // ==========================================
-// AppDelegate の拡張: About Leaf の表示処理
+// AppDelegate の拡張: About Galley の表示処理
 // ==========================================
 extension AppDelegate {
 
@@ -30,8 +30,9 @@ extension AppDelegate {
 
         // --- コンテンツの構築 ---
 
-        // 仮ロゴ (SF Symbols の leaf.fill を緑色で表示)
-        let logoImage = NSImage(systemSymbolName: "leaf.fill", accessibilityDescription: "Leaf Logo")
+        // ロゴ
+        // TODO: ロゴをGalleyPDF.pngに置き換える
+        let logoImage = NSImage(systemSymbolName: "leaf.fill", accessibilityDescription: "Galley Logo")
         let logoImageView = NSImageView(image: logoImage!)
         logoImageView.contentTintColor = NSColor.systemGreen
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -39,7 +40,7 @@ extension AppDelegate {
         logoImageView.heightAnchor.constraint(equalToConstant: 64).isActive = true
 
         // アプリ名
-        let nameLabel = NSTextField(labelWithString: "Leaf")
+        let nameLabel = NSTextField(labelWithString: "Galley")
         nameLabel.font = NSFont.systemFont(ofSize: 32, weight: .bold)
         nameLabel.isEditable = false
         nameLabel.isBordered = false
@@ -54,7 +55,7 @@ extension AppDelegate {
         versionLabel.drawsBackground = false
 
         // プロジェクトURL (クリック可能)
-        let urlLabel = NSTextField(labelWithString: "https://github.com/munepi/Leaf")
+        let urlLabel = NSTextField(labelWithString: "https://github.com/munepi/Galley")
         urlLabel.font = NSFont.systemFont(ofSize: 12, weight: .regular)
         urlLabel.textColor = .linkColor // リンク色（青など）にする
         urlLabel.isEditable = false
@@ -110,7 +111,7 @@ extension AppDelegate {
 
     // URLをクリックしたときにブラウザで開く処理
     @objc func openProjectURL(_ sender: NSClickGestureRecognizer) {
-        if let url = URL(string: "https://github.com/munepi/Leaf") {
+        if let url = URL(string: "https://github.com/munepi/Galley") {
             NSWorkspace.shared.open(url) // デフォルトブラウザで開く
 
             // クリックされたら、5秒待たずにAbout画面を閉じる

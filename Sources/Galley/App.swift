@@ -3,7 +3,7 @@ import AppKit
 import PDFKit
 
 @main
-struct LeafApp {
+struct GalleyApp {
     static func main() {
         // NSApplication.sharedが呼ばれて描画エンジンが起動する「前」に設定
         UserDefaults.standard.set(0, forKey: "AppleFontSmoothing")
@@ -30,9 +30,9 @@ struct LeafApp {
         let appMenu = NSMenu()
         let appMenuItem = NSMenuItem()
         appMenuItem.submenu = appMenu
-        appMenu.addItem(withTitle: "About Leaf", action: #selector(AppDelegate.showAbout(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: "About Galley", action: #selector(AppDelegate.showAbout(_:)), keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator()) // 区切り線
-        appMenu.addItem(withTitle: "Quit Leaf", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: "Quit Galley", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
 
         // --- 2. File メニュー ---
         let fileMenu = NSMenu(title: "File")
@@ -140,12 +140,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var window: NSWindow?
 
     var container: NSView!
-    var pdfViewA: LeafPDFView!
-    var pdfViewB: LeafPDFView!
+    var pdfViewA: GalleyPDFView!
+    var pdfViewB: GalleyPDFView!
     var isShowingA = true
 
-    var activePDFView: LeafPDFView { isShowingA ? pdfViewA : pdfViewB }
-    var hiddenPDFView: LeafPDFView { isShowingA ? pdfViewB : pdfViewA }
+    var activePDFView: GalleyPDFView { isShowingA ? pdfViewA : pdfViewB }
+    var hiddenPDFView: GalleyPDFView { isShowingA ? pdfViewB : pdfViewA }
 
     var timer: Timer?
     var lastUpdate: Date?
@@ -195,8 +195,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        pdfViewA = LeafPDFView()
-        pdfViewB = LeafPDFView()
+        pdfViewA = GalleyPDFView()
+        pdfViewB = GalleyPDFView()
 
         let savedModeInt = UserDefaults.standard.integer(forKey: "displayMode")
         let savedMode = PDFDisplayMode(rawValue: savedModeInt) ?? .singlePageContinuous
@@ -241,7 +241,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         } else if CommandLine.arguments.count > 1 {
             loadPDF(url: URL(fileURLWithPath: CommandLine.arguments[1]).absoluteURL)
         } else {
-            window.title = "Leaf"
+            window.title = "Galley"
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
