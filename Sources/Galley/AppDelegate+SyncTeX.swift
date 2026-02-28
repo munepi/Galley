@@ -11,7 +11,7 @@ extension AppDelegate {
         switch sender.title {
         case "Visual Studio Code":
             editor = "vscode"
-        case "Custom...":
+        case "Custom":
             editor = "custom"
         default:
             editor = "emacs"
@@ -28,7 +28,7 @@ extension AppDelegate {
             menuItem.state = (currentEditor == "emacs") ? .on : .off
         case "Visual Studio Code":
             menuItem.state = (currentEditor == "vscode") ? .on : .off
-        case "Custom...":
+        case "Custom":
             menuItem.state = (currentEditor == "custom") ? .on : .off
         default:
             break

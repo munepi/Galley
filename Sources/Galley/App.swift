@@ -117,7 +117,7 @@ struct GalleyApp {
 
         let emacsItem = NSMenuItem(title: "Emacs", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
         let vscodeItem = NSMenuItem(title: "Visual Studio Code", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
-        let customItem = NSMenuItem(title: "Custom...", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
+        let customItem = NSMenuItem(title: "Custom", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
 
         syncTexMenu.addItem(emacsItem)
         syncTexMenu.addItem(vscodeItem)
@@ -225,10 +225,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
             case "forward":
                 // 外部からの Forward Search 実行
-                // 例: open "galleypdf://forward?line=123&file=/path/to/main.pdf&src=/path/to/source.tex"
+                // 例: open "galleypdf://forward?line=123&pdfpath=/path/to/main.pdf&srcpath=/path/to/source.tex"
                 if let lineStr = params["line"], let line = Int32(lineStr) {
-                    let pdfPath = params["file"]
-                    let srcPath = params["src"]
+                    let pdfPath = params["pdfpath"]
+                    let srcPath = params["srcpath"]
                     self.processForwardSearch(line: line, pdfPath: pdfPath, srcPath: srcPath)
                 }
 
