@@ -112,6 +112,13 @@ extension AppDelegate {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         guard let docView = self.activePDFView.documentView else { return }
 
+                        // --- 1. 古い赤丸 (OLD) があれば削除する ---
+                        let dotIdentifier = NSUserInterfaceItemIdentifier("ForwardSearchDot")
+                        docView.subviews.filter { $0.identifier == dotIdentifier }.forEach { oldDot in
+                            oldDot.removeFromSuperview()
+                        }
+
+                        // --- 2. 新しい赤丸 (NEW) の座標計算と生成 ---
                         let pdfPoint = CGPoint(x: pdfX > 0 ? pdfX : 30, y: flippedY)
                         let viewPoint = self.activePDFView.convert(pdfPoint, from: page)
                         let docPoint = self.activePDFView.convert(viewPoint, to: docView)
@@ -121,6 +128,9 @@ extension AppDelegate {
                                                            y: docPoint.y - (dotSize / 2),
                                                            width: dotSize, height: dotSize))
                         dotView.wantsLayer = true
+
+                        // 識別子をセット (次回検索して消せるようにするため)
+                        dotView.identifier = dotIdentifier
 
                         let circleLayer = CAShapeLayer()
                         let circleRect = CGRect(x: 1, y: 1, width: dotSize - 2, height: dotSize - 2)
@@ -136,14 +146,19 @@ extension AppDelegate {
 
                         dotView.layer?.addSublayer(circleLayer)
 
+                        // 新しい赤丸を画面に追加
                         docView.addSubview(dotView)
 
+                        // 3秒後にフェードアウトして削除
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            NSAnimationContext.runAnimationGroup({ context in
-                                context.duration = 0.3
-                                dotView.animator().alphaValue = 0.0
-                            }) {
-                                dotView.removeFromSuperview()
+                            // すでに新しい検索によって削除されている可能性も考慮してアニメーションを実行
+                            if dotView.superview != nil {
+                                NSAnimationContext.runAnimationGroup({ context in
+                                    context.duration = 0.3
+                                    dotView.animator().alphaValue = 0.0
+                                }) {
+                                    dotView.removeFromSuperview()
+                                }
                             }
                         }
                     }
