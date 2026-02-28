@@ -225,11 +225,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
             case "forward":
                 // 外部からの Forward Search 実行
-                // 例: open "galleypdf://forward?line=123&pdfpath=/path/to/main.pdf&srcpath=/path/to/source.tex"
+                // 例: open "galleypdf://forward?line=123&column=45&pdfpath=/path/to/main.pdf&srcpath=/path/to/source.tex"
                 if let lineStr = params["line"], let line = Int32(lineStr) {
                     let pdfPath = params["pdfpath"]
                     let srcPath = params["srcpath"]
-                    self.processForwardSearch(line: line, pdfPath: pdfPath, srcPath: srcPath)
+
+                    var column: Int32? = nil
+                    if let colStr = params["column"], let col = Int32(colStr) {
+                        column = col
+                    }
+
+                    self.processForwardSearch(line: line, column: column, pdfPath: pdfPath, srcPath: srcPath)
                 }
 
             default:

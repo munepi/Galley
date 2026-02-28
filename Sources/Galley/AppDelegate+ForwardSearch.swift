@@ -22,18 +22,19 @@ extension AppDelegate {
         let pdfPath = event.paramDescriptor(forKeyword: AEKeyword(0x70646650))?.stringValue
         let srcPath = event.paramDescriptor(forKeyword: AEKeyword(0x73726346))?.stringValue
 
-        self.processForwardSearch(line: line, pdfPath: pdfPath, srcPath: srcPath)
+        self.processForwardSearch(line: line, column: nil, pdfPath: pdfPath, srcPath: srcPath)
         replyEvent.setDescriptor(NSAppleEventDescriptor(string: "OK"), forKeyword: keyDirectObject)
     }
 
-    func processForwardSearch(line: Int32, pdfPath: String?, srcPath: String?) {
+    func processForwardSearch(line: Int32, column: Int32? = nil, pdfPath: String?, srcPath: String?) {
         let pdfName = (pdfPath as NSString?)?.lastPathComponent ?? "nil"
 
         // 1. srcPath が省略された場合、PDFのパスから .tex ファイルを推測するフォールバック
         let guessedSrcPath = srcPath ?? (pdfPath as NSString?)?.deletingPathExtension.appending(".tex")
         let srcName = (guessedSrcPath as NSString?)?.lastPathComponent ?? "nil"
 
-        let baseMessage = "Forward Search ➔ PDF: \(pdfName) | Src: \(srcName) | Line: \(line)"
+        let colStr = column != nil ? " | Col: \(column!)" : ""
+        let baseMessage = "Forward Search ➔ PDF: \(pdfName) | Src: \(srcName) | Line: \(line)\(colStr)"
 
         if let pPath = pdfPath {
             let url = URL(fileURLWithPath: pPath).absoluteURL
@@ -54,7 +55,32 @@ extension AppDelegate {
             return
         }
 
-        if synctex_display_query(scanner, srcCStr, line, 0, -1) > 0 {
+        var searchLine = line
+        var isLineShifted = false
+        // エディタから column = 0 (行頭) が指定された場合、1行下をターゲットにする
+        if let col = column, col == 0 {
+            searchLine = line + 1
+            isLineShifted = true
+        }
+
+        var querySuccess = false
+        if synctex_display_query(scanner, srcCStr, searchLine, 0, -1) > 0 {
+            querySuccess = true
+            if self.isDebugMode { print("SyncTeX query succeeded.") }
+        } else {
+            if isLineShifted {
+                // エディタからの column が最終行だった場合、元のlineとする
+                searchLine = line
+                if synctex_display_query(scanner, srcCStr, searchLine, 0, -1) > 0 {
+                    querySuccess = true
+                    if self.isDebugMode { print("SyncTeX query succeeded.") }
+                }
+            } else {
+                if self.isDebugMode { print("SyncTeX query failed or matched.") }
+            }
+        }
+
+        if querySuccess {
             if let node = synctex_scanner_next_result(scanner) {
                 let pageIndex = synctex_node_page(node) - 1
 
