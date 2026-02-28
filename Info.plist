@@ -12,6 +12,17 @@
     <string>GalleyPDF.icns</string>
     <key>CFBundleIdentifier</key>
     <string>com.github.munepi.galley</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLName</key>
+        <string>com.github.munepi.galley</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>galleypdf</string>
+        </array>
+      </dict>
+    </array>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -25,16 +36,16 @@
 
     <key>CFBundleDocumentTypes</key>
     <array>
-        <dict>
-            <key>CFBundleTypeName</key>
-            <string>PDF Document</string>
-            <key>CFBundleTypeRole</key>
-            <string>Viewer</string>
-            <key>LSItemContentTypes</key>
-            <array>
-                <string>com.adobe.pdf</string>
-            </array>
-        </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>PDF Document</string>
+        <key>CFBundleTypeRole</key>
+        <string>Viewer</string>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.adobe.pdf</string>
+        </array>
+      </dict>
     </array>
 </dict>
 </plist>

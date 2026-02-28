@@ -192,6 +192,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         self.setupForwardSearch()
+
+        // Register URL handler
+        NSAppleEventManager.shared().setEventHandler(
+            self,
+            andSelector: #selector(handleURLEvent(_:withReplyEvent:)),
+            forEventClass: AEEventClass(kInternetEventClass),
+            andEventID: AEEventID(kAEGetURL)
+        )
+    }
+
+    @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
+        guard let urlString = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue,
+              let url = URL(string: urlString),
+              url.scheme == "galleypdf" else { return }
+
+        let host = url.host // reload, forward など
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        let queryItems = components?.queryItems ?? []
+
+        // パラメータを辞書形式に変換
+        var params: [String: String] = [:]
+        for item in queryItems {
+            params[item.name] = item.value
+        }
+
+        DispatchQueue.main.async {
+            switch host {
+            case "reload":
+                // 外部から強制リロード (例: open "galleypdf://reload")
+                self.reloadPDF()
+
+            case "forward":
+                // 外部からの Forward Search 実行
+                // 例: open "galleypdf://forward?line=123&file=/path/to/main.pdf&src=/path/to/source.tex"
+                if let lineStr = params["line"], let line = Int32(lineStr) {
+                    let pdfPath = params["file"]
+                    let srcPath = params["src"]
+                    self.processForwardSearch(line: line, pdfPath: pdfPath, srcPath: srcPath)
+                }
+
+            default:
+                break
+            }
+        }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
