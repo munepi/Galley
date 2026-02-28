@@ -19,9 +19,8 @@ Most PDF viewers are designed for reading multiple documents simultaneously. Gal
   * **Inverse Search**: Command-Click anywhere in the PDF to jump back to the corresponding source line in your editor. Supported editors include **Emacs**, **Visual Studio Code**, and any **Custom Editor** via CLI.
 * **📏 Precision Measurements**: Hold **Shift + Drag** to create a rectangular selection. You can also reposition an existing selection by holding **Shift** and dragging inside the marquee. Real-time dimensions are displayed in millimeters at the point of selection, and the area can be copied as a high-fidelity vector PDF object.
 * **🖋️ Featherweight & Zero-Distraction**:
-  * An incredibly small footprint (~600KB), leveraging native macOS frameworks.
+  * A lightweight executable (~740KB) and lean app bundle, leveraging native macOS frameworks to ensure near-instant startup and peak efficiency.
   * A truly minimalist interface that gives 100% of the window space to your PDF, keeping you in the flow of writing and editing.
-
 
 
 ## Installation
@@ -156,8 +155,12 @@ It safely URL-encodes the paths before sending them to macOS LaunchServices.
 You can select your preferred editor for Inverse Search (`Cmd + Click`) directly from the **SyncTeX** menu in the menu bar:
 
 * **Emacs**: Uses `emacsclient`. (Default)
+  * Galley automatically searches for the executable in the following default locations:
+    1. `/Applications/Emacs.app/Contents/MacOS/bin/emacsclient`
+    2. `/opt/homebrew/bin/emacsclient`
+    3. `/usr/local/bin/emacsclient`
 * **Visual Studio Code**: Uses the native `vscode://` URL scheme.
-* **Custom...**: Uses a user-defined shell command.
+* **Custom**: Uses a user-defined shell command.
 
 #### Custom Editor Command
 When **"Custom..."** is selected, Galley executes the command stored in the `customEditorCommand` preference. You can use `%file` and `%line` as placeholders.
@@ -173,9 +176,10 @@ defaults write com.github.munepi.galley customEditorCommand "/opt/homebrew/bin/s
 ~~~
 
 #### Specifying Emacsclient Path
-If your `emacsclient` is not in the standard PATH, specify it here:
+If your `emacsclient` is located in a path other than the default locations listed above, you must specify its absolute path here:
+
 ~~~bash
-defaults write com.github.munepi.galley emacsclientPath "/opt/homebrew/bin/emacsclient"
+defaults write com.github.munepi.galley emacsclientPath "/path/to/your/emacsclient"
 ~~~
 
 
