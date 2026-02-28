@@ -52,11 +52,106 @@ make app
 
 
 
+## Integration & Automation
+
+Galley provides two ways to communicate with external editors and scripts. **Using the URL Scheme is highly recommended for maximum performance.**
+
+### 1. URL Scheme (`galleypdf://`) - ⭐️ Recommended
+
+Galley registers a custom URL scheme (`galleypdf://`) with macOS LaunchServices. This allows zero-overhead, instantaneous communication with the app, bypassing the need for Bash execution or AppleScript compilation.
+
+Available endpoints:
+
+* **Force Reload**
+  ~~~bash
+  open -g "galleypdf://reload"
+  ~~~
+
+* **Forward Search**
+  ~~~bash
+  open -g "galleypdf://forward?line=<line>&pdfpath=<absolute_pdf_path>&srcpath=<absolute_src_path>"
+  ~~~
+  *(Note: URL parameters must be URL-encoded, especially if paths contain spaces.)*
+
+### 2. Command Line Utility (`displayline`)
+
+For legacy compatibility with older scripts, Galley includes a `displayline` bash script inside the application bundle.
+
+> [!WARNING]
+> **Performance Note**: We highly recommend migrating your editor configurations to the `galleypdf://` URL scheme. The `displayline` utility relies on `osascript` (AppleEvents), which introduces a noticeable delay (several hundred milliseconds) due to process forking and script compilation. The URL scheme is significantly faster.
+
+Usage:
+~~~bash
+/Applications/GalleyPDF.app/Contents/MacOS/displayline [-g] LINE PDFFILE [SRCFILE]
+~~~
+
+
+
 ## Configuration
 
 Galley is designed to be configured via the macOS Menu Bar and `UserDefaults` to maintain its clean, zero-UI aesthetic.
 
-### 1. Selecting your Editor (Inverse Search)
+### 1. Emacs Setup (Forward Search)
+
+To jump from Emacs to Galley, configure your TeX environment to call Galley's high-speed URL scheme using the `open` command.
+
+#### For AUCTeX Users
+Add the following to your `init.el` or `.emacs`. 
+We use `open -g` to perform the jump in the background without stealing focus.
+
+~~~elisp
+;; Enable SyncTeX correlation
+(setq TeX-source-correlate-mode t)
+(setq TeX-source-correlate-start-server t)
+
+;; Register Galley as a custom PDF viewer
+(add-to-list 'TeX-view-program-list
+             '("Galley" "open -g \"galleypdf://forward?line=%n&pdfpath=%o&srcpath=%b\""))
+
+;; Set Galley as the default viewer for PDF output
+(setq TeX-view-program-selection '((output-pdf "Galley")))
+~~~
+
+To execute Forward Search in AUCTeX, simply press `C-c C-v` (or `C-c C-c` and select `View`).
+
+
+#### For YaTeX Users
+Add the following function to your `init.el` or `.emacs`. 
+It safely URL-encodes the paths before sending them to macOS LaunchServices.
+
+~~~elisp
+(defun YaTeX:galley-forward-search ()
+  "Perform a Forward Search using Galley's URL scheme."
+  (interactive)
+  (require 'url-util)
+  (let* ((line (number-to-string (save-restriction
+                                   (widen)
+                                   (count-lines (point-min) (point)))))
+         (pdf-file (expand-file-name
+                    (concat (file-name-sans-extension
+                             (or YaTeX-parent-file
+                                 (save-excursion
+                                   (YaTeX-visit-main t)
+                                   buffer-file-name)))
+                            ".pdf")))
+         (tex-file buffer-file-name)
+         (url (format "galleypdf://forward?line=%s&pdfpath=%s&srcpath=%s"
+                      line
+                      (url-hexify-string pdf-file)
+                      (url-hexify-string tex-file))))
+    ;; Add the -g option to perform the jump in the background without bringing Galley to the foreground.
+    (start-process "galley-forward" nil "open" "-g" url)))
+
+;; Shortcut key configuration for YaTeX (e.g., prefix + C-j)
+(add-hook 'yatex-mode-hook
+          (lambda ()
+            (YaTeX-define-key "\C-j" 'YaTeX:galley-forward-search)
+            ;; (YaTeX-define-key "\C-l" 'YaTeX:galley-forward-search)
+        ))
+~~~
+
+
+### 2. Selecting your Editor (Inverse Search)
 
 You can select your preferred editor for Inverse Search (`Cmd + Click`) directly from the **SyncTeX** menu in the menu bar:
 
@@ -75,12 +170,6 @@ defaults write com.github.munepi.galley customEditorCommand "/opt/homebrew/bin/c
 
 # Example for Sublime Text
 defaults write com.github.munepi.galley customEditorCommand "/opt/homebrew/bin/subl '%file':%line"
-
-# Example for Vim (CLI)
-defaults write com.github.munepi.galley customEditorCommand "/opt/homebrew/bin/vim --remote-silent +%line '%file'"
-
-# Example for MacVim
-defaults write com.github.munepi.galley customEditorCommand "/opt/homebrew/bin/mvim --remote-silent +%line '%file'"
 ~~~
 
 #### Specifying Emacsclient Path
@@ -89,68 +178,6 @@ If your `emacsclient` is not in the standard PATH, specify it here:
 defaults write com.github.munepi.galley emacsclientPath "/opt/homebrew/bin/emacsclient"
 ~~~
 
-### 2. Emacs Setup (Forward Search)
-
-To jump from Emacs to Galley, configure your TeX environment to call Galley's `displayline` script.
-
-> [!NOTE]
-> **⚠️ Security Note on First Forward Search**
-> The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions. Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
-
-#### For AUCTeX Users
-Add the following to your `init.el` or `.emacs`:
-
-~~~elisp
-;; Enable SyncTeX correlation
-(setq TeX-source-correlate-mode t)
-(setq TeX-source-correlate-start-server t)
-
-;; Register Galley as a custom PDF viewer
-(add-to-list 'TeX-view-program-list
-             '("Galley" "/Applications/GalleyPDF.app/Contents/MacOS/displayline -g %n %o %b"))
-
-;; Set Galley as the default viewer for PDF output
-(setq TeX-view-program-selection '((output-pdf "Galley")))
-~~~
-
-To execute Forward Search in AUCTeX, simply press `C-c C-v` (or `C-c C-c` and select `View`).
-
-
-#### For YaTeX Users
-Add the following to your `init.el` or `.emacs`:
-
-~~~elisp
-(defun YaTeX:galley-forward-search ()
-  "Perform a Forward Search in the PDF corresponding to the current line using Galley."
-  (interactive)
-  (let* ((line (number-to-string (save-restriction
-                                   (widen)
-                                   (count-lines (point-min) (point)))))
-         (pdf-file (expand-file-name
-                    (concat (file-name-sans-extension
-                             (or YaTeX-parent-file
-                                 (save-excursion
-                                   (YaTeX-visit-main t)
-                                   buffer-file-name)))
-                            ".pdf")))
-         (tex-file buffer-file-name)
-         (cmd "/Applications/GalleyPDF.app/Contents/MacOS/displayline"))
-
-    (if (file-executable-p cmd)
-        ;; Add the -g option to perform the jump in the background without bringing Galley to the foreground
-        (let ((proc (start-process "displayline" nil cmd "-g" line pdf-file tex-file)))
-          (if (fboundp 'set-process-query-on-exit-flag)
-              (set-process-query-on-exit-flag proc nil)
-            (process-kill-without-query proc)))
-      (message "Executable file not found. Please ensure GalleyPDF.app is installed correctly."))))
-
-;; Shortcut key configuration for YaTeX (e.g., prefix + C-l)
-(add-hook 'yatex-mode-hook
-          (lambda ()
-            ;; (YaTeX-define-key "\C-j" 'YaTeX:galley-forward-search)
-            (YaTeX-define-key "\C-l" 'YaTeX:galley-forward-search)
-        ))
-~~~
 
 ### 3. Debug Mode
 
@@ -165,8 +192,6 @@ defaults write com.github.munepi.galley debugMode -bool true
 ~~~bash
 /Applications/GalleyPDF.app/Contents/MacOS/GalleyPDF /path/to/document.pdf -debugMode YES
 ~~~
-
-In Debug Mode, the HUD stays visible for 15 seconds to ensure you have enough time to read the coordinates.
 
 
 
@@ -188,11 +213,15 @@ In Debug Mode, the HUD stays visible for 15 seconds to ensure you have enough ti
 
 ### Page Navigation & Interface Notes
 * **Direct Jump**: When you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly.
-* **Window Title Info**: To keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`) or simply `Page <physical>/<total>` instead of using a bulky status bar.
-* **Display Modes**: You can switch between Single Page, Two Pages, Continuous, Book Mode, and Right-To-Left (RTL) layouts from the **View** menu in the macOS menu bar.
+* **Window Title Info**: To keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`).
+* **Persistence**: Galley automatically remembers your Display Mode, Book Mode, and RTL settings using `UserDefaults`.
 
-### Persistence
-Galley automatically remembers your **Display Mode** (Single/Two Pages), **Book Mode**, and **Right-To-Left** (RTL) settings using `UserDefaults`. Your preferred viewing environment is restored every time you open the app.
+
+
+## **⚠️ Security Note on First Forward Search**
+
+The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions. 
+Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
 
 
 
