@@ -28,7 +28,11 @@ extension AppDelegate {
 
     func processForwardSearch(line: Int32, pdfPath: String?, srcPath: String?) {
         let pdfName = (pdfPath as NSString?)?.lastPathComponent ?? "nil"
-        let srcName = (srcPath as NSString?)?.lastPathComponent ?? "nil"
+
+        // 1. srcPath が省略された場合、PDFのパスから .tex ファイルを推測するフォールバック
+        let guessedSrcPath = srcPath ?? (pdfPath as NSString?)?.deletingPathExtension.appending(".tex")
+        let srcName = (guessedSrcPath as NSString?)?.lastPathComponent ?? "nil"
+
         let baseMessage = "Forward Search ➔ PDF: \(pdfName) | Src: \(srcName) | Line: \(line)"
 
         if let pPath = pdfPath {
@@ -41,7 +45,14 @@ extension AppDelegate {
         guard let scanner = synctex_scanner_new_with_output_file(currentPDFPath, nil, 1) else { return }
         defer { synctex_scanner_free(scanner) }
 
-        let srcCStr = (srcPath as NSString?)?.utf8String
+        // 2. CSynctex に NULL を渡してクラッシュするのを防ぐガード
+        guard let finalSrcPath = guessedSrcPath,
+              let srcCStr = (finalSrcPath as NSString).utf8String else {
+            if self.isDebugMode {
+                DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] Source path is missing or invalid.") }
+            }
+            return
+        }
 
         if synctex_display_query(scanner, srcCStr, line, 0, -1) > 0 {
             if let node = synctex_scanner_next_result(scanner) {
