@@ -6,6 +6,13 @@ import PDFKit
 // ==========================================
 extension AppDelegate {
 
+    // NOTE: (0.1, 0.2, 0.05)でも大丈夫そう
+    struct DelaySettings {
+        static let pollingInterval: TimeInterval = 0.1  // 0.2 // ファイル変更を監視する間隔
+        static let reloadWait: TimeInterval = 0.2       // 0.4 // 変更検知からリロード処理を開始するまでの待機時間
+        static let swapWait: TimeInterval = 0.05        // 0.15 // 裏で読み込みが完了してから画面を入れ替えるまでの待機時間
+    }
+
     @objc func openDocument(_ sender: Any?) {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
@@ -58,7 +65,7 @@ extension AppDelegate {
         self.lastUpdate = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date)
 
         self.timer?.invalidate()
-        self.timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+        self.timer = Timer.scheduledTimer(withTimeInterval: DelaySettings.pollingInterval, repeats: true) { [weak self] _ in
             guard let self = self,
                   let currentModDate = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date),
                   let lastMod = self.lastUpdate,
@@ -71,7 +78,7 @@ extension AppDelegate {
                 self?.reloadPDF()
             }
             self.reloadWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: workItem)
+            DispatchQueue.main.asyncAfter(deadline: .now() + DelaySettings.reloadWait, execute: workItem)
         }
     }
 
@@ -89,9 +96,10 @@ extension AppDelegate {
         }
 
         DispatchQueue.global(qos: .userInitiated).async {
+            // LaTeXコンパイラがPDFを生成途中しているにおける安全装置
             guard let data = try? Data(contentsOf: url),
-                  let newDocument = PDFDocument(data: data),
-                  newDocument.pageCount > 0 else { return }
+                  let newDocument = PDFDocument(data: data), // ← 不完全なPDFのとき、ここで nil になる
+                  newDocument.pageCount > 0 else { return } // ← nil ならば、処理を中断 (return) する
 
             DispatchQueue.main.async {
                 hiddenView.document = newDocument
@@ -125,7 +133,7 @@ extension AppDelegate {
                 }
                 self.swapWorkItem = swapItem
 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: swapItem)
+                DispatchQueue.main.asyncAfter(deadline: .now() + DelaySettings.swapWait, execute: swapItem)
             }
         }
     }
