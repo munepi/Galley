@@ -118,7 +118,23 @@ extension AppDelegate {
                             oldDot.removeFromSuperview()
                         }
 
-                        // --- 2. 新しい赤丸 (NEW) の座標計算と生成 ---
+                        // --- 2. 古いテキスト選択をクリアする ---
+                        self.activePDFView.clearSelection()
+
+                        // --- 3. 該当行のテキストを「選択状態(Selection)」にする ---
+                        let selectionHeight: CGFloat = 20.0
+                        let lineRect = NSRect(x: 0,
+                                              y: flippedY - (selectionHeight / 2),
+                                              width: bounds.width,
+                                              height: selectionHeight)
+
+                        if let selection = page.selection(for: lineRect) {
+                            self.activePDFView.currentSelection = selection
+                        } else if self.isDebugMode {
+                            print("No text found at Y: \(flippedY) to select.")
+                        }
+
+                        // --- 4. 新しい赤丸 (NEW) の座標計算と生成 ---
                         let pdfPoint = CGPoint(x: pdfX > 0 ? pdfX : 30, y: flippedY)
                         let viewPoint = self.activePDFView.convert(pdfPoint, from: page)
                         let docPoint = self.activePDFView.convert(viewPoint, to: docView)
@@ -149,9 +165,8 @@ extension AppDelegate {
                         // 新しい赤丸を画面に追加
                         docView.addSubview(dotView)
 
-                        // 3秒後にフェードアウトして削除
+                        // 3秒後に赤丸だけをフェードアウトして削除 (テキスト選択は残る)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            // すでに新しい検索によって削除されている可能性も考慮してアニメーションを実行
                             if dotView.superview != nil {
                                 NSAnimationContext.runAnimationGroup({ context in
                                     context.duration = 0.3
