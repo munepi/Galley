@@ -68,9 +68,24 @@ Available endpoints:
 
 * **Forward Search**
   ~~~bash
+  open -g "galleypdf://forward?line=<line>&pdfpath=<absolute_pdf_path>"
+
   open -g "galleypdf://forward?line=<line>&pdfpath=<absolute_pdf_path>&srcpath=<absolute_src_path>"
+
+  open -g "galleypdf://forward?line=<line>&column=<column>&pdfpath=<absolute_pdf_path>&srcpath=<absolute_src_path>"
   ~~~
   *(Note: URL parameters must be URL-encoded, especially if paths contain spaces.)*
+
+  > [!TIP]
+  > **Overcoming the SyncTeX "Column 0" Limitation**
+  > Most PDF viewers suffer from a notorious SyncTeX issue where initiating a forward search from the beginning of a line (column 0) incorrectly jumps to the end of the previous line. **Galley automatically detects `column=0` and intelligently shifts the search target to `line + 1`**, guaranteeing precise jumps regardless of your cursor position.
+
+  > [!WARNING]
+  > **Security Note on First Forward Search**
+  > The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions. 
+  > Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
+
+
 
 ### 2. Command Line Utility (`displayline`)
 
@@ -92,20 +107,25 @@ Galley is designed to be configured via the macOS Menu Bar and `UserDefaults` to
 
 ### 1. Emacs Setup (Forward Search)
 
-To jump from Emacs to Galley, configure your TeX environment to call Galley's high-speed URL scheme using the `open` command.
+To jump from Emacs to Galley, configure your TeX environment to call Galley's high-speed URL scheme using the `open` command. 
+By passing both the line and column numbers, Galley can perform highly accurate SyncTeX jumps.
 
 #### For AUCTeX Users
 Add the following to your `init.el` or `.emacs`. 
-We use `open -g` to perform the jump in the background without stealing focus.
+We define a custom expansion `%c` to pass the cursor's current column to Galley.
 
 ~~~elisp
 ;; Enable SyncTeX correlation
 (setq TeX-source-correlate-mode t)
 (setq TeX-source-correlate-start-server t)
 
+;; Define %c to get the current column for precise Forward Search
+(add-to-list 'TeX-expand-list
+             '("%c" (lambda () (number-to-string (current-column)))))
+
 ;; Register Galley as a custom PDF viewer
 (add-to-list 'TeX-view-program-list
-             '("Galley" "open -g \"galleypdf://forward?line=%n&pdfpath=%o&srcpath=%b\""))
+             '("Galley" "open -g \"galleypdf://forward?line=%n&column=%c&pdfpath=%o&srcpath=%b\""))
 
 ;; Set Galley as the default viewer for PDF output
 (setq TeX-view-program-selection '((output-pdf "Galley")))
@@ -116,16 +136,17 @@ To execute Forward Search in AUCTeX, simply press `C-c C-v` (or `C-c C-c` and se
 
 #### For YaTeX Users
 Add the following function to your `init.el` or `.emacs`. 
-It safely URL-encodes the paths before sending them to macOS LaunchServices.
+It extracts both the line and column numbers and safely URL-encodes the paths before sending them to macOS LaunchServices.
 
 ~~~elisp
 (defun YaTeX:galley-forward-search ()
-  "Perform a Forward Search using Galley's URL scheme."
+  "Perform a precise Forward Search using Galley's URL scheme."
   (interactive)
   (require 'url-util)
   (let* ((line (number-to-string (save-restriction
                                    (widen)
                                    (count-lines (point-min) (point)))))
+         (column (number-to-string (current-column)))
          (pdf-file (expand-file-name
                     (concat (file-name-sans-extension
                              (or YaTeX-parent-file
@@ -134,8 +155,9 @@ It safely URL-encodes the paths before sending them to macOS LaunchServices.
                                    buffer-file-name)))
                             ".pdf")))
          (tex-file buffer-file-name)
-         (url (format "galleypdf://forward?line=%s&pdfpath=%s&srcpath=%s"
+         (url (format "galleypdf://forward?line=%s&column=%s&pdfpath=%s&srcpath=%s"
                       line
+                      column
                       (url-hexify-string pdf-file)
                       (url-hexify-string tex-file))))
     ;; Add the -g option to perform the jump in the background without bringing Galley to the foreground.
@@ -221,20 +243,11 @@ defaults write com.github.munepi.galley debugMode -bool true
 * **Persistence**: Galley automatically remembers your Display Mode, Book Mode, and RTL settings using `UserDefaults`.
 
 
-
-## **⚠️ Security Note on First Forward Search**
-
-The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions. 
-Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
-
-
-
 ## Roadmap
 
 Galley is actively being developed with the following features planned:
 
 * **Text Selection HUD**: A subtle pop-up displaying character/word counts and Unicode/Font information for professional typesetting analysis.
-* **GUI Preferences**: An in-app settings window to manage editor commands and defaults without using the command line.
 
 
 ## Why Galley?
