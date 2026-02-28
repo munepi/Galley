@@ -66,18 +66,31 @@ extension AppDelegate {
 
                     let bounds = page.bounds(for: .cropBox)
 
+                    // 1. DVI unit (sp) -> TeX point (pt) への変換
                     let texPtX = rawX / 65536.0
                     let texPtY = rawY / 65536.0
 
-                    let pdfX = texPtX * (72.0 / 72.27)
-                    let pdfY = texPtY * (72.0 / 72.27)
+                    // 2. TeX point (72.27 pt/inch) -> PDF point (72.0 pt/inch) への変換
+                    let pdfOffsetX = texPtX * (72.0 / 72.27)
+                    let pdfOffsetY = texPtY * (72.0 / 72.27)
 
-                    let flippedY = bounds.maxY - pdfY
+                    // 3. TeXの原点オフセット（左上から 1 inch, 1 inch の位置が原点）を加算
+                    // 1 inch = 72.0 PDF points
+                    let absolutePDFX = pdfOffsetX + 72.0
+                    let absolutePDFY = pdfOffsetY + 72.0
+
+                    // 4. PDFKitの座標系（左下原点）にY軸を反転させる
+                    // bounds.maxY は用紙全体の高さ（例: A4判なら約842）
+                    let finalPdfX = absolutePDFX
+                    let finalPdfY = bounds.maxY - absolutePDFY
+
+                    let flippedY = finalPdfY
+                    let pdfX = finalPdfX
 
                     let detailMessage = """
                     Page: \(pageIndex + 1)
                     Raw (sp): Y=\(String(format: "%.0f", rawY))
-                    PDF pt: Y=\(String(format: "%.1f", pdfY))
+                    Absolute PDF: X=\(String(format: "%.1f", absolutePDFX)), Y=\(String(format: "%.1f", absolutePDFY))
                     Flipped Y: \(String(format: "%.1f", flippedY))
                     Bounds height: \(String(format: "%.1f", bounds.maxY))
                     """
