@@ -18,7 +18,8 @@ TODO-munepi.md
 
 /GalleyPDF.app
 GalleyPDF.icns
-GalleyPDF.dmg
+GalleyPDF.*.dmg
+GalleyPDF.pkg
 /.build
 /Packages
 xcuserdata/
