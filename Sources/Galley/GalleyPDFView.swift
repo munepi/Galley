@@ -2,7 +2,7 @@ import AppKit
 import PDFKit
 
 // ==========================================
-// カスタムPDFView: 矩形選択ツール ＆ 寸法・コピー機能 ＆ ページジャンプ機能
+// カスタムPDFView: 矩形選択ツール ＆ 寸法・コピー機能 ＆ ページジャンプ機能 ＆ 文字情報機能
 // ==========================================
 class GalleyPDFView: PDFView {
     // フォーカス管理 (First Responder)
@@ -158,6 +158,232 @@ class GalleyPDFView: PDFView {
 
         // スペースキー（ページ送り）など、対象外のキーはPDFKitに処理させる
         super.keyDown(with: event)
+    }
+
+
+    // --- 選択文字の解析情報を一時保持する構造体 ---
+    struct CharacterInspectionInfo {
+        let charStr: String
+        let unicodeStr: String
+        let glyphIDStr: String
+        let unicodeName: String
+        let unicodePlane: String
+        let unicodeCategory: String
+        let fontName: String
+        let familyName: String
+        let traits: String
+        let pt: CGFloat
+        let mm: CGFloat
+        let q: CGFloat
+        let ascent: CGFloat
+        let descent: CGFloat
+        let leading: CGFloat
+        let selectionBounds: NSRect
+        let page: PDFPage
+    }
+    var pendingInspectionInfo: CharacterInspectionInfo?
+
+    // ==========================================
+    // コンテキストメニュー (右クリック) のカスタマイズ
+    // ==========================================
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let menu = super.menu(for: event) ?? NSMenu(title: "")
+
+        guard let selection = self.currentSelection,
+              let attrString = selection.attributedString,
+              attrString.length > 0 else {
+            return menu
+        }
+
+        let rawString = attrString.string
+        guard let firstChar = rawString.first else { return menu }
+        let charStr = String(firstChar)
+
+        let attributes = attrString.attributes(at: 0, effectiveRange: nil)
+        guard let font = attributes[.font] as? NSFont else { return menu }
+
+        guard let scalar = firstChar.unicodeScalars.first else { return menu }
+        let unicodeVal = scalar.value
+        let unicodeStr = String(format: "U+%04X", unicodeVal)
+
+        let unicodeName = scalar.properties.name?.capitalized ?? "Unknown"
+        let unicodePlane = getUnicodePlaneName(value: unicodeVal)
+        let unicodeCategory = getUnicodeCategoryName(category: scalar.properties.generalCategory)
+
+        // --- フォント情報の詳細抽出 (CoreText) ---
+        let ctFont = font as CTFont
+        let rawFontName = (CTFontCopyPostScriptName(ctFont) as String?) ?? font.fontName
+        let fontName = (rawFontName == "Helvetica") ? "Helvetica (fallback)" : rawFontName
+
+        let familyName = (CTFontCopyFamilyName(ctFont) as String?) ?? font.familyName ?? "Unknown"
+
+        // Traits (属性) の抽出
+        let symbolicTraits = CTFontGetSymbolicTraits(ctFont)
+        var traitStrings: [String] = []
+        if symbolicTraits.contains(.traitBold) { traitStrings.append("Bold") }
+        if symbolicTraits.contains(.traitItalic) { traitStrings.append("Italic") }
+        if symbolicTraits.contains(.traitMonoSpace) { traitStrings.append("Mono") }
+        if symbolicTraits.contains(.traitCondensed) { traitStrings.append("Condensed") }
+        let traits = traitStrings.isEmpty ? "Regular" : traitStrings.joined(separator: ", ")
+
+        // Metrics (垂直メトリクス) の抽出
+        let ascent = CTFontGetAscent(ctFont)
+        let descent = CTFontGetDescent(ctFont)
+        let leading = CTFontGetLeading(ctFont)
+
+        let pt = font.pointSize
+        let mm = pt * (25.4 / 72.0)
+        let q = mm * 4.0
+
+        var glyphIDStr = "N/A"
+        let utf16Chars = Array(charStr.utf16)
+        if !utf16Chars.isEmpty {
+            var glyphs = [CGGlyph](repeating: 0, count: utf16Chars.count)
+            if CTFontGetGlyphsForCharacters(ctFont, utf16Chars, &glyphs, utf16Chars.count) {
+                glyphIDStr = "\(glyphs[0])"
+            }
+        }
+
+        guard let page = selection.pages.first else { return menu }
+        let bounds = selection.bounds(for: page)
+
+        self.pendingInspectionInfo = CharacterInspectionInfo(
+            charStr: charStr, unicodeStr: unicodeStr, glyphIDStr: glyphIDStr,
+            unicodeName: unicodeName, unicodePlane: unicodePlane, unicodeCategory: unicodeCategory,
+            fontName: fontName, familyName: familyName, traits: traits,
+            pt: pt, mm: mm, q: q, ascent: ascent, descent: descent, leading: leading,
+            selectionBounds: bounds, page: page
+        )
+
+        let inspectionItem = NSMenuItem(title: "Inspect Character \"\(charStr)\"", action: #selector(showCharacterInspection), keyEquivalent: "")
+        inspectionItem.target = self
+        if let icon = NSImage(systemSymbolName: "text.magnifyingglass", accessibilityDescription: nil) {
+            inspectionItem.image = icon
+        }
+
+        menu.insertItem(NSMenuItem.separator(), at: 0)
+        menu.insertItem(inspectionItem, at: 0)
+
+        return menu
+    }
+
+    // ==========================================
+    // Popover (吹き出しUI) で文字情報を表示する
+    // ==========================================
+    @objc func showCharacterInspection() {
+        guard let info = pendingInspectionInfo else { return }
+
+        let isCJK = info.charStr.unicodeScalars.first?.properties.isIdeographic == true ||
+                    info.charStr.range(of: "\\p{Hiragana}|\\p{Katakana}", options: .regularExpression) != nil
+        let cidNote = (info.glyphIDStr != "N/A" && isCJK) ? " (≒ CID)" : ""
+
+        let infoText = """
+        Char:  \(info.charStr)
+        Code:  \(info.unicodeStr)
+        Glyph: \(info.glyphIDStr)\(cidNote)
+
+        [ Unicode Info ]
+        Name:  \(info.unicodeName)
+        Plane: \(info.unicodePlane)
+        Cat:   \(info.unicodeCategory)
+
+        [ Font Info ]
+        Font:   \(info.fontName)
+        Family: \(info.familyName)
+        Traits: \(info.traits)
+        Size:   \(String(format: "%.2f pt", info.pt)) = \(String(format: "%.2f mm", info.mm)) = \(String(format: "%.2f Q", info.q))
+        Metric: Asc \(String(format: "%.2f", info.ascent)), Des \(String(format: "%.2f", info.descent)), Ldg \(String(format: "%.2f", info.leading))
+        """
+
+        let displayFont = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+
+        // --- Popover のサイズを動的に計算する ---
+        let attributes: [NSAttributedString.Key: Any] = [.font: displayFont]
+
+        // 修正 1: .greatestFiniteMagnitude に CGFloat を明示
+        let boundingSize = (infoText as NSString).boundingRect(
+            with: NSSize(width: 500, height: CGFloat.greatestFiniteMagnitude),
+            options: .usesLineFragmentOrigin,
+            attributes: attributes
+        ).size
+
+        // 余白を足して最終的なViewサイズを決定
+        let popoverWidth = max(340, ceil(boundingSize.width) + 40)
+        let popoverHeight = ceil(boundingSize.height) + 40
+
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.animates = true
+
+        let viewController = NSViewController()
+        let view = NSView(frame: NSRect(x: 0, y: 0, width: popoverWidth, height: popoverHeight))
+
+        let textView = NSTextView(frame: NSRect(x: 15, y: 15, width: popoverWidth - 30, height: popoverHeight - 30))
+        textView.string = infoText
+        textView.font = displayFont
+
+        // 修正 2: NSColor を明示
+        textView.textColor = NSColor.labelColor
+        textView.backgroundColor = NSColor.clear
+
+        textView.isEditable = false
+        textView.isSelectable = true // 選択＆コピー可能
+
+        view.addSubview(textView)
+        viewController.view = view
+        popover.contentViewController = viewController
+
+        let targetRect = self.convert(info.selectionBounds, from: info.page)
+        popover.show(relativeTo: targetRect, of: self, preferredEdge: .maxY)
+    }
+
+    // --- Unicode 解析用ヘルパー関数 ---
+    private func getUnicodePlaneName(value: UInt32) -> String {
+        let planeIndex = value >> 16
+        switch planeIndex {
+        case 0: return "Basic Multilingual Plane (BMP)"
+        case 1: return "Supplementary Multilingual Plane (SMP)"
+        case 2: return "Supplementary Ideographic Plane (SIP)"
+        case 3: return "Tertiary Ideographic Plane (TIP)"
+        case 14: return "Supplementary Special-purpose Plane (SSP)"
+        default: return "Plane \(planeIndex)"
+        }
+    }
+
+    private func getUnicodeCategoryName(category: Unicode.GeneralCategory) -> String {
+        switch category {
+        case .uppercaseLetter: return "Uppercase Letter (Lu)"
+        case .lowercaseLetter: return "Lowercase Letter (Ll)"
+        case .titlecaseLetter: return "Titlecase Letter (Lt)"
+        case .modifierLetter: return "Modifier Letter (Lm)"
+        case .otherLetter: return "Other Letter (Lo)"
+        case .nonspacingMark: return "Nonspacing Mark (Mn)"
+        case .spacingMark: return "Spacing Mark (Mc)"
+        case .enclosingMark: return "Enclosing Mark (Me)"
+        case .decimalNumber: return "Decimal Number (Nd)"
+        case .letterNumber: return "Letter Number (Nl)"
+        case .otherNumber: return "Other Number (No)"
+        case .connectorPunctuation: return "Connector Punctuation (Pc)"
+        case .dashPunctuation: return "Dash Punctuation (Pd)"
+        case .openPunctuation: return "Open Punctuation (Ps)"
+        case .closePunctuation: return "Close Punctuation (Pe)"
+        case .initialPunctuation: return "Initial Punctuation (Pi)"
+        case .finalPunctuation: return "Final Punctuation (Pf)"
+        case .otherPunctuation: return "Other Punctuation (Po)"
+        case .mathSymbol: return "Math Symbol (Sm)"
+        case .currencySymbol: return "Currency Symbol (Sc)"
+        case .modifierSymbol: return "Modifier Symbol (Sk)"
+        case .otherSymbol: return "Other Symbol (So)"
+        case .spaceSeparator: return "Space Separator (Zs)"
+        case .lineSeparator: return "Line Separator (Zl)"
+        case .paragraphSeparator: return "Paragraph Separator (Zp)"
+        case .control: return "Control (Cc)"
+        case .format: return "Format (Cf)"
+        case .surrogate: return "Surrogate (Cs)"
+        case .privateUse: return "Private Use (Co)"
+        case .unassigned: return "Unassigned (Cn)"
+        @unknown default: return "Unknown"
+        }
     }
 
     private func resetPageInputTimer() {
