@@ -37,8 +37,18 @@ class GalleyPDFView: PDFView {
     private var pageInputTimer: Timer?
     private var pageInputHUD: NSTextField?
 
+    // --- リンクホバー用のプロパティ ---
+    private var trackingArea: NSTrackingArea?
+
+    // --- リンクプレビュー用のプロパティ ---
+    private var linkPreviewTimer: Timer?
+    private var linkPreviewPopover: NSPopover?
+    private var hoveredLinkAnnotation: PDFAnnotation?
+
+
     // マウス操作 (Inverse Search, 矩形選択, リンクジャンプ)
     override func mouseDown(with event: NSEvent) {
+        cancelLinkPreview() // クリックされたらプレビューは即座に消す
 
         // --- 0. Inverse Search (Cmd + Click) ---
         if event.modifierFlags.contains(.command) {
@@ -633,8 +643,6 @@ class GalleyPDFView: PDFView {
     // ==========================================
     // トラッキングエリア (Hover時の👆カーソル変更)
     // ==========================================
-    private var trackingArea: NSTrackingArea?
-
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         if let ta = trackingArea {
@@ -651,13 +659,160 @@ class GalleyPDFView: PDFView {
         super.mouseMoved(with: event)
 
         // 2. その直後に、マウスの下が「リンク」であれば 👆 カーソルで上書きする
-        guard let docView = self.documentView else { return }
-        let locationInDocView = docView.convert(event.locationInWindow, from: nil)
-        guard let page = self.page(for: locationInDocView, nearest: true) else { return }
-        let pagePoint = self.convert(locationInDocView, to: page)
+        let locationInPDFView = self.convert(event.locationInWindow, from: nil)
+        guard let page = self.page(for: locationInPDFView, nearest: true) else {
+            resetHoverState()
+            return
+        }
+
+        let pagePoint = self.convert(locationInPDFView, to: page)
 
         if let annotation = page.annotation(at: pagePoint), annotation.type == "Link" {
             NSCursor.pointingHand.set()
+
+            // 新しいリンクの上に来たら、プレビューのタイマーをセット
+            if hoveredLinkAnnotation != annotation {
+                hoveredLinkAnnotation = annotation
+                // 完璧に正確なマウス位置(pagePoint)とページ情報を渡す
+                scheduleLinkPreview(for: annotation, on: page, at: pagePoint)
+            }
+        } else {
+            resetHoverState()
         }
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        resetHoverState()
+        super.mouseExited(with: event)
+    }
+
+    private func resetHoverState() {
+        if hoveredLinkAnnotation != nil {
+            hoveredLinkAnnotation = nil
+            cancelLinkPreview()
+            // カーソルは super.mouseMoved が自動でIビーム等に戻してくれます
+        }
+    }
+
+    // ==========================================
+    // リンクプレビュー (実寸切り出し) の処理
+    // ==========================================
+    private func scheduleLinkPreview(for annotation: PDFAnnotation, on page: PDFPage, at pagePoint: CGPoint) {
+        cancelLinkPreview()
+
+        // 0.3秒 ホバーしたらプレビューを表示
+        linkPreviewTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { [weak self] _ in
+            self?.showLinkPreview(for: annotation, on: page, at: pagePoint)
+        }
+    }
+
+    private func cancelLinkPreview() {
+        linkPreviewTimer?.invalidate()
+        linkPreviewTimer = nil
+        linkPreviewPopover?.close()
+        linkPreviewPopover = nil
+    }
+
+    private func showLinkPreview(for annotation: PDFAnnotation, on page: PDFPage, at pagePoint: CGPoint) {
+        var destination: PDFDestination? = nil
+        var urlString: String? = nil
+
+        // アノテーションからジャンプ先を取得
+        if let dest = annotation.destination {
+            destination = dest
+        } else if let action = annotation.action as? PDFActionGoTo {
+            destination = action.destination
+        } else if let url = annotation.url {
+            urlString = url.absoluteString
+        } else if let action = annotation.action as? PDFActionURL, let url = action.url {
+            urlString = url.absoluteString
+        }
+
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.animates = true
+        let viewController = NSViewController()
+        let view = NSView()
+
+        // --- 内部リンク: 実寸での切り出し ---
+        if let dest = destination, let image = createSnippetImage(for: dest) {
+            let imageView = NSImageView(image: image)
+            imageView.frame = NSRect(origin: .zero, size: image.size)
+            imageView.wantsLayer = true
+            imageView.layer?.borderColor = NSColor.separatorColor.cgColor
+            imageView.layer?.borderWidth = 1.0
+
+            view.frame = NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
+            view.addSubview(imageView)
+        }
+        // --- 外部リンク: URLテキストの表示 ---
+        else if let urlStr = urlString {
+            let label = NSTextField(labelWithString: urlStr)
+            label.font = .systemFont(ofSize: 13)
+            label.textColor = .linkColor
+            label.lineBreakMode = .byCharWrapping
+
+            let targetWidth: CGFloat = min(300, label.intrinsicContentSize.width + 10)
+            let boundingSize = label.cell!.cellSize(forBounds: NSRect(x: 0, y: 0, width: targetWidth, height: .greatestFiniteMagnitude))
+
+            label.frame = NSRect(x: 10, y: 10, width: targetWidth, height: boundingSize.height)
+            view.frame = NSRect(x: 0, y: 0, width: targetWidth + 20, height: boundingSize.height + 20)
+            view.addSubview(label)
+        } else {
+            return
+        }
+
+        viewController.view = view
+        popover.contentViewController = viewController
+        self.linkPreviewPopover = popover
+
+        // マウスの先端 (pagePoint) に 1x1 の見えない四角形を作る
+        let pageRect = NSRect(x: pagePoint.x, y: pagePoint.y, width: 1, height: 1)
+
+        // PDFPage座標 -> PDFView(self)座標 に変換する
+        let targetRect = self.convert(pageRect, from: page)
+
+        // PDFView(self) を基準にして、マウスの真上 (.maxY) に吹き出しを出す
+        popover.show(relativeTo: targetRect, of: self, preferredEdge: .maxY)
+    }
+
+    // リンク先のページの一部を実寸スケールで切り出して画像化する
+    private func createSnippetImage(for dest: PDFDestination, width: CGFloat = 420, height: CGFloat = 160) -> NSImage? {
+        guard let page = dest.page else { return nil }
+        let bounds = page.bounds(for: .cropBox)
+
+        // 座標が未指定(greatestFiniteMagnitude)の場合はページの左上にフォールバック
+        var targetX = dest.point.x
+        var targetY = dest.point.y
+        if targetX == CGFloat.greatestFiniteMagnitude { targetX = bounds.minX }
+        if targetY == CGFloat.greatestFiniteMagnitude { targetY = bounds.maxY }
+
+        // 切り出す矩形(NSRect)の計算
+        // PDFのY座標は下から上に向かうため、targetY(ジャンプ先のヘッダ位置)の「下側」を読み取る
+        let topMargin: CGFloat = 20.0
+        var cropY = targetY - height + topMargin
+        if cropY < bounds.minY { cropY = bounds.minY }
+
+        var cropX = targetX - 20.0 // 左に少しだけ余白を持たせる
+        if cropX < bounds.minX { cropX = bounds.minX }
+        if cropX + width > bounds.maxX { cropX = max(bounds.minX, bounds.maxX - width) }
+
+        let cropRect = NSRect(x: cropX, y: cropY, width: width, height: height)
+
+        // NSImage のキャンバスを作成し、PDFの該当部分だけを等倍で描画する
+        let image = NSImage(size: NSSize(width: width, height: height))
+        image.lockFocus()
+        if let context = NSGraphicsContext.current?.cgContext {
+            // 背景を白で塗りつぶす (PDFの背景が透明な場合の対策)
+            NSColor.white.set()
+            NSRect(origin: .zero, size: image.size).fill()
+
+            // 切り出したい領域の左下がキャンバスの(0,0)に合うように座標系をずらす
+            context.translateBy(x: -cropRect.minX, y: -cropRect.minY)
+            page.draw(with: .cropBox, to: context)
+        }
+        image.unlockFocus()
+
+        return image
     }
 }
