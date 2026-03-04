@@ -259,9 +259,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             view!.displaysAsBook = savedBookMode
             view!.displaysRTL = savedRTL
             view!.backgroundColor = NSColor.windowBackgroundColor
-
-            let clickRecognizer = NSClickGestureRecognizer(target: self, action: #selector(handlePageClick(_:)))
-            view!.addGestureRecognizer(clickRecognizer)
         }
 
         // ページ移動イベントを監視してタイトルを更新するように設定

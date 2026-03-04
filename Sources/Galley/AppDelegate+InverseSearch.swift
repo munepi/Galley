@@ -8,12 +8,11 @@ import CSynctex
 // ==========================================
 extension AppDelegate {
 
-    @objc func handlePageClick(_ sender: NSClickGestureRecognizer) {
-        guard NSEvent.modifierFlags.contains(.command) else { return }
+    func performInverseSearch(event: NSEvent, view: PDFView) {
         guard let fileURL = self.fileURL else { return }
 
-        guard let view = sender.view as? PDFView else { return }
-        let location = sender.location(in: view)
+        // NSEvent から直接座標を取り出す
+        let location = view.convert(event.locationInWindow, from: nil)
         guard let page = view.page(for: location, nearest: true) else { return }
         let pagePoint = view.convert(location, to: page)
         let pageIndex = view.document?.index(for: page) ?? 0

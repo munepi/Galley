@@ -15,6 +15,8 @@ class GalleyPDFView: PDFView {
         super.viewDidMoveToWindow()
         if let window = self.window {
             window.makeFirstResponder(self)
+            // ウィンドウ上でマウスが動いたイベントを受け取る
+            window.acceptsMouseMovedEvents = true
         }
     }
 
@@ -35,21 +37,28 @@ class GalleyPDFView: PDFView {
     private var pageInputTimer: Timer?
     private var pageInputHUD: NSTextField?
 
-    // マウス操作 (矩形選択と移動など)
+    // マウス操作 (Inverse Search, 矩形選択, リンクジャンプ)
     override func mouseDown(with event: NSEvent) {
+
+        // --- 0. Inverse Search (Cmd + Click) ---
+        if event.modifierFlags.contains(.command) {
+            if let appDelegate = NSApp.delegate as? AppDelegate {
+                appDelegate.performInverseSearch(event: event, view: self)
+            }
+            return
+        }
+
+        // --- 1. 矩形選択ツール (Shift + Click) ---
         if event.modifierFlags.contains(.shift) {
             let location = self.convert(event.locationInWindow, from: nil)
             guard let page = self.page(for: location, nearest: true) else { return }
             let pagePoint = self.convert(location, to: page)
 
-            // 1. 既存の矩形領域の内側をクリックしたか判定 (移動モード)
             if let currentRect = currentSelectionRect, self.selectedPage == page, currentRect.contains(pagePoint) {
                 self.isDraggingMarquee = true
                 self.dragStartMousePoint = pagePoint
                 self.dragStartMarqueeRect = currentRect
-            }
-            // 2. 矩形領域の外側をクリックした場合は、新規作成モード
-            else {
+            } else {
                 self.clearSelection()
                 self.clearMarquee()
                 CATransaction.flush()
@@ -62,6 +71,28 @@ class GalleyPDFView: PDFView {
                 updateMarquee()
             }
         } else {
+            // --- 2. 通常のクリック (リンクジャンプ等) ---
+            let location = self.convert(event.locationInWindow, from: nil)
+
+            // PDFKitが提供するリンク判定
+            let area = self.areaOfInterest(for: location)
+            var isLink = area.contains(.linkArea)
+
+            // フォールバック判定 (特殊なLaTeXリンク用)
+            if !isLink, let page = self.page(for: location, nearest: true) {
+                let pagePoint = self.convert(location, to: page)
+                if let annotation = page.annotation(at: pagePoint), annotation.type == "Link" {
+                    isLink = true
+                }
+            }
+
+            if isLink {
+                // ★超重要: リンクの場合は、クリア処理を呼ばずPDFKit標準に完全に任せる！
+                super.mouseDown(with: event)
+                return
+            }
+
+            // 何もない場所をクリックした場合は、選択ツールをクリアして標準処理へ
             self.clearSelection()
             self.clearMarquee()
             super.mouseDown(with: event)
@@ -596,6 +627,37 @@ class GalleyPDFView: PDFView {
             }
         } else {
             super.copy(sender)
+        }
+    }
+
+    // ==========================================
+    // トラッキングエリア (Hover時の👆カーソル変更)
+    // ==========================================
+    private var trackingArea: NSTrackingArea?
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let ta = trackingArea {
+            self.removeTrackingArea(ta)
+        }
+        guard let docView = self.documentView else { return }
+        let options: NSTrackingArea.Options = [.mouseMoved, .activeInKeyWindow, .inVisibleRect]
+        trackingArea = NSTrackingArea(rect: docView.bounds, options: options, owner: self, userInfo: nil)
+        docView.addTrackingArea(trackingArea!)
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        // 1. まず必ず PDFKit 標準の処理(テキスト上のIビームカーソル化など)を呼ぶ
+        super.mouseMoved(with: event)
+
+        // 2. その直後に、マウスの下が「リンク」であれば 👆 カーソルで上書きする
+        guard let docView = self.documentView else { return }
+        let locationInDocView = docView.convert(event.locationInWindow, from: nil)
+        guard let page = self.page(for: locationInDocView, nearest: true) else { return }
+        let pagePoint = self.convert(locationInDocView, to: page)
+
+        if let annotation = page.annotation(at: pagePoint), annotation.type == "Link" {
+            NSCursor.pointingHand.set()
         }
     }
 }
