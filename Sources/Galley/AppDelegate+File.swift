@@ -147,6 +147,9 @@ extension AppDelegate {
               let url = self.fileURL,
               let document = activePDFView.document else { return }
 
+        // ウィンドウにファイルのURLを紐付ける
+        window.representedURL = url
+
         let fileName = url.lastPathComponent
         let totalPages = document.pageCount
 
