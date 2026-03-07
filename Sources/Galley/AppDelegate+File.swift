@@ -150,6 +150,12 @@ extension AppDelegate {
         // ウィンドウにファイルのURLを紐付ける
         window.representedURL = url
 
+        // 無理やりGalleyのアイコンにすり替える☃
+        if let iconButton = window.standardWindowButton(.documentIconButton) {
+            // アプリ自身のアイコン(NSApplication.shared.applicationIconImage)で強制上書き
+            iconButton.image = NSApplication.shared.applicationIconImage
+        }
+
         let fileName = url.lastPathComponent
         let totalPages = document.pageCount
 
