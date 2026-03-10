@@ -243,11 +243,46 @@ defaults write com.github.munepi.galley debugMode -bool true
 * **Persistence**: Galley automatically remembers your Display Mode, Book Mode, and RTL settings using `UserDefaults`.
 
 
-## Roadmap
+## Roadmap: The "Galley Pro" Ambitions
 
-Galley is actively being developed with the following features planned:
+Galley currently focuses on being the fastest, most precise lightweight viewer for macOS. However, we have a massive roadmap aimed at transforming Galley into an ultimate open-source Swiss Army knife for professional typesetters and DTP operators.
 
-* **Text Selection HUD**: A subtle pop-up displaying character/word counts and Unicode/Font information for professional typesetting analysis.
+Here are the experimental features and architectures currently in the R&D phase:
+
+### 1. Universal SyncTeX Bridge: `pandoc-synctex`
+Going beyond traditional SyncTeX. We are building a universal bidirectional synchronization bridge between **any structured text format** and Galley. By leveraging ASTs (like Pandoc's `+sourcepos`) and custom Lua filters, this will allow true Forward/Inverse Search directly from the final PDF back to your original lightweight markup sources—not just Markdown, but also **Typst, SATySFi, Vivliostyle (VFM), AsciiDoc, and Re:VIEW**—without breaking the rendering pipeline.
+
+### 2. Galley Pro Hybrid Engine & Typography Inspector (Poppler + HarfBuzz + FreeType)
+Apple's native `PDFKit` is optimized for RGB screen rendering, which hides crucial print data. We plan to statically link C++ libraries to build a professional hybrid backend combined with an advanced **Text Selection HUD**:
+* **True Output Preview:** Rendering 1x1 pixel samples in `/Separation` and `/DeviceN` modes via **Poppler** to extract pure CMYK and Spot Color (e.g., DIC, PANTONE) percentages, completely bypassing OS-level RGB fallbacks.
+* **Ultimate Typography Inspector:** A subtle HUD displaying character/word counts, while extracting the *true* embedded font names, raw CIDs/GIDs, and subset statuses directly from the PDF stream.
+* **OpenType Shaping Validation:** Passing extracted raw text to **HarfBuzz** and **FreeType** to logically verify if the PDF's absolute glyph positioning matches the font's internal kerning, ligatures, and complex text layout (CTL) rules.
+
+### 3. Native PDF/X & PDF/A Preflight and Fixup
+The holy grail of open-source DTP. Instead of relying on the unpredictable Ghostscript (`gs`), we are developing a native PDF/X (X-1a, X-4) and PDF/A export and fixup engine. We aim to implement enterprise-grade transparency flattening, bleed box generation, deep color conversions (via macOS ColorSync), and correct ICC profile tagging (`/OutputIntents`) to ensure print-ready compliance.
+
+### 4. Comprehensive URL Scheme API
+We plan to significantly expand our `galleypdf://` URL scheme. Beyond zero-overhead reloading and SyncTeX jumping, we will expose Galley's advanced features to URL events, enabling deep integration with external editors, CI/CD pipelines, and automation scripts. 
+
+*While the exact endpoint names and parameters are still in the conceptual phase, here is a glimpse of the API we envision:*
+* **Advanced Navigation**: `galleypdf://page?num=iv` or `galleypdf://find?query=Theorem1`
+* **Build Integration**: `galleypdf://highlight?page=5&rect=x,y,w,h` (Visualizing compiler errors or Overfull hboxes directly on the PDF)
+* **Dynamic Configuration**: `galleypdf://set?editor=vscode` (Changing the target editor per project without restarting)
+* **Preflight & Visualization**:
+    * `galleypdf://boxes?show=trim,bleed` (Overlaying TrimBox and BleedBox lines)
+    * `galleypdf://fonts?audit=true` (Highlighting un-embedded or Type 3 fonts)
+    * `galleypdf://ink?tac=300` (Highlighting Total Area Coverage violations)
+    * `galleypdf://audit?warn=hairline&threshold=0.25` (Detecting hairlines that might disappear in print)
+* **Document Manipulation & Diff**:
+    * `galleypdf://props?set=openaction&mode=UseOutlines` (Forcing PDF open actions)
+    * `galleypdf://diff?target=/path/to/old.pdf&mode=difference` (Visual diffing for proofreaders)
+* **Export & Conversion**:
+    * `galleypdf://convert?format=pdfx4&input=<pdf>&output=<pdf>`
+    * `galleypdf://convert?action=vivid-cmyk&n-colors=5` (Algorithmic RGB-to-CMYK conversion mitigating gamut clipping, optionally injecting `/Separation` or `/DeviceN` for wide-gamut and vivid print results)
+    * `galleypdf://imposition?layout=booklet` (Dynamic N-up/Booklet preview and generation)
+
+### 5. Full Command Line Interface (CLI) Equivalency
+A core philosophy for Galley's future: **anything you can do in the GUI, you should be able to do via the CLI**. We are building a robust command-line interface that allows you to execute precise PDF/X preflight/exports, generate N-up impositions, apply vivid CMYK conversions, dump Typography Inspector data, and manipulate the viewer seamlessly from your terminal.
 
 
 ## Why Galley?
