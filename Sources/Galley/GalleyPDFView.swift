@@ -164,6 +164,12 @@ class GalleyPDFView: PDFView {
         // Escキー (keyCode: 53) が押されたら、もろもろの選択・入力をキャンセルする
 
         if event.keyCode == 53 {
+            // 0. 検索バーが表示中であれば閉じる
+            if let appDelegate = NSApp.delegate as? AppDelegate, appDelegate.searchBarVisible {
+                appDelegate.hideSearchBar()
+                return
+            }
+
             // 1. PDFKit標準のテキスト選択などをクリア
             self.clearSelection()
 
