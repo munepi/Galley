@@ -47,6 +47,8 @@ struct GalleyApp {
         let editMenuItem = NSMenuItem()
         editMenuItem.submenu = editMenu
         editMenu.addItem(withTitle: "Copy", action: #selector(PDFView.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(NSMenuItem.separator())
+        editMenu.addItem(withTitle: "Find...", action: #selector(AppDelegate.toggleSearchBar(_:)), keyEquivalent: "f")
 
         // --- 4. View メニュー (Zoom系 & ページナビゲーション系) ---
         let viewMenu = NSMenu(title: "View")
@@ -152,6 +154,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var fileURL: URL?
     var reloadWorkItem: DispatchWorkItem?
     var swapWorkItem: DispatchWorkItem?
+
+    // --- 検索バー用プロパティ ---
+    var searchBarContainer: NSView?
+    var searchBarTopConstraint: NSLayoutConstraint?
+    var searchField: NSSearchField?
+    var searchMatchCountLabel: NSTextField?
+    var searchRegexCheckbox: NSButton?
+    var searchBarVisible: Bool = false
+    var searchResults: [PDFSelection] = []
+    var searchCurrentIndex: Int = 0
 
     var isDebugMode: Bool {
         return UserDefaults.standard.bool(forKey: "debugMode")

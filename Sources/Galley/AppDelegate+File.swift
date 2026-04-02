@@ -114,6 +114,8 @@ extension AppDelegate {
                     hiddenView.scaleFactor = activeView.scaleFactor
                 }
 
+                self.clearSearchHighlights()
+
                 self.swapWorkItem?.cancel()
                 let swapItem = DispatchWorkItem {
                     CATransaction.begin()
