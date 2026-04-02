@@ -211,7 +211,7 @@ extension AppDelegate {
         if useRegex {
             searchResults = performRegexSearch(query, in: doc)
         } else {
-            searchResults = doc.findString(query, withOptions: [.caseInsensitive])
+            searchResults = performCrossLineSearch(query, in: doc)
         }
 
         searchCurrentIndex = nearestMatchIndex()
@@ -244,6 +244,86 @@ extension AppDelegate {
         return 0
     }
 
+    // ==========================================
+    // 行またぎ対応の共通基盤
+    // ==========================================
+
+    /// ページテキストから改行を除去し、元テキストへのインデックスマッピングを返す
+    /// - Returns: (改行除去済みテキスト, cleanedIndex → originalIndex のマッピング配列)
+    private func buildCleanedText(from pageString: String) -> (String, [Int]) {
+        var cleaned = ""
+        var indexMap: [Int] = []  // cleaned の各文字位置 → 元テキストの utf16 offset
+
+        let nsString = pageString as NSString
+        var i = 0
+        while i < nsString.length {
+            let ch = nsString.character(at: i)
+            // 改行文字 (LF, CR, NEL, LS, PS) を除去
+            if ch == 0x0A || ch == 0x0D || ch == 0x85 || ch == 0x2028 || ch == 0x2029 {
+                i += 1
+                continue
+            }
+            cleaned.append(Character(UnicodeScalar(ch)!))
+            indexMap.append(i)
+            i += 1
+        }
+
+        return (cleaned, indexMap)
+    }
+
+    /// cleaned テキスト上のマッチ範囲を、元テキスト上の NSRange に変換して PDFSelection を生成
+    private func selectionFromCleanedRange(
+        matchRange: NSRange, indexMap: [Int], page: PDFPage, originalLength: Int
+    ) -> PDFSelection? {
+        let cleanedStart = matchRange.location
+        let cleanedEnd = matchRange.location + matchRange.length - 1
+
+        guard cleanedStart < indexMap.count, cleanedEnd < indexMap.count else { return nil }
+
+        let origStart = indexMap[cleanedStart]
+        let origEnd = indexMap[cleanedEnd]
+        let origRange = NSRange(location: origStart, length: origEnd - origStart + 1)
+
+        return page.selection(for: origRange)
+    }
+
+    /// 通常テキスト検索（行またぎ対応）
+    private func performCrossLineSearch(_ query: String, in doc: PDFDocument) -> [PDFSelection] {
+        let lowerQuery = query.lowercased()
+        var results: [PDFSelection] = []
+
+        for i in 0..<doc.pageCount {
+            guard let page = doc.page(at: i),
+                  let pageString = page.string else { continue }
+
+            let (cleaned, indexMap) = buildCleanedText(from: pageString)
+            let lowerCleaned = cleaned.lowercased() as NSString
+            let queryNS = lowerQuery as NSString
+            let queryLen = queryNS.length
+
+            guard queryLen > 0 else { continue }
+
+            var searchStart = 0
+            while searchStart + queryLen <= lowerCleaned.length {
+                let range = lowerCleaned.range(of: lowerQuery as String,
+                                               options: [],
+                                               range: NSRange(location: searchStart, length: lowerCleaned.length - searchStart))
+                if range.location == NSNotFound { break }
+
+                if let sel = selectionFromCleanedRange(
+                    matchRange: range, indexMap: indexMap, page: page, originalLength: (pageString as NSString).length
+                ) {
+                    results.append(sel)
+                }
+
+                searchStart = range.location + 1
+            }
+        }
+
+        return results
+    }
+
+    /// 正規表現検索（行またぎ対応）
     private func performRegexSearch(_ pattern: String, in doc: PDFDocument) -> [PDFSelection] {
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
             updateMatchCountLabel(error: true)
@@ -256,12 +336,14 @@ extension AppDelegate {
             guard let page = doc.page(at: i),
                   let pageString = page.string else { continue }
 
-            let nsString = pageString as NSString
-            let matches = regex.matches(in: pageString, range: NSRange(location: 0, length: nsString.length))
+            let (cleaned, indexMap) = buildCleanedText(from: pageString)
+            let matches = regex.matches(in: cleaned, range: NSRange(location: 0, length: (cleaned as NSString).length))
 
             for match in matches {
-                if let selection = page.selection(for: match.range) {
-                    results.append(selection)
+                if let sel = selectionFromCleanedRange(
+                    matchRange: match.range, indexMap: indexMap, page: page, originalLength: (pageString as NSString).length
+                ) {
+                    results.append(sel)
                 }
             }
         }
