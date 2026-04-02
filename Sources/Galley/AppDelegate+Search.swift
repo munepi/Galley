@@ -130,6 +130,11 @@ extension AppDelegate {
         guard let window = self.window else { return }
         if searchBarContainer == nil { setupSearchBar() }
 
+        // PDFViewのホットリロードで裏に隠れている可能性があるため、最前面に持ってくる
+        if let bar = searchBarContainer, let parent = bar.superview {
+            parent.addSubview(bar, positioned: .above, relativeTo: nil)
+        }
+
         // タイトルバーの高さを取得して、その直下に配置
         let titleBarHeight = window.frame.height - window.contentLayoutRect.height
         searchBarTopConstraint?.constant = titleBarHeight
