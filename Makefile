@@ -1,5 +1,6 @@
 APP_NAME := GalleyPDF
-VERSION := 0.0
+VERSION := $(shell head -n 1 version)
+BUILD_NUMBER := $(shell git rev-list --count HEAD 2>/dev/null || echo 0)
 
 BUNDLE_NAME := $(APP_NAME).app
 BUILD_PATH := .build/apple/Products/Release/$(APP_NAME)
@@ -30,9 +31,15 @@ all: app
 clean:
 	rm -rf .build
 	rm -rf $(BUNDLE_NAME)
+	rm -f Info.plist
 	rm -f *.dmg
 	rm -f *.pkg
 	find . -name '*~' -delete
+
+Info.plist: Info.plist.in version
+	sed -e 's/@@VERSION@@/$(VERSION)/g' \
+	    -e 's/@@BUILD_NUMBER@@/$(BUILD_NUMBER)/g' \
+	    Info.plist.in > Info.plist
 
 .PHONY: nativebuild
 nativebuild:
@@ -43,7 +50,7 @@ build:
 	swift build -c release --arch arm64 --arch x86_64
 
 .PHONY: app
-app $(APP_NAME).app: build $(APP_NAME).icns
+app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
 	@echo "Packaging $(BUNDLE_NAME)..."
 	mkdir -p $(MACOS_DIR)
 	mkdir -p $(RESOURCES_DIR)/en.lproj
@@ -76,6 +83,18 @@ uninstall:
 	rm -rf /Applications/$(BUNDLE_NAME)
 	@echo "Uninstallation complete!"
 
+.PHONY: codesign
+codesign: app
+	@if [ -n "$(CODE_SIGN_IDENTITY)" ]; then \
+	    echo "Signing $(BUNDLE_NAME) with identity: $(CODE_SIGN_IDENTITY)"; \
+	    codesign --force --deep --options runtime \
+	        --sign "$(CODE_SIGN_IDENTITY)" $(BUNDLE_NAME); \
+	    codesign --verify --deep $(BUNDLE_NAME); \
+	    echo "Code signing complete."; \
+	else \
+	    echo "CODE_SIGN_IDENTITY not set, skipping codesign."; \
+	fi
+
 .PHONY: pkg
 pkg $(PKG_NAME): app
 	@echo "Building package $(PKG_NAME)..."
@@ -91,6 +110,18 @@ pkg $(PKG_NAME): app
 	@rm -rf $(PKG_TEMP_DIR)
 	@echo "Package $(PKG_NAME) created."
 
+.PHONY: codesign-pkg
+codesign-pkg: pkg
+	@if [ -n "$(INSTALLER_CODE_SIGN_IDENTITY)" ]; then \
+	    echo "Signing $(PKG_NAME) with installer identity: $(INSTALLER_CODE_SIGN_IDENTITY)"; \
+	    productsign --sign "$(INSTALLER_CODE_SIGN_IDENTITY)" \
+	        $(PKG_NAME) $(PKG_NAME).signed && \
+	    mv $(PKG_NAME).signed $(PKG_NAME); \
+	    echo "Package signing complete."; \
+	else \
+	    echo "INSTALLER_CODE_SIGN_IDENTITY not set, skipping pkg sign."; \
+	fi
+
 .PHONY: dmg
 dmg: pkg
 	@echo "Creating disk image ($(DMG_FILENAME)) in ULMO format..."
@@ -101,3 +132,13 @@ dmg: pkg
 	hdiutil create -volname $(VOL_NAME) -srcfolder .build/dmg_temp -ov -format ULMO $(DMG_FILENAME)
 	@rm -rf .build/dmg_temp
 	@echo "Done! $(DMG_FILENAME) created."
+
+.PHONY: notarize
+notarize: dmg
+	xcrun notarytool submit $(DMG_FILENAME) \
+	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
+	xcrun stapler staple $(DMG_FILENAME)
+	@echo "Notarization complete."
+
+.PHONY: notarized-dmg
+notarized-dmg: codesign codesign-pkg dmg notarize

@@ -46,7 +46,8 @@ extension AppDelegate {
         nameLabel.drawsBackground = false
 
         // バージョン
-        let versionLabel = NSTextField(labelWithString: "Version 0.0")
+        let versionString = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+        let versionLabel = NSTextField(labelWithString: "Version \(versionString)")
         versionLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
         versionLabel.textColor = .secondaryLabelColor
         versionLabel.isEditable = false
