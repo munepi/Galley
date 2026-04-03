@@ -39,6 +39,14 @@ extension AppDelegate {
             NSApp.stopModal()
             modal.close()
         }
+
+        // 保留中のリロード/スワップ操作をキャンセル（前ファイルの監視由来の競合防止）
+        self.timer?.invalidate()
+        self.reloadWorkItem?.cancel()
+        self.reloadWorkItem = nil
+        self.swapWorkItem?.cancel()
+        self.swapWorkItem = nil
+
         self.fileURL = url.absoluteURL
         guard let document = PDFDocument(url: url) else { return }
 
@@ -46,8 +54,11 @@ extension AppDelegate {
 
         self.updateWindowTitle()
 
-        self.timer?.invalidate()
         startMonitoring(url: url)
+
+        // open -a 経由で開いた場合にウィンドウを前面化
+        self.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     @objc func printDocument(_ sender: Any?) {
