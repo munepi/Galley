@@ -13,7 +13,7 @@ Galley maintains a strict **1-to-1 correspondence** between your TeX source and 
 
 ## Key Features
 
-* **Auto-Reload**: Monitors the PDF file for changes and reloads automatically, preserving your scroll position and zoom level. A dual-view A/B swap avoids screen flashing during reloads.
+* **Auto-Reload**: Monitors the PDF file for changes and reloads automatically, preserving your scroll position and zoom level.
 * **SyncTeX Integration**:
   * **Forward Search**: Jump from your editor to the corresponding position in the PDF, highlighted with a fading red dot centered in the window.
   * **Inverse Search**: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports **Emacs**, **Visual Studio Code**, and **custom editors** via CLI.
@@ -28,9 +28,10 @@ Galley maintains a strict **1-to-1 correspondence** between your TeX source and 
 
 Pre-compiled **Universal Binaries** are available under the [Releases](https://github.com/munepi/Galley/releases) section. 
 
-1. Download `GalleyPDF.pkg`.
-2. Double-click to open the installer package.
-3. Follow the on-screen instructions to install **GalleyPDF.app**.
+1. Download `GalleyPDF_<version>.dmg`.
+2. Double-click to mount the disk image.
+3. Double-click `GalleyPDF.pkg` inside the mounted volume.
+4. Follow the on-screen instructions to install **GalleyPDF.app**.
 ### Building from Source
 
 If you prefer to build it yourself, ensure you have the Swift compiler installed (via Xcode or Command Line Tools).
@@ -71,14 +72,14 @@ Available endpoints:
   ~~~
   *(Note: URL parameters must be URL-encoded, especially if paths contain spaces.)*
 
-  > [!TIP]
-  > **SyncTeX "Column 0" Workaround**
-  > Many PDF viewers have a known SyncTeX issue where forward search from the beginning of a line (column 0) incorrectly jumps to the end of the previous line. Galley detects `column=0` and automatically shifts the search target to `line + 1` to avoid this.
+> [!TIP]
+> **SyncTeX "Column 0" Workaround**
+> Many PDF viewers have a known SyncTeX issue where forward search from the beginning of a line (column 0) incorrectly jumps to the end of the previous line. Galley detects `column=0` and automatically shifts the search target to `line + 1` to avoid this.
 
-  > [!WARNING]
-  > **Security Note on First Forward Search**
-  > The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions. 
-  > Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
+> [!WARNING]
+> **Security Note on First Forward Search**
+> The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions.
+> Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
 
 
 
