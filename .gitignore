@@ -30,5 +30,6 @@ DerivedData/
 .netrc
 
 # Claude Code (personal config, not committed)
+CLAUDE.md
 .claude/CLAUDE.md
 .claude/settings.json
