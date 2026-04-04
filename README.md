@@ -105,8 +105,8 @@ Galley is configured via the macOS Menu Bar and `UserDefaults`. No configuration
 To jump from Emacs to Galley, configure your TeX environment to call Galley's URL scheme using the `open` command.
 Passing both the line and column numbers improves the accuracy of SyncTeX jumps.
 
-#### For AUCTeX Users
-Add the following to your `init.el` or `.emacs`. 
+#### For [AUCTeX](https://www.gnu.org/software/auctex/) Users
+Add the following to your `init.el` or `.emacs`.
 We define a custom expansion `%c` to pass the cursor's current column to Galley.
 
 ~~~elisp
@@ -129,8 +129,8 @@ We define a custom expansion `%c` to pass the cursor's current column to Galley.
 To execute Forward Search in AUCTeX, simply press `C-c C-v` (or `C-c C-c` and select `View`).
 
 
-#### For YaTeX Users
-Add the following function to your `init.el` or `.emacs`. 
+#### For [YaTeX](https://www.yatex.org/) Users
+Add the following function to your `init.el` or `.emacs`.
 It extracts both the line and column numbers and safely URL-encodes the paths before sending them to macOS LaunchServices.
 
 ~~~elisp
