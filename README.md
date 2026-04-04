@@ -1,10 +1,10 @@
 # Galley ![Galley Icon](GalleyPDF.png)
 
-**Galley** is a minimalist, ultra-lightweight PDF previewer specifically designed for TeX/LaTeX authors and professional typesetters on macOS. Developed by **Munehiro Yamamoto (@munepi)**, it provides a "content-first" experience by eliminating unnecessary toolbars and status bars, focusing entirely on your document and your workflow.
+**Galley** is a lightweight PDF previewer for macOS, designed with TeX/LaTeX authors and typesetters in mind. Developed by **Munehiro Yamamoto (@munepi)**, it removes unnecessary toolbars and status bars so you can focus on your document.
 
 ## The Core Philosophy: 1-to-1 Correspondence
 
-Most PDF viewers are designed for reading multiple documents simultaneously. Galley is different. It maintains a strict **1-to-1 correspondence** between your TeX source and its PDF output. By enforcing a **single-window policy**, Galley ensures your focus remains on the current task without the clutter of multiple open documents, while ensuring SyncTeX operations always target the correct context.
+Galley maintains a strict **1-to-1 correspondence** between your TeX source and its PDF output. It enforces a **single-window policy** — one source, one PDF, one window — so that SyncTeX operations always target the correct context without ambiguity.
 
 ## System Requirements
 
@@ -13,14 +13,13 @@ Most PDF viewers are designed for reading multiple documents simultaneously. Gal
 
 ## Key Features
 
-* **⚡ High-Speed Auto-Reload**: Detects PDF updates instantly and reloads the document while preserving your scroll position and zoom level.
-* **🎯 Precise SyncTeX Integration**:
-  * **Forward Search**: Jump from your editor to the exact line in the PDF with a soft-fading red dot highlight, automatically centered in the window for better visibility.
-  * **Inverse Search**: Command-Click anywhere in the PDF to jump back to the corresponding source line in your editor. Supported editors include **Emacs**, **Visual Studio Code**, and any **Custom Editor** via CLI.
-* **📏 Precision Measurements**: Hold **Shift + Drag** to create a rectangular selection. You can also reposition an existing selection by holding **Shift** and dragging inside the marquee. Real-time dimensions are displayed in millimeters at the point of selection, and the area can be copied as a high-fidelity vector PDF object.
-* **🖋️ Featherweight & Zero-Distraction**:
-  * A lightweight executable (~740KB) and lean app bundle, leveraging native macOS frameworks to ensure near-instant startup and peak efficiency.
-  * A truly minimalist interface that gives 100% of the window space to your PDF, keeping you in the flow of writing and editing.
+* **Auto-Reload**: Monitors the PDF file for changes and reloads automatically, preserving your scroll position and zoom level. A dual-view A/B swap avoids screen flashing during reloads.
+* **SyncTeX Integration**:
+  * **Forward Search**: Jump from your editor to the corresponding position in the PDF, highlighted with a fading red dot centered in the window.
+  * **Inverse Search**: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports **Emacs**, **Visual Studio Code**, and **custom editors** via CLI.
+* **Character Inspection**: Right-click a selected character to view its Unicode code point, name, plane, general category, embedded font name (PostScript), family, traits, point size (pt / mm / Q), vertical metrics (ascent / descent / leading), and Glyph ID (with CID notation for CJK).
+* **Rectangular Selection & Measurement**: `Shift + Drag` to create a selection rectangle with real-time dimensions in mm. Drag inside an existing marquee to reposition it. `Cmd + C` copies the selected area as a vector PDF.
+* **Lightweight Rendering**: Galley draws only the PDF page itself — no annotation overlays or editing tools — so page rendering stays light even when flipping through pages quickly.
 
 
 ## Installation
@@ -32,10 +31,6 @@ Pre-compiled **Universal Binaries** are available under the [Releases](https://g
 1. Download `GalleyPDF.dmg`.
 2. Double-click to open the disk image.
 3. Drag **GalleyPDF.app** to the `Applications` folder shortcut.
-
-> [!NOTE]
-> Galley will undergo Apple Notarization in the future. For now, if macOS warns you about an unidentified developer, simply **Right-Click** `GalleyPDF.app` in your Applications folder and select **"Open"** to bypass Gatekeeper for the first launch.
-
 ### Building from Source
 
 If you prefer to build it yourself, ensure you have the Swift compiler installed (via Xcode or Command Line Tools).
@@ -57,7 +52,7 @@ Galley provides two ways to communicate with external editors and scripts. **Usi
 
 ### 1. URL Scheme (`galleypdf://`) - ⭐️ Recommended
 
-Galley registers a custom URL scheme (`galleypdf://`) with macOS LaunchServices. This allows zero-overhead, instantaneous communication with the app, bypassing the need for Bash execution or AppleScript compilation.
+Galley registers a custom URL scheme (`galleypdf://`) with macOS LaunchServices. This is faster than the `displayline` script because it avoids process forking and AppleScript compilation.
 
 Available endpoints:
 
@@ -77,8 +72,8 @@ Available endpoints:
   *(Note: URL parameters must be URL-encoded, especially if paths contain spaces.)*
 
   > [!TIP]
-  > **Overcoming the SyncTeX "Column 0" Limitation**
-  > Most PDF viewers suffer from a notorious SyncTeX issue where initiating a forward search from the beginning of a line (column 0) incorrectly jumps to the end of the previous line. **Galley automatically detects `column=0` and intelligently shifts the search target to `line + 1`**, guaranteeing precise jumps regardless of your cursor position.
+  > **SyncTeX "Column 0" Workaround**
+  > Many PDF viewers have a known SyncTeX issue where forward search from the beginning of a line (column 0) incorrectly jumps to the end of the previous line. Galley detects `column=0` and automatically shifts the search target to `line + 1` to avoid this.
 
   > [!WARNING]
   > **Security Note on First Forward Search**
@@ -92,7 +87,7 @@ Available endpoints:
 For legacy compatibility with older scripts, Galley includes a `displayline` bash script inside the application bundle.
 
 > [!WARNING]
-> **Performance Note**: We highly recommend migrating your editor configurations to the `galleypdf://` URL scheme. The `displayline` utility relies on `osascript` (AppleEvents), which introduces a noticeable delay (several hundred milliseconds) due to process forking and script compilation. The URL scheme is significantly faster.
+> **Performance Note**: Consider migrating to the `galleypdf://` URL scheme. The `displayline` utility relies on `osascript` (AppleEvents), which can introduce a noticeable delay due to process forking and script compilation.
 
 Usage:
 ~~~bash
@@ -103,12 +98,12 @@ Usage:
 
 ## Configuration
 
-Galley is designed to be configured via the macOS Menu Bar and `UserDefaults` to maintain its clean, zero-UI aesthetic.
+Galley is configured via the macOS Menu Bar and `UserDefaults`. No configuration files are needed.
 
 ### 1. Emacs Setup (Forward Search)
 
-To jump from Emacs to Galley, configure your TeX environment to call Galley's high-speed URL scheme using the `open` command. 
-By passing both the line and column numbers, Galley can perform highly accurate SyncTeX jumps.
+To jump from Emacs to Galley, configure your TeX environment to call Galley's URL scheme using the `open` command.
+Passing both the line and column numbers improves the accuracy of SyncTeX jumps.
 
 #### For AUCTeX Users
 Add the following to your `init.el` or `.emacs`. 
@@ -226,45 +221,48 @@ defaults write com.github.munepi.galley debugMode -bool true
 | Action | Shortcut / Gesture |
 | :--- | :--- |
 | **Open File** | `Cmd + O` or `open -a GalleyPDF document.pdf` |
+| **Print** | `Cmd + P` |
+| **Find** | `Cmd + F` (toggle search bar) |
+| **Find Next / Previous** | `Enter` / `Shift + Enter` (while search bar is open) |
 | **Zoom In/Out** | `Cmd + "+"` / `Cmd + "-"` |
 | **Actual Size** | `Cmd + 0` |
 | **Auto Resize** | `Cmd + _` |
 | **Next Page** | `Space` or `Opt + J` |
 | **Previous Page** | `Shift + Space` or `Opt + K` |
 | **Jump to Page** | Type page number or label (e.g., `123`, `iv`, `cover`) |
-| **Clear Selection / Cancel Jump** | `Esc` |
+| **Clear Selection / Cancel** | `Esc` |
 | **Inverse Search** | `Cmd + Click` on PDF |
+| **Character Inspection** | Right-click on selected text |
 | **Measure / Move Area** | `Shift + Drag` (drag inside an existing marquee to move it) |
-| **Copy Selection** | `Cmd + C` (while area is selected) |
+| **Copy Selection** | `Cmd + C` (while area is selected, copies as vector PDF) |
 
 ### Page Navigation & Interface Notes
-* **Direct Jump**: When you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly.
+* **Direct Jump**: When you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly. The input auto-commits after 1 second of inactivity.
 * **Window Title Info**: To keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`).
+* **Link Preview**: Hovering over a PDF link for 0.3 seconds shows a popover with a real-size snippet of the target page (internal links) or the URL text (external links). Clicking a link follows it normally.
 * **Persistence**: Galley automatically remembers your Display Mode, Book Mode, and RTL settings using `UserDefaults`.
 
 
 ## Roadmap: The "Galley Pro" Ambitions
 
-Galley currently focuses on being the fastest, most precise lightweight viewer for macOS. However, we have a massive roadmap aimed at transforming Galley into an ultimate open-source Swiss Army knife for professional typesetters and DTP operators.
-
-Here are the experimental features and architectures currently in the R&D phase:
+Galley is currently a focused, lightweight viewer. The following features are under consideration or in early exploration:
 
 ### 1. Universal SyncTeX Bridge: `pandoc-synctex`
-Going beyond traditional SyncTeX. We are building a universal bidirectional synchronization bridge between **any structured text format** and Galley. By leveraging ASTs (like Pandoc's `+sourcepos`) and custom Lua filters, this will allow true Forward/Inverse Search directly from the final PDF back to your original lightweight markup sources—not just Markdown, but also **Typst, SATySFi, Vivliostyle (VFM), AsciiDoc, and Re:VIEW**—without breaking the rendering pipeline.
+A bidirectional synchronization bridge between structured text formats and Galley. By leveraging ASTs (like Pandoc's `+sourcepos`) and custom Lua filters, this would enable Forward/Inverse Search from the PDF back to sources in formats such as **Typst, SATySFi, Vivliostyle (VFM), AsciiDoc, and Re:VIEW**.
 
-### 2. Galley Pro Hybrid Engine & Typography Inspector (Poppler + HarfBuzz + FreeType)
-Apple's native `PDFKit` is optimized for RGB screen rendering, which hides crucial print data. We plan to statically link C++ libraries to build a professional hybrid backend combined with an advanced **Text Selection HUD**:
-* **True Output Preview:** Rendering 1x1 pixel samples in `/Separation` and `/DeviceN` modes via **Poppler** to extract pure CMYK and Spot Color (e.g., DIC, PANTONE) percentages, completely bypassing OS-level RGB fallbacks.
-* **Ultimate Typography Inspector:** A subtle HUD displaying character/word counts, while extracting the *true* embedded font names, raw CIDs/GIDs, and subset statuses directly from the PDF stream.
-* **OpenType Shaping Validation:** Passing extracted raw text to **HarfBuzz** and **FreeType** to logically verify if the PDF's absolute glyph positioning matches the font's internal kerning, ligatures, and complex text layout (CTL) rules.
+### 2. Hybrid Rendering Engine & Typography Inspector (Poppler + HarfBuzz + FreeType)
+Apple's `PDFKit` is optimized for screen rendering and does not expose all print-related data. A hybrid backend using C++ libraries could provide:
+* **Output Preview:** Extracting CMYK and Spot Color (e.g., DIC, PANTONE) values via **Poppler** in `/Separation` and `/DeviceN` modes.
+* **Typography Inspector:** Displaying embedded font names, raw CIDs/GIDs, and subset statuses from the PDF stream.
+* **OpenType Shaping Validation:** Using **HarfBuzz** and **FreeType** to verify whether glyph positioning matches the font's kerning, ligatures, and complex text layout rules.
 
-### 3. Native PDF/X & PDF/A Preflight and Fixup
-The holy grail of open-source DTP. Instead of relying on the unpredictable Ghostscript (`gs`), we are developing a native PDF/X (X-1a, X-4) and PDF/A export and fixup engine. We aim to implement enterprise-grade transparency flattening, bleed box generation, deep color conversions (via macOS ColorSync), and correct ICC profile tagging (`/OutputIntents`) to ensure print-ready compliance.
+### 3. PDF/X & PDF/A Preflight and Fixup
+Native PDF/X (X-1a, X-4) and PDF/A validation and fixup, including transparency flattening, bleed box generation, color conversions (via macOS ColorSync), and ICC profile tagging (`/OutputIntents`).
 
-### 4. Comprehensive URL Scheme API
-We plan to significantly expand our `galleypdf://` URL scheme. Beyond zero-overhead reloading and SyncTeX jumping, we will expose Galley's advanced features to URL events, enabling deep integration with external editors, CI/CD pipelines, and automation scripts. 
+### 4. Extended URL Scheme API
+Expanding the `galleypdf://` URL scheme to expose more features for editor integration and automation.
 
-*While the exact endpoint names and parameters are still in the conceptual phase, here is a glimpse of the API we envision:*
+*The following endpoints are tentative:*
 * **Advanced Navigation**: `galleypdf://page?num=iv` or `galleypdf://find?query=Theorem1`
 * **Build Integration**: `galleypdf://highlight?page=5&rect=x,y,w,h` (Visualizing compiler errors or Overfull hboxes directly on the PDF)
 * **Dynamic Configuration**: `galleypdf://set?editor=vscode` (Changing the target editor per project without restarting)
@@ -281,18 +279,17 @@ We plan to significantly expand our `galleypdf://` URL scheme. Beyond zero-overh
     * `galleypdf://convert?action=vivid-cmyk&n-colors=5` (Algorithmic RGB-to-CMYK conversion mitigating gamut clipping, optionally injecting `/Separation` or `/DeviceN` for wide-gamut and vivid print results)
     * `galleypdf://imposition?layout=booklet` (Dynamic N-up/Booklet preview and generation)
 
-### 5. Full Command Line Interface (CLI) Equivalency
-A core philosophy for Galley's future: **anything you can do in the GUI, you should be able to do via the CLI**. We are building a robust command-line interface that allows you to execute precise PDF/X preflight/exports, generate N-up impositions, apply vivid CMYK conversions, dump Typography Inspector data, and manipulate the viewer seamlessly from your terminal.
+### 5. Command Line Interface (CLI)
+Providing CLI access to preflight, export, imposition, and viewer control so that any GUI operation can also be scripted from the terminal.
 
 
 ## Why Galley?
 
-Most PDF viewers are designed for reading books, not for the rigorous, iterative cycle of writing and typesetting LaTeX. 
-Galley was built to be the "missing link" for TeX users who find standard viewers too heavy or cluttered. 
-By using native macOS technologies like PDFKit and SwiftUI, Galley provides a smooth, "Apple-native" feel with a binary size that is orders of magnitude smaller than Electron-based alternatives. 
+Most PDF viewers are general-purpose readers, not optimized for the edit–compile–preview cycle of TeX/LaTeX work.
+Galley is built with native macOS technologies (PDFKit, AppKit) and has no external dependencies, resulting in a small binary and fast startup.
 
-It doesn't try to be everything for everyone. 
-Instead, it aims to be the perfect companion for your text editor, quietly and flawlessly updating your document in the background—whether you are drafting an academic paper or professionally typesetting a multi-volume book.
+It does not try to be a general-purpose PDF reader.
+Instead, it aims to be a reliable companion for your text editor, updating your document in the background as you write.
 
 
 ## License
