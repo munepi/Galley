@@ -167,7 +167,29 @@ It extracts both the line and column numbers and safely URL-encodes the paths be
 ~~~
 
 
-### 2. Selecting your Editor (Inverse Search)
+### 2. Visual Studio Code Setup (Forward Search)
+
+For [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) users, add the following to your `settings.json`:
+
+~~~jsonc
+{
+  // Enable SyncTeX
+  "latex-workshop.synctex.afterBuild.enabled": true,
+
+  // Register Galley as an external viewer
+  "latex-workshop.view.pdf.viewer": "external",
+  "latex-workshop.view.pdf.external.synctex.command": "open",
+  "latex-workshop.view.pdf.external.synctex.args": [
+    "-g",
+    "galleypdf://forward?line=%LINE%&column=0&pdfpath=%PDF%&srcpath=%TEX%"
+  ]
+}
+~~~
+
+To execute Forward Search, press `Cmd + Opt + J` (or run **LaTeX Workshop: SyncTeX from cursor** from the Command Palette).
+
+
+### 3. Selecting your Editor (Inverse Search)
 
 You can select your preferred editor for Inverse Search (`Cmd + Click`) directly from the **SyncTeX** menu in the menu bar:
 
@@ -200,7 +222,7 @@ defaults write com.github.munepi.galley emacsclientPath "/path/to/your/emacsclie
 ~~~
 
 
-### 3. Debug Mode
+### 4. Debug Mode
 
 If you need to verify SyncTeX coordinate data or troubleshoot Forward Search, you can enable the HUD (Head-Up Display):
 
