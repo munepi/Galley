@@ -34,6 +34,7 @@ clean:
 	rm -f Info.plist
 	rm -f *.dmg
 	rm -f *.pkg
+	find . -name '.DS_Store' -delete
 	find . -name '*~' -delete
 
 Info.plist: Info.plist.in version
