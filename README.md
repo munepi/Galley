@@ -28,9 +28,9 @@ Galley maintains a strict **1-to-1 correspondence** between your TeX source and 
 
 Pre-compiled **Universal Binaries** are available under the [Releases](https://github.com/munepi/Galley/releases) section. 
 
-1. Download `GalleyPDF.dmg`.
-2. Double-click to open the disk image.
-3. Drag **GalleyPDF.app** to the `Applications` folder shortcut.
+1. Download `GalleyPDF.pkg`.
+2. Double-click to open the installer package.
+3. Follow the on-screen instructions to install **GalleyPDF.app**.
 ### Building from Source
 
 If you prefer to build it yourself, ensure you have the Swift compiler installed (via Xcode or Command Line Tools).
