@@ -1,0 +1,26 @@
++++
+title = "UserDefaults Keys"
+weight = 20
++++
+
+# UserDefaults Keys
+
+All settings live under the `com.github.munepi.galley` domain.
+
+| Key                    | Type    | Purpose                                                                                  |
+|------------------------|---------|-------------------------------------------------------------------------------------------|
+| `customEditorCommand`  | String  | Inverse-search command for the **Custom** editor. See [Custom Editor]({{< relref "/docs/configuration/custom-editor" >}}). |
+| `emacsclientPath`      | String  | Explicit path to `emacsclient`. See [Emacsclient Path]({{< relref "/docs/configuration/emacsclient-path" >}}). |
+| `debugMode`            | Bool    | Enables the SyncTeX HUD. See [Debug Mode]({{< relref "/docs/configuration/debug-mode" >}}). |
+
+## Read current values
+
+```bash
+defaults read com.github.munepi.galley
+```
+
+## Reset everything
+
+```bash
+defaults delete com.github.munepi.galley
+```

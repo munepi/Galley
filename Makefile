@@ -1,23 +1,33 @@
-RUBY := /opt/homebrew/opt/ruby/bin/ruby
-BUNDLE := $(dir $(RUBY))bundle
-export PATH := $(dir $(RUBY)):$(PATH)
+HUGO ?= hugo
 
-REMOTE := origin
-BRANCH := gh-pages
+# Use Homebrew Hugo if not on PATH (e.g., inside a sandboxed shell).
+ifeq (,$(shell command -v $(HUGO) 2>/dev/null))
+  HUGO := /opt/homebrew/bin/hugo
+endif
 
-.PHONY: serve build push install clean
+.PHONY: serve build deploy clean update-theme help
+
+help:
+	@echo "Targets:"
+	@echo "  make serve         - run a local dev server with live reload"
+	@echo "  make build         - produce a minified site under public/"
+	@echo "  make deploy        - manually trigger the GitHub Actions deploy workflow"
+	@echo "  make update-theme  - pull the latest hugo-book submodule"
+	@echo "  make clean         - remove build artifacts"
 
 serve:
-	$(BUNDLE) exec jekyll serve --livereload
+	$(HUGO) server --buildDrafts --buildFuture --navigateToChanged
 
 build:
-	$(BUNDLE) exec jekyll build
+	$(HUGO) --minify
 
-push:
-	git push $(REMOTE) master:$(BRANCH)
+# Deploys are handled by .github/workflows/deploy.yml on push to `site`.
+# This target manually triggers a workflow run for the current branch.
+deploy:
+	gh workflow run deploy.yml --ref site
 
-install:
-	$(BUNDLE) install
+update-theme:
+	git submodule update --remote --merge themes/hugo-book
 
 clean:
-	$(BUNDLE) exec jekyll clean
+	rm -rf public resources .hugo_build.lock
