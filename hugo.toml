@@ -1,0 +1,57 @@
+baseURL = "https://munepi.github.io/Galley/"
+languageCode = "en-us"
+title = "GalleyPDF"
+theme = "hugo-book"
+
+# Pretty URLs (no trailing index.html)
+canonifyURLs = false
+disableKinds = ["taxonomy", "term"]
+
+[params]
+  # Follow OS-level dark mode preference
+  BookTheme = "auto"
+
+  # Show table of contents on the right
+  BookToC = true
+
+  # Treat /content/docs as the main book section
+  BookSection = "docs"
+
+  # Edit links in the docs
+  BookRepo = "https://github.com/munepi/Galley"
+  BookEditPath = "edit/master"
+
+  # Built-in client-side search
+  BookSearch = true
+
+  # No comments
+  BookComments = false
+
+  # Let book theme prepend root menu items
+  BookMenuBundle = ""
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.highlight]
+    noClasses = false
+    style = "github"
+    tabWidth = 2
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4
+    ordered = false
+
+[menu]
+  [[menu.before]]
+    name = "Documentation"
+    url = "/docs/"
+    weight = 10
+  [[menu.before]]
+    name = "GitHub"
+    url = "https://github.com/munepi/Galley"
+    weight = 20
+  [[menu.before]]
+    name = "Releases"
+    url = "https://github.com/munepi/Galley/releases"
+    weight = 30
