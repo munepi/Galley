@@ -19,7 +19,7 @@ disableKinds = ["taxonomy", "term"]
 
   # Edit links in the docs
   BookRepo = "https://github.com/munepi/Galley"
-  BookEditPath = "edit/master"
+  BookEditPath = "edit/site"
 
   # Built-in client-side search
   BookSearch = true
