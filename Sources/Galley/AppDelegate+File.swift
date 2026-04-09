@@ -47,8 +47,14 @@ extension AppDelegate {
         self.swapWorkItem?.cancel()
         self.swapWorkItem = nil
 
+        // In-flight な reloadPDF の非同期処理を無効化するための世代トークン
+        self.loadGeneration &+= 1
+        let gen = self.loadGeneration
+
         self.fileURL = url.absoluteURL
         guard let document = PDFDocument(url: url) else { return }
+
+        Log.file.info("loadPDF: gen=\(gen) url=\(url.lastPathComponent, privacy: .public)")
 
         self.activePDFView.document = document
 
@@ -96,8 +102,11 @@ extension AppDelegate {
     func reloadPDF() {
         guard let url = self.fileURL else { return }
 
+        let gen = self.loadGeneration
         let activeView = self.activePDFView
         let hiddenView = self.hiddenPDFView
+
+        Log.file.info("reloadPDF: start gen=\(gen) url=\(url.lastPathComponent, privacy: .public)")
 
         var currentPageIndex = 0
         var currentPoint = CGPoint.zero
@@ -113,6 +122,11 @@ extension AppDelegate {
                   newDocument.pageCount > 0 else { return } // ← nil ならば、処理を中断 (return) する
 
             DispatchQueue.main.async {
+                guard self.loadGeneration == gen else {
+                    Log.file.warning("reloadPDF: stale generation (captured=\(gen), current=\(self.loadGeneration)) → main.async SKIPPED")
+                    return
+                }
+
                 hiddenView.document = newDocument
                 if currentPageIndex < newDocument.pageCount,
                    let newPage = newDocument.page(at: currentPageIndex) {
@@ -129,6 +143,11 @@ extension AppDelegate {
 
                 self.swapWorkItem?.cancel()
                 let swapItem = DispatchWorkItem {
+                    guard self.loadGeneration == gen else {
+                        Log.file.warning("reloadPDF: stale generation (captured=\(gen), current=\(self.loadGeneration)) → swap SKIPPED")
+                        return
+                    }
+
                     CATransaction.begin()
                     CATransaction.setDisableActions(true)
 
@@ -142,6 +161,7 @@ extension AppDelegate {
 
                     CATransaction.commit()
 
+                    Log.file.info("reloadPDF: swap done gen=\(gen) url=\(url.lastPathComponent, privacy: .public)")
                     self.updateWindowTitle()
                 }
                 self.swapWorkItem = swapItem

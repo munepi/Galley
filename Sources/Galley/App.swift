@@ -154,6 +154,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var fileURL: URL?
     var reloadWorkItem: DispatchWorkItem?
     var swapWorkItem: DispatchWorkItem?
+    var loadGeneration: Int = 0
 
     // --- 検索バー用プロパティ ---
     var searchBarContainer: NSView?
