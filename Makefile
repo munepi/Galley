@@ -1,4 +1,5 @@
 APP_NAME := GalleyPDF
+BUNDLE_ID := com.github.munepi.galley
 VERSION := $(shell head -n 1 version)
 BUILD_NUMBER := $(shell git rev-list --count HEAD 2>/dev/null || echo 0)
 
@@ -140,6 +141,20 @@ notarize: dmg
 	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
 	xcrun stapler staple $(DMG_FILENAME)
 	@echo "Notarization complete."
+
+.PHONY: debug
+debug:
+	defaults write $(BUNDLE_ID) debugMode -bool true
+	@echo "Debug mode enabled."
+
+.PHONY: debug-off
+debug-off:
+	defaults delete $(BUNDLE_ID) debugMode 2>/dev/null || true
+	@echo "Debug mode disabled."
+
+.PHONY: log
+log:
+	log stream --predicate 'subsystem == "$(BUNDLE_ID)"' --level info
 
 .PHONY: notarized-dmg
 notarized-dmg: codesign codesign-pkg dmg notarize
