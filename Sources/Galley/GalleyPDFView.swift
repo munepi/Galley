@@ -496,7 +496,7 @@ class GalleyPDFView: PDFView {
         guard let hud = pageInputHUD else { return }
 
         // 余白を持たせるために前後にスペースを入れる
-        hud.stringValue = "  Page: \(pageInputBuffer)  "
+        hud.stringValue = "Page: \(pageInputBuffer) "
         hud.sizeToFit()
 
         let hudSize = hud.frame.size
@@ -557,7 +557,7 @@ class GalleyPDFView: PDFView {
             hidePageInputHUD()
         } else {
             // エラー表示の見た目と位置も更新
-            pageInputHUD?.stringValue = "  Page \(target) Not Found  "
+            pageInputHUD?.stringValue = "Page \(target) Not Found "
             pageInputHUD?.textColor = NSColor.systemRed
             pageInputHUD?.sizeToFit()
 
