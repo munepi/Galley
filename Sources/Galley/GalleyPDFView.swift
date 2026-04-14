@@ -62,6 +62,17 @@ class GalleyPDFView: PDFView {
     private var dragStartMousePoint: CGPoint?
     private var dragStartMarqueeRect: NSRect?
 
+    // 矩形領域のリサイズ用のプロパティ
+    private enum ResizeEdge {
+        case topLeft, top, topRight
+        case left, right
+        case bottomLeft, bottom, bottomRight
+    }
+    private var isResizingMarquee: Bool = false
+    private var resizeEdge: ResizeEdge?
+    private var resizeStartMousePoint: CGPoint?
+    private var resizeStartRect: NSRect?
+
     // --- ページジャンプ用のプロパティ ---
     private var pageInputBuffer: String = ""
     private var pageInputTimer: Timer?
@@ -94,7 +105,15 @@ class GalleyPDFView: PDFView {
             guard let page = self.page(for: location, nearest: true) else { return }
             let pagePoint = self.convert(location, to: page)
 
-            if let currentRect = currentSelectionRect, self.selectedPage == page, currentRect.contains(pagePoint) {
+            if let currentRect = currentSelectionRect, self.selectedPage == page,
+               let edge = detectResizeEdge(point: pagePoint, rect: currentRect) {
+                // エッジ/コーナー付近 → リサイズモード
+                self.isResizingMarquee = true
+                self.resizeEdge = edge
+                self.resizeStartMousePoint = pagePoint
+                self.resizeStartRect = currentRect
+            } else if let currentRect = currentSelectionRect, self.selectedPage == page, currentRect.contains(pagePoint) {
+                // 矩形内部 → 移動モード
                 self.isDraggingMarquee = true
                 self.dragStartMousePoint = pagePoint
                 self.dragStartMarqueeRect = currentRect
@@ -142,8 +161,14 @@ class GalleyPDFView: PDFView {
     override func mouseDragged(with event: NSEvent) {
         let location = self.convert(event.locationInWindow, from: nil)
 
+        // 0. リサイズモード中の処理
+        if isResizingMarquee, let edge = resizeEdge, let startRect = resizeStartRect, let page = selectedPage {
+            let pagePoint = self.convert(location, to: page)
+            self.currentSelectionRect = resizedRect(startRect: startRect, edge: edge, currentPoint: pagePoint)
+            updateMarquee()
+        }
         // 1. 移動モード中の処理
-        if isDraggingMarquee, let startMouse = dragStartMousePoint, let startRect = dragStartMarqueeRect, let page = selectedPage {
+        else if isDraggingMarquee, let startMouse = dragStartMousePoint, let startRect = dragStartMarqueeRect, let page = selectedPage {
             let pagePoint = self.convert(location, to: page)
 
             // マウスの移動量(差分)を計算して、元の矩形を移動させる
@@ -174,8 +199,15 @@ class GalleyPDFView: PDFView {
     }
 
     override func mouseUp(with event: NSEvent) {
+        // リサイズモードの終了
+        if isResizingMarquee {
+            isResizingMarquee = false
+            resizeEdge = nil
+            resizeStartMousePoint = nil
+            resizeStartRect = nil
+        }
         // 移動モードの終了
-        if isDraggingMarquee {
+        else if isDraggingMarquee {
             isDraggingMarquee = false
             dragStartMousePoint = nil
             dragStartMarqueeRect = nil
@@ -584,7 +616,7 @@ class GalleyPDFView: PDFView {
             let layer = CAShapeLayer()
             layer.strokeColor = NSColor.systemTeal.cgColor
             layer.fillColor = NSColor.systemTeal.withAlphaComponent(0.2).cgColor
-            layer.lineWidth = 1.0
+            layer.lineWidth = 0.5
             layer.lineDashPattern = [4, 4]
             layer.zPosition = 9999
             self.documentView?.wantsLayer = true
@@ -595,7 +627,7 @@ class GalleyPDFView: PDFView {
             let label = NSTextField(labelWithString: "")
             label.backgroundColor = NSColor.black.withAlphaComponent(0.75)
             label.textColor = .white
-            label.font = .monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+            label.font = .monospacedDigitSystemFont(ofSize: 15, weight: .medium)
             label.drawsBackground = true
             label.isBordered = false
             label.isEditable = false
@@ -616,6 +648,11 @@ class GalleyPDFView: PDFView {
         let docRect = self.convert(viewRect, to: docView)
 
         layer.path = CGPath(rect: docRect, transform: nil)
+
+        // ズームに関わらず画面上で一定の線幅・破線間隔にする
+        let scale = max(self.scaleFactor, 0.01)
+        layer.lineWidth = 0.5 / scale
+        layer.lineDashPattern = [NSNumber(value: 4.0 / scale), NSNumber(value: 4.0 / scale)]
 
         let widthMM = rect.width * 25.4 / 72.0
         let heightMM = rect.height * 25.4 / 72.0
@@ -640,6 +677,59 @@ class GalleyPDFView: PDFView {
         dimensionLabel = nil
         currentSelectionRect = nil
         selectedPage = nil
+    }
+
+    // エッジ/コーナーの当たり判定（画面上8ptをページ座標に換算）
+    private func detectResizeEdge(point: CGPoint, rect: NSRect) -> ResizeEdge? {
+        let screenThreshold: CGFloat = 8.0
+        let threshold = screenThreshold / max(self.scaleFactor, 0.01)
+        let expandedRect = rect.insetBy(dx: -threshold, dy: -threshold)
+        guard expandedRect.contains(point) else { return nil }
+
+        let nearLeft   = abs(point.x - rect.minX) < threshold
+        let nearRight  = abs(point.x - rect.maxX) < threshold
+        let nearBottom = abs(point.y - rect.minY) < threshold
+        let nearTop    = abs(point.y - rect.maxY) < threshold
+
+        // コーナー優先
+        if nearLeft  && nearTop    { return .topLeft }
+        if nearRight && nearTop    { return .topRight }
+        if nearLeft  && nearBottom { return .bottomLeft }
+        if nearRight && nearBottom { return .bottomRight }
+        // 辺
+        if nearTop    { return .top }
+        if nearBottom { return .bottom }
+        if nearLeft   { return .left }
+        if nearRight  { return .right }
+
+        return nil
+    }
+
+    // リサイズ後の矩形を計算（反転も許容）
+    private func resizedRect(startRect: NSRect, edge: ResizeEdge, currentPoint: CGPoint) -> NSRect {
+        var minX = startRect.minX
+        var minY = startRect.minY
+        var maxX = startRect.maxX
+        var maxY = startRect.maxY
+
+        switch edge {
+        case .top:         maxY = currentPoint.y
+        case .bottom:      minY = currentPoint.y
+        case .left:        minX = currentPoint.x
+        case .right:       maxX = currentPoint.x
+        case .topLeft:     maxY = currentPoint.y; minX = currentPoint.x
+        case .topRight:    maxY = currentPoint.y; maxX = currentPoint.x
+        case .bottomLeft:  minY = currentPoint.y; minX = currentPoint.x
+        case .bottomRight: minY = currentPoint.y; maxX = currentPoint.x
+        }
+
+        // min/max を正規化して常に正のサイズにする
+        return NSRect(
+            x: min(minX, maxX),
+            y: min(minY, maxY),
+            width: abs(maxX - minX),
+            height: abs(maxY - minY)
+        )
     }
 
     @objc override func copy(_ sender: Any?) {
