@@ -99,10 +99,12 @@ struct GalleyApp {
         viewMenu.addItem(NSMenuItem.separator())
 
         // 表示モード系
-        let singlePageItem = NSMenuItem(title: "Single Page", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
-        let singlePageContinuousItem = NSMenuItem(title: "Single Page Continuous", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
-        let twoPagesItem = NSMenuItem(title: "Two Pages", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
-        let twoPagesContinuousItem = NSMenuItem(title: "Two Pages Continuous", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "")
+        let singlePageItem = NSMenuItem(title: "Single Page", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "1")
+        let singlePageContinuousItem = NSMenuItem(title: "Single Page Continuous", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "1")
+        singlePageContinuousItem.keyEquivalentModifierMask = [.command, .shift]
+        let twoPagesItem = NSMenuItem(title: "Two Pages", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "2")
+        let twoPagesContinuousItem = NSMenuItem(title: "Two Pages Continuous", action: #selector(AppDelegate.changeDisplayMode(_:)), keyEquivalent: "2")
+        twoPagesContinuousItem.keyEquivalentModifierMask = [.command, .shift]
 
         viewMenu.addItem(singlePageItem)
         viewMenu.addItem(singlePageContinuousItem)
