@@ -44,7 +44,6 @@ struct GalleyApp {
             "displayMode": PDFDisplayMode.singlePageContinuous.rawValue,
             "displaysAsBook": false,
             "displaysRTL": false,
-            "debugMode": false,
             "syncTexEditor": "emacs",
             "emacsclientPath": "",
             "customEditorCommand": ""
@@ -197,10 +196,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var searchBarVisible: Bool = false
     var searchResults: [PDFSelection] = []
     var searchCurrentIndex: Int = 0
-
-    var isDebugMode: Bool {
-        return UserDefaults.standard.bool(forKey: "debugMode")
-    }
 
     // ==========================================
     // メニューのチェックマーク状態の管理 (View & SyncTeX)

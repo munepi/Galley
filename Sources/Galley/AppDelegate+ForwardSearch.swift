@@ -65,6 +65,7 @@ extension AppDelegate {
 
         let colStr = column != nil ? " | Col: \(column!)" : ""
         let baseMessage = "Forward Search ➔ PDF: \(pdfName) | Src: \(srcName) | Line: \(line)\(colStr)"
+        Log.forwardSearch.debug("\(baseMessage, privacy: .public)")
 
         if let pPath = pdfPath {
             let url = URL(fileURLWithPath: pPath).absoluteURL
@@ -79,9 +80,7 @@ extension AppDelegate {
         // 2. CSynctex に NULL を渡してクラッシュするのを防ぐガード
         guard let finalSrcPath = guessedSrcPath,
               let srcCStr = (finalSrcPath as NSString).utf8String else {
-            if self.isDebugMode {
-                DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] Source path is missing or invalid.") }
-            }
+            Log.forwardSearch.error("Source path is missing or invalid.")
             return
         }
 
@@ -96,17 +95,17 @@ extension AppDelegate {
         var querySuccess = false
         if synctex_display_query(scanner, srcCStr, searchLine, 0, -1) > 0 {
             querySuccess = true
-            if self.isDebugMode { print("SyncTeX query succeeded.") }
+            Log.forwardSearch.debug("SyncTeX query succeeded.")
         } else {
             if isLineShifted {
                 // エディタからの column が最終行だった場合、元のlineとする
                 searchLine = line
                 if synctex_display_query(scanner, srcCStr, searchLine, 0, -1) > 0 {
                     querySuccess = true
-                    if self.isDebugMode { print("SyncTeX query succeeded.") }
+                    Log.forwardSearch.debug("SyncTeX query succeeded.")
                 }
             } else {
-                if self.isDebugMode { print("SyncTeX query failed or matched.") }
+                Log.forwardSearch.debug("SyncTeX query failed or matched.")
             }
         }
 
@@ -151,11 +150,7 @@ extension AppDelegate {
                     Bounds height: \(String(format: "%.1f", bounds.maxY))
                     """
 
-                    if self.isDebugMode {
-                        DispatchQueue.main.async {
-                            self.showNotification("\(baseMessage)\n⬇︎\n\(detailMessage)")
-                        }
-                    }
+                    Log.forwardSearch.debug("\(detailMessage, privacy: .public)")
 
                     let visibleHeight = self.activePDFView.bounds.height
                     let scale = self.activePDFView.scaleFactor
@@ -186,8 +181,8 @@ extension AppDelegate {
 
                         if let selection = page.selection(for: lineRect) {
                             self.activePDFView.currentSelection = selection
-                        } else if self.isDebugMode {
-                            print("No text found at Y: \(flippedY) to select.")
+                        } else {
+                            Log.forwardSearch.debug("No text found at Y: \(flippedY) to select.")
                         }
 
                         // --- 4. 新しい赤丸 (NEW) の座標計算と生成 ---
@@ -235,14 +230,10 @@ extension AppDelegate {
                     }
                 }
             } else {
-                if self.isDebugMode {
-                    DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] SyncTeX matched no nodes.") }
-                }
+                Log.forwardSearch.error("SyncTeX matched no nodes.")
             }
         } else {
-            if self.isDebugMode {
-                DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] SyncTeX query failed.") }
-            }
+            Log.forwardSearch.error("SyncTeX query failed.")
         }
     }
 
