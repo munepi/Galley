@@ -54,7 +54,7 @@ extension AppDelegate {
         let synctexY = bounds.maxY - pagePoint.y
 
         let pdfName = fileURL.lastPathComponent
-        let baseMessage = "Inverse Search ➔ PDF: \(pdfName)"
+        Log.inverseSearch.debug("Inverse Search ➔ PDF: \(pdfName, privacy: .public)")
 
         if synctex_edit_query(scanner, Int32(pageIndex + 1), Float(pagePoint.x), Float(synctexY)) > 0 {
             if let node = synctex_scanner_next_result(scanner),
@@ -64,17 +64,13 @@ extension AppDelegate {
                 let srcName = (srcPath as NSString).lastPathComponent
                 let line = synctex_node_line(node)
 
-                if self.isDebugMode {
-                    let detailMessage = """
-                    Page: \(pageIndex + 1)
-                    Click pt: X=\(String(format: "%.1f", pagePoint.x)), Y=\(String(format: "%.1f", pagePoint.y))
-                    SyncTeX Y: \(String(format: "%.1f", synctexY))
-                    Target: \(srcName) | Line: \(line)
-                    """
-                    DispatchQueue.main.async {
-                        self.showNotification("\(baseMessage)\n⬇︎\n\(detailMessage)")
-                    }
-                }
+                let detailMessage = """
+                Page: \(pageIndex + 1)
+                Click pt: X=\(String(format: "%.1f", pagePoint.x)), Y=\(String(format: "%.1f", pagePoint.y))
+                SyncTeX Y: \(String(format: "%.1f", synctexY))
+                Target: \(srcName) | Line: \(line)
+                """
+                Log.inverseSearch.debug("\(detailMessage, privacy: .public)")
 
                 // --- 選択されているエディタに応じて処理を分岐 ---
                 let selectedEditor = UserDefaults.standard.string(forKey: "syncTexEditor") ?? "emacs"
@@ -88,14 +84,10 @@ extension AppDelegate {
                 }
 
             } else {
-                if self.isDebugMode {
-                    DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] SyncTeX matched no nodes.") }
-                }
+                Log.inverseSearch.error("SyncTeX matched no nodes.")
             }
         } else {
-            if self.isDebugMode {
-                DispatchQueue.main.async { self.showNotification("\(baseMessage)\n⬇︎\n[Error] SyncTeX query failed.") }
-            }
+            Log.inverseSearch.error("SyncTeX query failed.")
         }
     }
 
@@ -114,14 +106,8 @@ extension AppDelegate {
             ? (searchPaths.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) ?? "emacsclient")
             : savedPath
 
-        // HUD表示用のコマンド文字列
         let commandString = "\(executablePath) --no-wait +\(line) '\(file)'"
-
-        if self.isDebugMode {
-            DispatchQueue.main.async {
-                self.showNotification("Executing Emacs Command:\n\(commandString)")
-            }
-        }
+        Log.inverseSearch.debug("Executing Emacs Command: \(commandString, privacy: .public)")
 
         process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = ["--no-wait", "+\(line)", file]
@@ -136,12 +122,7 @@ extension AppDelegate {
     // --- VSCode で開く ---
     func openInVSCode(file: String, line: Int32) {
         let urlString = "vscode://file\(file):\(line)"
-
-        if self.isDebugMode {
-            DispatchQueue.main.async {
-                self.showNotification("Opening VSCode URL:\n\(urlString)")
-            }
-        }
+        Log.inverseSearch.debug("Opening VSCode URL: \(urlString, privacy: .public)")
 
         // パスにスペース等が含まれている場合のためのエンコーディング
         if let encodedString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
@@ -165,11 +146,7 @@ extension AppDelegate {
             .replacingOccurrences(of: "%file", with: file)
             .replacingOccurrences(of: "%line", with: "\(line)")
 
-        if self.isDebugMode {
-            DispatchQueue.main.async {
-                self.showNotification("Executing Custom Command:\n\(command)")
-            }
-        }
+        Log.inverseSearch.debug("Executing Custom Command: \(command, privacy: .public)")
 
         // /bin/sh 経由でコマンドを実行
         let process = Process()
@@ -183,11 +160,7 @@ extension AppDelegate {
         do {
             try process.run()
         } catch {
-            if self.isDebugMode {
-                DispatchQueue.main.async {
-                    self.showNotification("[Error] Failed to execute custom command.")
-                }
-            }
+            Log.inverseSearch.error("Failed to execute custom command: \(error.localizedDescription, privacy: .public)")
         }
     }
 }
