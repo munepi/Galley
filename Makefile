@@ -142,16 +142,6 @@ notarize: dmg
 	xcrun stapler staple $(DMG_FILENAME)
 	@echo "Notarization complete."
 
-.PHONY: debug
-debug:
-	defaults write $(BUNDLE_ID) debugMode -bool true
-	@echo "Debug mode enabled."
-
-.PHONY: debug-off
-debug-off:
-	defaults delete $(BUNDLE_ID) debugMode 2>/dev/null || true
-	@echo "Debug mode disabled."
-
 .PHONY: log
 log:
 	log stream --predicate 'subsystem == "$(BUNDLE_ID)"' --level info
