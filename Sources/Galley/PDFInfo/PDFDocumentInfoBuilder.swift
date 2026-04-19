@@ -13,6 +13,7 @@ enum PDFDocumentInfoBuilder {
         var sections: [InfoSection] = []
         sections.append(buildFileSection(document: doc, url: url))
         sections.append(buildDocumentInfoSection(document: doc))
+        sections.append(contentsOf: extractComplianceSections(from: doc))
         sections.append(buildSecuritySection(document: doc))
         sections.append(buildPagesSection(document: doc))
         sections.append(buildFeaturesSection(document: doc))
@@ -102,6 +103,17 @@ enum PDFDocumentInfoBuilder {
             return s.isEmpty ? "—" : s
         }
         return "\(value)"
+    }
+
+    // MARK: - PDF/X, PDF/A, PDF/UA compliance (XMP 由来)
+
+    private static let complianceTitles: Set<String> = ["PDF/X", "PDF/A", "PDF/UA"]
+
+    private static func extractComplianceSections(from doc: PDFDocument) -> [InfoSection] {
+        let xmp = CGPDFMetadataExtractor.extract(from: doc)
+        guard let xml = xmp.xml else { return [] }
+        let parsed = XMPParser.parse(xml)
+        return parsed.sections.filter { complianceTitles.contains($0.title) }
     }
 
     // MARK: - Security
