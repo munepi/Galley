@@ -41,7 +41,17 @@ final class SidebarController: NSSplitViewController {
         self.leftItem = leftItem
 
         let mainVC = NSViewController()
-        mainVC.view = mainContainer
+        let wrapper = NSView()
+        wrapper.translatesAutoresizingMaskIntoConstraints = false
+        mainContainer.translatesAutoresizingMaskIntoConstraints = false
+        wrapper.addSubview(mainContainer)
+        NSLayoutConstraint.activate([
+            mainContainer.topAnchor.constraint(equalTo: wrapper.topAnchor),
+            mainContainer.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor),
+            mainContainer.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
+            mainContainer.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),
+        ])
+        mainVC.view = wrapper
         let mainItem = NSSplitViewItem(viewController: mainVC)
         mainItem.canCollapse = false
         mainItem.minimumThickness = 300
@@ -66,5 +76,21 @@ final class SidebarController: NSSplitViewController {
 
     func notifyDocumentChanged(_ document: PDFDocument?, url: URL?) {
         infoPanel?.reload(document: document, url: url)
+    }
+
+    // ドラッグで左ペインを最小幅より狭くできないように制約（auto-collapse 防止）
+    override func splitView(_ splitView: NSSplitView,
+                            constrainSplitPosition proposedPosition: CGFloat,
+                            ofSubviewAt dividerIndex: Int) -> CGFloat {
+        if dividerIndex == 0, !leftItem.isCollapsed {
+            return max(proposedPosition, leftItem.minimumThickness)
+        }
+        return proposedPosition
+    }
+
+    override func splitView(_ splitView: NSSplitView,
+                            shouldCollapseSubview subview: NSView,
+                            forDoubleClickOnDividerAt dividerIndex: Int) -> Bool {
+        return false
     }
 }
