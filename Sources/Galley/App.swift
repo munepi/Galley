@@ -31,6 +31,7 @@
 import SwiftUI
 import AppKit
 import PDFKit
+import Sparkle
 
 @main
 struct GalleyApp {
@@ -62,6 +63,17 @@ struct GalleyApp {
         appMenuItem.submenu = appMenu
         appMenu.addItem(withTitle: "About Galley", action: #selector(AppDelegate.showAbout(_:)), keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator()) // 区切り線
+
+        // Sparkle: Check for Updates...
+        let checkForUpdatesItem = NSMenuItem(
+            title: "Check for Updates...",
+            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
+            keyEquivalent: ""
+        )
+        checkForUpdatesItem.target = delegate.updaterController
+        appMenu.addItem(checkForUpdatesItem)
+        appMenu.addItem(NSMenuItem.separator())
+
         appMenu.addItem(withTitle: "Quit Galley", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
 
         // --- 2. File メニュー ---
@@ -170,6 +182,20 @@ struct GalleyApp {
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var window: NSWindow?
+
+    // Sparkle updater controller.
+    // Pass `updaterDelegate: self` here in future if dynamic feed URL switching
+    // (e.g. stable/pro channel toggle based on license) becomes necessary.
+    let updaterController: SPUStandardUpdaterController
+
+    override init() {
+        self.updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: nil,
+            userDriverDelegate: nil
+        )
+        super.init()
+    }
 
     var container: NSView!
     var pdfViewA: GalleyPDFView!

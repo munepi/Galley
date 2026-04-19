@@ -8,6 +8,18 @@ BUILD_PATH := .build/apple/Products/Release/$(APP_NAME)
 CONTENTS_DIR := $(BUNDLE_NAME)/Contents
 MACOS_DIR := $(CONTENTS_DIR)/MacOS
 RESOURCES_DIR := $(CONTENTS_DIR)/Resources
+FRAMEWORKS_DIR := $(CONTENTS_DIR)/Frameworks
+
+# Sparkle (auto-update) ----------------------------------------------------
+# Channel-specific values. Override on the command line for the pro channel:
+#   make app SU_FEED_URL=https://example.com/pro-appcast.xml SU_PUBLIC_ED_KEY=...
+SU_FEED_URL ?= https://munepi.github.io/Galley/appcast.xml
+SU_PUBLIC_ED_KEY ?= WXbMltcSsSAHafSIrJv/VJ9WYXUP7W5F5Y+2Eldrask=
+
+SPARKLE_ROOT := .build/artifacts/sparkle/Sparkle
+SPARKLE_FW := $(SPARKLE_ROOT)/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework
+SPARKLE_BIN := $(SPARKLE_ROOT)/bin
+# --------------------------------------------------------------------------
 
 TAG_EXISTS := $(shell git rev-parse -q --verify refs/tags/v$(VERSION) >/dev/null && echo yes || echo no)
 
@@ -41,6 +53,8 @@ clean:
 Info.plist: Info.plist.in version
 	sed -e 's/@@VERSION@@/$(VERSION)/g' \
 	    -e 's/@@BUILD_NUMBER@@/$(BUILD_NUMBER)/g' \
+	    -e 's|@@SU_FEED_URL@@|$(SU_FEED_URL)|g' \
+	    -e 's|@@SU_PUBLIC_ED_KEY@@|$(SU_PUBLIC_ED_KEY)|g' \
 	    Info.plist.in > Info.plist
 
 .PHONY: nativebuild
@@ -56,6 +70,7 @@ app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
 	@echo "Packaging $(BUNDLE_NAME)..."
 	mkdir -p $(MACOS_DIR)
 	mkdir -p $(RESOURCES_DIR)/en.lproj
+	mkdir -p $(FRAMEWORKS_DIR)
 	echo 'CFBundleName = "Galley";\nCFBundleDisplayName = "Galley";' > $(RESOURCES_DIR)/en.lproj/InfoPlist.strings
 	cp $(BUILD_PATH) $(MACOS_DIR)/
 	cp Info.plist $(CONTENTS_DIR)/
@@ -64,6 +79,11 @@ app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
 	cp displayline.bash $(MACOS_DIR)/displayline
 	chmod +x $(MACOS_DIR)/$(APP_NAME)
 	chmod +x $(MACOS_DIR)/displayline
+	# --- Embed Sparkle.framework (required for runtime) ---
+	@echo "Embedding Sparkle.framework..."
+	rsync -a --delete $(SPARKLE_FW) $(FRAMEWORKS_DIR)/
+	# Galley is not sandboxed, so XPCServices are unnecessary.
+	rm -rf $(FRAMEWORKS_DIR)/Sparkle.framework/Versions/B/XPCServices
 	touch $(BUNDLE_NAME)
 	@echo "Done! You can find $(BUNDLE_NAME) in the current directory."
 
@@ -88,8 +108,18 @@ uninstall:
 .PHONY: codesign
 codesign: app
 	@if [ -n "$(CODE_SIGN_IDENTITY)" ]; then \
+	    echo "Signing Sparkle inner components..."; \
+	    codesign --force --options runtime \
+	        --sign "$(CODE_SIGN_IDENTITY)" \
+	        $(FRAMEWORKS_DIR)/Sparkle.framework/Versions/B/Autoupdate; \
+	    codesign --force --options runtime \
+	        --sign "$(CODE_SIGN_IDENTITY)" \
+	        "$(FRAMEWORKS_DIR)/Sparkle.framework/Versions/B/Updater.app"; \
+	    codesign --force --options runtime \
+	        --sign "$(CODE_SIGN_IDENTITY)" \
+	        $(FRAMEWORKS_DIR)/Sparkle.framework; \
 	    echo "Signing $(BUNDLE_NAME) with identity: $(CODE_SIGN_IDENTITY)"; \
-	    codesign --force --deep --options runtime \
+	    codesign --force --options runtime \
 	        --sign "$(CODE_SIGN_IDENTITY)" $(BUNDLE_NAME); \
 	    codesign --verify --deep $(BUNDLE_NAME); \
 	    echo "Code signing complete."; \
@@ -158,3 +188,34 @@ log:
 
 .PHONY: notarized-dmg
 notarized-dmg: codesign codesign-pkg dmg notarize
+
+# Sparkle helpers ----------------------------------------------------------
+
+.PHONY: sparkle-generate-keys
+sparkle-generate-keys:
+	@echo "Generating EdDSA key pair (private key stored in macOS Keychain)..."
+	@$(SPARKLE_BIN)/generate_keys
+	@echo ""
+	@echo "Copy the public key above into Info.plist.in (SU_PUBLIC_ED_KEY)"
+	@echo "or pass it via 'make app SU_PUBLIC_ED_KEY=...'"
+
+.PHONY: sparkle-export-key
+sparkle-export-key:
+	@echo "Exporting private EdDSA key (KEEP SECRET)..."
+	@$(SPARKLE_BIN)/generate_keys -x sparkle_private_key.txt
+	@echo "Saved to sparkle_private_key.txt — store as a CI secret and delete locally."
+
+.PHONY: sign-update
+sign-update:
+	@if [ ! -f "$(DMG_FILENAME)" ]; then \
+	    echo "Error: $(DMG_FILENAME) not found. Run 'make dmg' first."; \
+	    exit 1; \
+	fi
+	@echo "Signing $(DMG_FILENAME) with EdDSA..."
+	@$(SPARKLE_BIN)/sign_update $(DMG_FILENAME)
+
+.PHONY: appcast
+appcast: sign-update
+	@echo ""
+	@echo "Add the sparkle:edSignature/length attributes above to your appcast.xml"
+	@echo "  enclosure URL: https://github.com/munepi/Galley/releases/download/v$(VERSION)/$(DMG_FILENAME)"
