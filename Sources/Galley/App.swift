@@ -333,6 +333,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         container.addSubview(pdfViewA)
 
         let sidebar = SidebarController(mainContainer: container)
+        sidebar.onNavigateToDestination = { [weak self] dest in
+            self?.activePDFView.go(to: dest)
+        }
         self.sidebarController = sidebar
 
         let window = NSWindow(
