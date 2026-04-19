@@ -14,9 +14,9 @@ final class InfoBasicViewController: NSViewController, SidebarPanelViewControlle
     private var contentStack: NSStackView!
     private var documentView: FlippedView!
 
-    private var keyColumnWidth: CGFloat = 120
+    private var keyColumnWidth: CGFloat = 100
     private let keyColumnMin: CGFloat = 60
-    private let keyColumnMax: CGFloat = 140
+    private let keyColumnMax: CGFloat = 100
 
     override func loadView() {
         let root = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 600))
