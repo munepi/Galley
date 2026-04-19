@@ -18,16 +18,16 @@ If you already have Galley installed, jump to
 
 ## Sections
 
-- **[Getting Started]({{< relref "getting-started" >}})** — Philosophy, system
+- [Getting Started]({{< relref "getting-started" >}}) — philosophy, system
   requirements, and installation.
-- **[Features]({{< relref "features" >}})** — A tour of what Galley does.
-- **[Integration]({{< relref "integration" >}})** — `galleypdf://` URL scheme,
+- [Features]({{< relref "features" >}}) — a tour of what Galley does.
+- [Integration]({{< relref "integration" >}}) — `galleypdf://` URL scheme,
   AUCTeX, YaTeX, and VS Code (LaTeX Workshop).
-- **[Configuration]({{< relref "configuration" >}})** — Inverse search editor
+- [Configuration]({{< relref "configuration" >}}) — inverse search editor
   selection, custom editor command, debug mode, and other `defaults` keys.
-- **[Reference]({{< relref "reference" >}})** — Keyboard shortcuts and the full
+- [Reference]({{< relref "reference" >}}) — keyboard shortcuts and the full
   list of `UserDefaults` keys.
-- **[Roadmap]({{< relref "roadmap" >}})** — The "Galley Pro" ambitions.
+- [Roadmap]({{< relref "roadmap" >}}) — the "Galley Pro" ambitions.
 
 ## License
 

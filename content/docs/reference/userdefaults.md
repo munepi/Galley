@@ -9,7 +9,7 @@ All settings live under the `com.github.munepi.galley` domain.
 
 | Key                    | Type    | Purpose                                                                                  |
 |------------------------|---------|-------------------------------------------------------------------------------------------|
-| `customEditorCommand`  | String  | Inverse-search command for the **Custom** editor. See [Custom Editor]({{< relref "/docs/configuration/custom-editor" >}}). |
+| `customEditorCommand`  | String  | Inverse-search command for the Custom editor. See [Custom Editor]({{< relref "/docs/configuration/custom-editor" >}}). |
 | `emacsclientPath`      | String  | Explicit path to `emacsclient`. See [Emacsclient Path]({{< relref "/docs/configuration/emacsclient-path" >}}). |
 
 For debug logging, see [Debug Logging]({{< relref "/docs/configuration/debug-mode" >}}) — logs are emitted via `os_log`, no `UserDefaults` key required.

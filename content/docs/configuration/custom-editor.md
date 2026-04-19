@@ -18,5 +18,5 @@ defaults write com.github.munepi.galley customEditorCommand \
   "/opt/homebrew/bin/subl '%file':%line"
 ```
 
-After setting this, switch the inverse search target to **Custom** in the
+After setting this, switch the inverse search target to Custom in the
 SyncTeX menu (see [Inverse Search]({{< relref "inverse-search" >}})).
