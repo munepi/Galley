@@ -59,6 +59,13 @@ final class AnnotationsPanelViewController: NSViewController, SidebarPanelViewCo
         tableView.target = self
         tableView.action = #selector(rowClicked(_:))
 
+        // 右クリックメニュー
+        let menu = NSMenu()
+        menu.addItem(withTitle: "Copy Content", action: #selector(copyContent(_:)), keyEquivalent: "")
+        menu.addItem(withTitle: "Copy as Markdown", action: #selector(copyAsMarkdown(_:)), keyEquivalent: "")
+        for mi in menu.items { mi.target = self }
+        tableView.menu = menu
+
         scrollView.documentView = tableView
 
         NSLayoutConstraint.activate([
@@ -143,6 +150,37 @@ final class AnnotationsPanelViewController: NSViewController, SidebarPanelViewCo
         let point = CGPoint(x: ann.bounds.minX, y: ann.bounds.maxY)
         let dest = PDFDestination(page: page, at: point)
         onNavigate?(dest)
+    }
+
+    private func targetRow() -> Int {
+        // 右クリック行優先、なければ選択行
+        let clicked = tableView.clickedRow
+        if clicked >= 0 { return clicked }
+        return tableView.selectedRow
+    }
+
+    @objc private func copyContent(_ sender: Any?) {
+        let row = targetRow()
+        guard row >= 0, row < items.count else { return }
+        let text = items[row].preview
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        pb.setString(text, forType: .string)
+    }
+
+    @objc private func copyAsMarkdown(_ sender: Any?) {
+        let row = targetRow()
+        guard row >= 0, row < items.count else { return }
+        let item = items[row]
+        let md = "- **p.\(item.pageLabel)** `[\(item.typeName)]` \(item.preview)"
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        pb.setString(md, forType: .string)
+    }
+
+    /// ⌘C でのコピーに対応（NSTableView が pasteboardWriterForRow を通じて処理）
+    @objc func copy(_ sender: Any?) {
+        copyContent(sender)
     }
 }
 
