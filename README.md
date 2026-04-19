@@ -49,11 +49,11 @@ make app
 
 ## Integration & Automation
 
-Galley provides two ways to communicate with external editors and scripts. **Using the URL Scheme is highly recommended for maximum performance.**
+Galley communicates with external editors and scripts via its URL scheme.
 
-### 1. URL Scheme (`galleypdf://`) - ⭐️ Recommended
+### URL Scheme (`galleypdf://`)
 
-Galley registers a custom URL scheme (`galleypdf://`) with macOS LaunchServices. This is faster than the `displayline` script because it avoids process forking and AppleScript compilation.
+Galley registers a custom URL scheme (`galleypdf://`) with macOS LaunchServices, giving editors a zero-overhead way to drive forward search and reload.
 
 Available endpoints:
 
@@ -80,20 +80,6 @@ Available endpoints:
 > **Security Note on First Forward Search**
 > The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions.
 > Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
-
-
-
-### 2. Command Line Utility (`displayline`)
-
-For legacy compatibility with older scripts, Galley includes a `displayline` bash script inside the application bundle.
-
-> [!WARNING]
-> **Performance Note**: Consider migrating to the `galleypdf://` URL scheme. The `displayline` utility relies on `osascript` (AppleEvents), which can introduce a noticeable delay due to process forking and script compilation.
-
-Usage:
-~~~bash
-/Applications/GalleyPDF.app/Contents/MacOS/displayline [-g] LINE PDFFILE [SRCFILE]
-~~~
 
 
 
