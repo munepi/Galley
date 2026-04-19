@@ -3,6 +3,10 @@ BUNDLE_ID := com.github.munepi.galley
 VERSION := $(shell head -n 1 version)
 BUILD_NUMBER := $(shell git rev-list --count HEAD 2>/dev/null || echo 0)
 
+# Default signing identities (override on command line if needed)
+CODE_SIGN_IDENTITY ?= 
+INSTALLER_CODE_SIGN_IDENTITY ?= 
+
 BUNDLE_NAME := $(APP_NAME).app
 BUILD_PATH := .build/apple/Products/Release/$(APP_NAME)
 CONTENTS_DIR := $(BUNDLE_NAME)/Contents
@@ -76,9 +80,7 @@ app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
 	cp Info.plist $(CONTENTS_DIR)/
 	cp $(APP_NAME).icns $(RESOURCES_DIR)/
 	cp $(APP_NAME).png $(RESOURCES_DIR)/
-	cp displayline.bash $(MACOS_DIR)/displayline
 	chmod +x $(MACOS_DIR)/$(APP_NAME)
-	chmod +x $(MACOS_DIR)/displayline
 	# --- Embed Sparkle.framework (required for runtime) ---
 	@echo "Embedding Sparkle.framework..."
 	rsync -a --delete $(SPARKLE_FW) $(FRAMEWORKS_DIR)/
@@ -109,28 +111,11 @@ uninstall:
 
 .PHONY: codesign
 codesign: app
-	@if [ -n "$(CODE_SIGN_IDENTITY)" ]; then \
-	    echo "Signing Sparkle inner components..."; \
-	    codesign --force --options runtime \
-	        --sign "$(CODE_SIGN_IDENTITY)" \
-	        $(FRAMEWORKS_DIR)/Sparkle.framework/Versions/B/Autoupdate; \
-	    codesign --force --options runtime \
-	        --sign "$(CODE_SIGN_IDENTITY)" \
-	        "$(FRAMEWORKS_DIR)/Sparkle.framework/Versions/B/Updater.app"; \
-	    codesign --force --options runtime \
-	        --sign "$(CODE_SIGN_IDENTITY)" \
-	        $(FRAMEWORKS_DIR)/Sparkle.framework; \
-	    echo "Signing $(BUNDLE_NAME) with identity: $(CODE_SIGN_IDENTITY)"; \
-	    codesign --force --options runtime \
-	        --sign "$(CODE_SIGN_IDENTITY)" $(BUNDLE_NAME); \
-	    codesign --verify --deep $(BUNDLE_NAME); \
-	    echo "Code signing complete."; \
-	else \
-	    echo "CODE_SIGN_IDENTITY not set, skipping codesign."; \
-	fi
+	CODE_SIGN_IDENTITY="$(CODE_SIGN_IDENTITY)" \
+	    scripts/codesign.sh $(BUNDLE_NAME)
 
 .PHONY: pkg
-pkg $(PKG_NAME): app
+pkg $(PKG_NAME): codesign
 	@echo "Building package $(PKG_NAME)..."
 	@rm -f $(PKG_NAME)
 	@rm -rf $(PKG_TEMP_DIR)
@@ -146,18 +131,11 @@ pkg $(PKG_NAME): app
 
 .PHONY: codesign-pkg
 codesign-pkg: pkg
-	@if [ -n "$(INSTALLER_CODE_SIGN_IDENTITY)" ]; then \
-	    echo "Signing $(PKG_NAME) with installer identity: $(INSTALLER_CODE_SIGN_IDENTITY)"; \
-	    productsign --sign "$(INSTALLER_CODE_SIGN_IDENTITY)" \
-	        $(PKG_NAME) $(PKG_NAME).signed && \
-	    mv $(PKG_NAME).signed $(PKG_NAME); \
-	    echo "Package signing complete."; \
-	else \
-	    echo "INSTALLER_CODE_SIGN_IDENTITY not set, skipping pkg sign."; \
-	fi
+	INSTALLER_CODE_SIGN_IDENTITY="$(INSTALLER_CODE_SIGN_IDENTITY)" \
+	    scripts/codesign-pkg.sh $(PKG_NAME)
 
 .PHONY: dmg
-dmg: pkg
+dmg: codesign-pkg
 	@echo "Creating disk image ($(DMG_FILENAME)) in ULMO format..."
 	@rm -f $(DMG_FILENAME)
 	@mkdir -p .build/dmg_temp
@@ -179,7 +157,7 @@ log:
 	log stream --predicate 'subsystem == "$(BUNDLE_ID)"' --level info
 
 .PHONY: notarized-dmg
-notarized-dmg: codesign codesign-pkg dmg notarize
+notarized-dmg: dmg notarize
 
 # Sparkle helpers ----------------------------------------------------------
 
