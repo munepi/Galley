@@ -22,6 +22,9 @@ final class SidebarController: NSSplitViewController {
     private var currentDocument: PDFDocument?
     private var currentURL: URL?
 
+    /// 栞や注釈パネルからのジャンプ要求を受けるコールバック。AppDelegate が PDFView.go(to:) に流す
+    var onNavigateToDestination: ((PDFDestination) -> Void)?
+
     private static let leftVisibleKey = "sidebar.leftVisible"
     private static let panelKindKey = "sidebar.panelKind"
 
@@ -44,6 +47,10 @@ final class SidebarController: NSSplitViewController {
         infoPanel = InfoPanelViewController()
         bookmarksPanel = BookmarksPanelViewController()
         annotationsPanel = AnnotationsPanelViewController()
+
+        bookmarksPanel.onNavigate = { [weak self] dest in
+            self?.onNavigateToDestination?(dest)
+        }
 
         // 保存された初期パネル
         let savedRaw = UserDefaults.standard.string(forKey: Self.panelKindKey) ?? SidebarPanelKind.info.rawValue
