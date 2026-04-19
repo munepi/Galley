@@ -123,7 +123,11 @@ struct GalleyApp {
 
         // サイドバー系
         let pdfInfoItem = NSMenuItem(title: "PDF Info", action: #selector(AppDelegate.toggleInfoSidebar(_:)), keyEquivalent: "i")
+        let pdfBookmarksItem = NSMenuItem(title: "PDF Bookmarks", action: #selector(AppDelegate.toggleBookmarksSidebar(_:)), keyEquivalent: "b")
+        let pdfAnnotationsItem = NSMenuItem(title: "PDF Annotations", action: #selector(AppDelegate.toggleAnnotationsSidebar(_:)), keyEquivalent: "n")
         viewMenu.addItem(pdfInfoItem)
+        viewMenu.addItem(pdfBookmarksItem)
+        viewMenu.addItem(pdfAnnotationsItem)
 
         viewMenu.addItem(NSMenuItem.separator())
 
@@ -212,7 +216,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             return self.validateSyncTexMenuItem(menuItem)
         }
 
-        if menuItem.action == #selector(toggleInfoSidebar(_:)) {
+        if menuItem.action == #selector(toggleInfoSidebar(_:)) ||
+           menuItem.action == #selector(toggleBookmarksSidebar(_:)) ||
+           menuItem.action == #selector(toggleAnnotationsSidebar(_:)) {
             return self.validateSidebarMenuItem(menuItem)
         }
 

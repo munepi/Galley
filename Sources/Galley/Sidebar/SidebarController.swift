@@ -11,9 +11,19 @@ final class SidebarController: NSSplitViewController {
     private let mainContainer: NSView
     private(set) var leftItem: NSSplitViewItem!
     private(set) var mainItem: NSSplitViewItem!
+
+    private var rootVC: SidebarRootViewController!
     private(set) var infoPanel: InfoPanelViewController!
+    private(set) var bookmarksPanel: BookmarksPanelViewController!
+    private(set) var annotationsPanel: AnnotationsPanelViewController!
+
+    private var currentPanelKind: SidebarPanelKind = .info
+
+    private var currentDocument: PDFDocument?
+    private var currentURL: URL?
 
     private static let leftVisibleKey = "sidebar.leftVisible"
+    private static let panelKindKey = "sidebar.panelKind"
 
     init(mainContainer: NSView) {
         self.mainContainer = mainContainer
@@ -30,10 +40,17 @@ final class SidebarController: NSSplitViewController {
         splitView.autosaveName = "galley.sidebar.splitview"
         splitView.dividerStyle = .paneSplitter
 
-        let infoVC = InfoPanelViewController()
-        self.infoPanel = infoVC
+        rootVC = SidebarRootViewController()
+        infoPanel = InfoPanelViewController()
+        bookmarksPanel = BookmarksPanelViewController()
+        annotationsPanel = AnnotationsPanelViewController()
 
-        let leftItem = NSSplitViewItem(sidebarWithViewController: infoVC)
+        // 保存された初期パネル
+        let savedRaw = UserDefaults.standard.string(forKey: Self.panelKindKey) ?? SidebarPanelKind.info.rawValue
+        currentPanelKind = SidebarPanelKind(rawValue: savedRaw) ?? .info
+        rootVC.showPanel(panelVC(for: currentPanelKind))
+
+        let leftItem = NSSplitViewItem(sidebarWithViewController: rootVC)
         leftItem.canCollapse = true
         leftItem.minimumThickness = 180
         leftItem.maximumThickness = 500
@@ -60,31 +77,63 @@ final class SidebarController: NSSplitViewController {
         addSplitViewItem(leftItem)
         addSplitViewItem(mainItem)
 
-        Log.sidebar.info("SidebarController loaded leftCollapsed=\(leftItem.isCollapsed)")
+        Log.sidebar.info("SidebarController loaded leftCollapsed=\(leftItem.isCollapsed) panel=\(self.currentPanelKind.rawValue)")
     }
 
-    func toggleLeft() {
-        let newCollapsed = !leftItem.isCollapsed
-        leftItem.animator().isCollapsed = newCollapsed
-        UserDefaults.standard.set(!newCollapsed, forKey: Self.leftVisibleKey)
-        Log.sidebar.info("toggleLeft collapsed=\(newCollapsed)")
+    private func panelVC(for kind: SidebarPanelKind) -> SidebarPanelViewController {
+        switch kind {
+        case .info: return infoPanel
+        case .bookmarks: return bookmarksPanel
+        case .annotations: return annotationsPanel
+        }
     }
 
     var isLeftVisible: Bool {
         !leftItem.isCollapsed
     }
 
-    func notifyDocumentChanged(_ document: PDFDocument?, url: URL?) {
-        infoPanel?.reload(document: document, url: url)
+    /// ⌘I/⌘B/⌘N の統一エントリポイント。スマートトグル:
+    /// - サイドバー閉じてる → パネル切替して開く
+    /// - 開いてて違うパネル → パネル切替（開いたまま）
+    /// - 開いてて同じパネル → 閉じる
+    func activatePanel(_ kind: SidebarPanelKind) {
+        if leftItem.isCollapsed {
+            switchPanel(to: kind)
+            leftItem.animator().isCollapsed = false
+            UserDefaults.standard.set(true, forKey: Self.leftVisibleKey)
+        } else if currentPanelKind == kind {
+            leftItem.animator().isCollapsed = true
+            UserDefaults.standard.set(false, forKey: Self.leftVisibleKey)
+        } else {
+            switchPanel(to: kind)
+        }
+        Log.sidebar.info("activatePanel kind=\(kind.rawValue) collapsed=\(self.leftItem.isCollapsed)")
     }
 
-    // ユーザーのドラッグ/ダブルクリック操作での折り畳みを禁止（⌘I によるプログラム的な折り畳みは別経路で可能）
+    private func switchPanel(to kind: SidebarPanelKind) {
+        currentPanelKind = kind
+        UserDefaults.standard.set(kind.rawValue, forKey: Self.panelKindKey)
+        let vc = panelVC(for: kind)
+        rootVC.showPanel(vc)
+        vc.reload(document: currentDocument, url: currentURL)
+    }
+
+    /// 現在表示中のパネル種別
+    var activePanelKind: SidebarPanelKind { currentPanelKind }
+
+    func notifyDocumentChanged(_ document: PDFDocument?, url: URL?) {
+        currentDocument = document
+        currentURL = url
+        rootVC.reloadCurrent(document: document, url: url)
+    }
+
+    // MARK: - NSSplitView delegate
+
     override func splitView(_ splitView: NSSplitView,
                             canCollapseSubview subview: NSView) -> Bool {
         return false
     }
 
-    // ドラッグで左ペインを最小幅より狭くできないよう制約
     override func splitView(_ splitView: NSSplitView,
                             constrainSplitPosition proposedPosition: CGFloat,
                             ofSubviewAt dividerIndex: Int) -> CGFloat {
