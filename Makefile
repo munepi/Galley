@@ -83,7 +83,9 @@ app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
 	@echo "Embedding Sparkle.framework..."
 	rsync -a --delete $(SPARKLE_FW) $(FRAMEWORKS_DIR)/
 	# Galley is not sandboxed, so XPCServices are unnecessary.
+	# Remove both the directory and the top-level symlink to avoid dangling links.
 	rm -rf $(FRAMEWORKS_DIR)/Sparkle.framework/Versions/B/XPCServices
+	rm -f $(FRAMEWORKS_DIR)/Sparkle.framework/XPCServices
 	touch $(BUNDLE_NAME)
 	@echo "Done! You can find $(BUNDLE_NAME) in the current directory."
 
