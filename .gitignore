@@ -31,5 +31,6 @@ DerivedData/
 
 # Claude Code (personal config, not committed)
 CLAUDE.md
-.claude/CLAUDE.md
-.claude/settings.json
+.claude/
+# .claude/CLAUDE.md
+# .claude/settings.json
