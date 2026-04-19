@@ -28,7 +28,7 @@ final class SidebarController: NSSplitViewController {
         super.viewDidLoad()
 
         splitView.autosaveName = "galley.sidebar.splitview"
-        splitView.dividerStyle = .thin
+        splitView.dividerStyle = .paneSplitter
 
         let infoVC = InfoPanelViewController()
         self.infoPanel = infoVC
@@ -78,7 +78,23 @@ final class SidebarController: NSSplitViewController {
         infoPanel?.reload(document: document, url: url)
     }
 
-    // ドラッグで左ペインを最小幅より狭くできないように制約（auto-collapse 防止）
+    // ドラッグ操作で左ペインを折りたたませない（⌘I によるプログラム的な折り畳みのみ許可）
+    override func splitView(_ splitView: NSSplitView,
+                            canCollapseSubview subview: NSView) -> Bool {
+        return false
+    }
+
+    // ドラッグで左ペインを最小幅より狭くできないよう、分割位置の最小座標を固定
+    override func splitView(_ splitView: NSSplitView,
+                            constrainMinCoordinate proposedMinimumPosition: CGFloat,
+                            ofSubviewAt dividerIndex: Int) -> CGFloat {
+        if dividerIndex == 0 {
+            return leftItem.minimumThickness
+        }
+        return proposedMinimumPosition
+    }
+
+    // 追加の保険: 途中位置もクランプ
     override func splitView(_ splitView: NSSplitView,
                             constrainSplitPosition proposedPosition: CGFloat,
                             ofSubviewAt dividerIndex: Int) -> CGFloat {
