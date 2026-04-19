@@ -29,13 +29,13 @@ weight = 10
 
 ## Page Navigation & Interface Notes
 
-- **Direct Jump:** Type a page number or label without modifier keys — a
+- Direct Jump: type a page number or label without modifier keys — a
   minimalist HUD appears at the bottom. Input auto-commits after 1 second of
   inactivity.
-- **Window Title:** Displays `<FileName> - Page <label> (<physical>/<total>)`
+- Window Title: displays `<FileName> - Page <label> (<physical>/<total>)`
   for a zero-distraction interface.
-- **Link Preview:** Hovering over a PDF link for 0.3 s shows a popover with a
+- Link Preview: hovering over a PDF link for 0.3 s shows a popover with a
   real-size snippet of the target page (internal links) or the URL text
   (external links).
-- **Persistence:** Galley remembers Display Mode, Book Mode, and RTL settings
+- Persistence: Galley remembers Display Mode, Book Mode, and RTL settings
   via `UserDefaults`.

@@ -42,5 +42,5 @@ source from the PDF alone (multi-file projects).
 >
 > The first time you execute a forward search, macOS will present a security
 > prompt asking for Automation permissions. Please click **OK (Allow)**. You
-> can later manage this in **System Settings → Privacy & Security →
-> Automation**.
+> can later manage this in System Settings → Privacy & Security →
+> Automation.

@@ -6,8 +6,7 @@ bookCollapseSection = true
 
 # Integration
 
-Galley provides two ways to communicate with external editors and scripts.
-**Using the URL Scheme is highly recommended for maximum performance.**
+Galley communicates with external editors and scripts via its URL scheme.
 
 - [URL Scheme (`galleypdf://`)]({{< relref "url-scheme" >}}) — the canonical
   reference for `reload` and `forward` commands.

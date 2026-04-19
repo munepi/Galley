@@ -24,5 +24,5 @@ make log
 
 ## Inspect in Console.app
 
-Open **Console.app**, select your Mac under *Devices*, and filter by
+Open Console.app, select your Mac under *Devices*, and filter by
 `subsystem:com.github.munepi.galley`.

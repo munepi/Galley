@@ -5,8 +5,8 @@ weight = 10
 
 # The Core Philosophy: 1-to-1 Correspondence
 
-Galley maintains a strict **1-to-1 correspondence** between your TeX source
-and its PDF output. It enforces a **single-window policy** — one source, one
+Galley maintains a strict 1-to-1 correspondence between your TeX source
+and its PDF output. It enforces a single-window policy — one source, one
 PDF, one window — so that SyncTeX operations always target the correct context
 without ambiguity.
 

@@ -20,11 +20,11 @@ filters, enabling Forward / Inverse Search from Typst, SATySFi, Vivliostyle
 A hybrid backend (Poppler + HarfBuzz + FreeType) to go beyond PDFKit's
 screen rendering:
 
-- **Output Preview** — CMYK and Spot Color extraction in `/Separation` and
+- Output Preview — CMYK and Spot Color extraction in `/Separation` and
   `/DeviceN` modes.
-- **Typography Inspector** — Embedded font names, raw CIDs/GIDs, and subset
+- Typography Inspector — embedded font names, raw CIDs/GIDs, and subset
   statuses from the PDF stream.
-- **OpenType Shaping Validation** — Verify glyph positioning against
+- OpenType Shaping Validation — verify glyph positioning against
   kerning, ligatures, and complex text layout rules.
 
 ## 3. PDF/X & PDF/A Preflight and Fixup
