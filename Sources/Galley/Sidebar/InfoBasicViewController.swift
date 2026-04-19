@@ -14,9 +14,9 @@ final class InfoBasicViewController: NSViewController, SidebarPanelViewControlle
     private var contentStack: NSStackView!
     private var documentView: FlippedView!
 
-    private var keyColumnWidth: CGFloat = 140
-    private let keyColumnMin: CGFloat = 80
-    private let keyColumnMax: CGFloat = 220
+    private var keyColumnWidth: CGFloat = 120
+    private let keyColumnMin: CGFloat = 60
+    private let keyColumnMax: CGFloat = 140
 
     override func loadView() {
         let root = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 600))
@@ -149,16 +149,20 @@ final class InfoBasicViewController: NSViewController, SidebarPanelViewControlle
     private func makeKeyValueRow(key: String, value: String, monospaceValue: Bool) -> NSView {
         let row = NSStackView()
         row.orientation = .horizontal
-        row.alignment = .firstBaseline
+        row.alignment = .centerY
         row.distribution = .fill
         row.spacing = 8
         row.translatesAutoresizingMaskIntoConstraints = false
 
-        let keyLabel = NSTextField(labelWithString: key)
+        let keyLabel = WrappingLabel(wrappingLabelWithString: key)
+        keyLabel.isEditable = false
+        keyLabel.isSelectable = false
+        keyLabel.isBordered = false
+        keyLabel.drawsBackground = false
         keyLabel.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
         keyLabel.textColor = .secondaryLabelColor
-        keyLabel.lineBreakMode = .byTruncatingTail
-        keyLabel.maximumNumberOfLines = 1
+        keyLabel.lineBreakMode = .byWordWrapping
+        keyLabel.maximumNumberOfLines = 0
         keyLabel.alignment = .right
         keyLabel.translatesAutoresizingMaskIntoConstraints = false
         keyLabel.widthAnchor.constraint(equalToConstant: keyColumnWidth).isActive = true
@@ -194,13 +198,3 @@ private final class FlippedView: NSView {
     override var isFlipped: Bool { true }
 }
 
-/// リサイズ時に preferredMaxLayoutWidth を追従させて無限ループを防ぐラベル
-private final class WrappingLabel: NSTextField {
-    override func setFrameSize(_ newSize: NSSize) {
-        super.setFrameSize(newSize)
-        if abs(preferredMaxLayoutWidth - newSize.width) > 0.5 {
-            preferredMaxLayoutWidth = newSize.width
-            invalidateIntrinsicContentSize()
-        }
-    }
-}

@@ -54,7 +54,7 @@ final class InfoPanelViewController: NSViewController, SidebarPanelViewControlle
         root.addSubview(segmented)
         root.addSubview(containerView)
         NSLayoutConstraint.activate([
-            segmented.topAnchor.constraint(equalTo: root.topAnchor, constant: 8),
+            segmented.topAnchor.constraint(equalTo: root.safeAreaLayoutGuide.topAnchor, constant: 8),
             segmented.leadingAnchor.constraint(equalTo: root.leadingAnchor, constant: 8),
             segmented.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -8),
 
