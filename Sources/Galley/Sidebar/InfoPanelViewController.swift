@@ -188,12 +188,11 @@ private final class FlippedView: NSView {
 
 /// リサイズ時に preferredMaxLayoutWidth を追従させて無限ループを防ぐラベル
 private final class WrappingLabel: NSTextField {
-    override func layout() {
-        let w = bounds.width
-        if abs(preferredMaxLayoutWidth - w) > 0.5 {
-            preferredMaxLayoutWidth = w
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        if abs(preferredMaxLayoutWidth - newSize.width) > 0.5 {
+            preferredMaxLayoutWidth = newSize.width
             invalidateIntrinsicContentSize()
         }
-        super.layout()
     }
 }
