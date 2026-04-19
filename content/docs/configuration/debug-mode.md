@@ -1,23 +1,28 @@
 +++
-title = "Debug Mode"
+title = "Debug Logging"
 weight = 40
 +++
 
-# Debug Mode
+# Debug Logging
 
-Enable the HUD to verify SyncTeX coordinate data or troubleshoot Forward
-Search:
+Galley emits structured logs via Apple's unified logging system (`os_log`)
+under the subsystem `com.github.munepi.galley`. Use this to verify SyncTeX
+coordinate data, inspect reload behavior, or troubleshoot Forward/Inverse
+Search.
 
-```bash
-# Permanent Enable
-defaults write com.github.munepi.galley debugMode -bool true
-
-# Temporary Enable (Terminal)
-/Applications/GalleyPDF.app/Contents/MacOS/GalleyPDF /path/to/document.pdf -debugMode YES
-```
-
-To disable the permanent setting:
+## Stream logs in Terminal
 
 ```bash
-defaults delete com.github.munepi.galley debugMode
+log stream --predicate 'subsystem == "com.github.munepi.galley"' --level info
 ```
+
+A convenience target is also available in the source tree:
+
+```bash
+make log
+```
+
+## Inspect in Console.app
+
+Open **Console.app**, select your Mac under *Devices*, and filter by
+`subsystem:com.github.munepi.galley`.

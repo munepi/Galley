@@ -15,7 +15,8 @@ configuration files to edit.
   command line for arbitrary editors.
 - [Emacsclient Path]({{< relref "emacsclient-path" >}}) — point Galley at a
   specific `emacsclient` binary.
-- [Debug Mode]({{< relref "debug-mode" >}}) — enable the SyncTeX HUD.
+- [Debug Logging]({{< relref "debug-mode" >}}) — stream `os_log` output for
+  SyncTeX and reload troubleshooting.
 
 For the full list of `defaults` keys, see
 [UserDefaults Reference]({{< relref "/docs/reference/userdefaults" >}}).

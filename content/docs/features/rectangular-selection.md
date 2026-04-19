@@ -7,7 +7,7 @@ weight = 40
 
 `Shift + Drag` creates a rectangular marquee with real-time dimensions
 displayed in millimetres. Drag inside an existing marquee to reposition it
-without losing the size.
+without losing the size, or drag its edges/corners to resize.
 
 `Cmd + C` copies the selected region as a **vector PDF** — not a raster
 screenshot — so you can paste it into another document with no loss of

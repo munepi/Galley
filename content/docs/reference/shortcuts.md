@@ -14,13 +14,17 @@ weight = 10
 | Zoom In / Out           | `Cmd + +` / `Cmd + -`                                                          |
 | Actual Size             | `Cmd + 0`                                                                      |
 | Auto Resize             | `Cmd + _`                                                                      |
+| Single Page             | `Cmd + 1`                                                                      |
+| Single Page Continuous  | `Shift + Cmd + 1`                                                              |
+| Two Pages               | `Cmd + 2`                                                                      |
+| Two Pages Continuous    | `Shift + Cmd + 2`                                                              |
 | Next Page               | `Space` or `Opt + J`                                                           |
 | Previous Page           | `Shift + Space` or `Opt + K`                                                   |
 | Jump to Page            | Type page number or label (e.g., `123`, `iv`, `cover`)                         |
 | Clear Selection / Cancel| `Esc`                                                                          |
 | Inverse Search          | `Cmd + Click` on PDF                                                           |
 | Character Inspection    | Right-click on selected text                                                   |
-| Measure / Move Area     | `Shift + Drag` (drag inside marquee to move)                                   |
+| Measure / Move / Resize Area | `Shift + Drag` (drag inside marquee to move; drag edges/corners to resize) |
 | Copy Selection          | `Cmd + C` (copies as vector PDF)                                               |
 
 ## Page Navigation & Interface Notes
