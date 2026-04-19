@@ -11,7 +11,8 @@ All settings live under the `com.github.munepi.galley` domain.
 |------------------------|---------|-------------------------------------------------------------------------------------------|
 | `customEditorCommand`  | String  | Inverse-search command for the **Custom** editor. See [Custom Editor]({{< relref "/docs/configuration/custom-editor" >}}). |
 | `emacsclientPath`      | String  | Explicit path to `emacsclient`. See [Emacsclient Path]({{< relref "/docs/configuration/emacsclient-path" >}}). |
-| `debugMode`            | Bool    | Enables the SyncTeX HUD. See [Debug Mode]({{< relref "/docs/configuration/debug-mode" >}}). |
+
+For debug logging, see [Debug Logging]({{< relref "/docs/configuration/debug-mode" >}}) — logs are emitted via `os_log`, no `UserDefaults` key required.
 
 ## Read current values
 
