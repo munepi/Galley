@@ -9,11 +9,14 @@ import PDFKit
 final class InfoPanelViewController: NSViewController {
 
     private var info: PDFDocumentInfo = .empty
-    private var outlineView: NSOutlineView!
     private var scrollView: NSScrollView!
+    private var contentStack: NSStackView!
+    private var documentView: FlippedView!
+
+    private let keyColumnWidth: CGFloat = 140
 
     override func loadView() {
-        let root = NSView(frame: NSRect(x: 0, y: 0, width: 280, height: 600))
+        let root = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 600))
         self.view = root
 
         scrollView = NSScrollView()
@@ -31,181 +34,133 @@ final class InfoPanelViewController: NSViewController {
             scrollView.bottomAnchor.constraint(equalTo: root.bottomAnchor),
         ])
 
-        outlineView = NSOutlineView()
-        outlineView.headerView = nil
-        outlineView.rowSizeStyle = .default
-        outlineView.floatsGroupRows = false
-        outlineView.indentationPerLevel = 0
-        outlineView.usesAutomaticRowHeights = true
-        outlineView.backgroundColor = .clear
-        outlineView.gridStyleMask = []
-        outlineView.allowsColumnResizing = true
-        outlineView.autoresizesOutlineColumn = false
+        documentView = FlippedView()
+        documentView.translatesAutoresizingMaskIntoConstraints = false
 
-        let keyCol = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("key"))
-        keyCol.title = "Key"
-        keyCol.width = 140
-        keyCol.minWidth = 60
-        keyCol.maxWidth = 260
-        outlineView.addTableColumn(keyCol)
-        outlineView.outlineTableColumn = keyCol
+        contentStack = NSStackView()
+        contentStack.orientation = .vertical
+        contentStack.alignment = .leading
+        contentStack.distribution = .fill
+        contentStack.spacing = 14
+        contentStack.edgeInsets = NSEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        documentView.addSubview(contentStack)
+        NSLayoutConstraint.activate([
+            contentStack.topAnchor.constraint(equalTo: documentView.topAnchor),
+            contentStack.leadingAnchor.constraint(equalTo: documentView.leadingAnchor),
+            contentStack.trailingAnchor.constraint(equalTo: documentView.trailingAnchor),
+            contentStack.bottomAnchor.constraint(equalTo: documentView.bottomAnchor),
+        ])
 
-        let valCol = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("value"))
-        valCol.title = "Value"
-        valCol.minWidth = 100
-        valCol.resizingMask = [.autoresizingMask, .userResizingMask]
-        outlineView.addTableColumn(valCol)
-
-        outlineView.dataSource = self
-        outlineView.delegate = self
-
-        scrollView.documentView = outlineView
-    }
-
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        outlineView.expandItem(nil, expandChildren: true)
+        scrollView.documentView = documentView
+        // documentView の幅は clipView に追従、高さはコンテンツに従う
+        if let clipView = scrollView.contentView as NSClipView? {
+            NSLayoutConstraint.activate([
+                documentView.leadingAnchor.constraint(equalTo: clipView.leadingAnchor),
+                documentView.trailingAnchor.constraint(equalTo: clipView.trailingAnchor),
+                documentView.topAnchor.constraint(equalTo: clipView.topAnchor),
+            ])
+        }
     }
 
     func reload(document: PDFDocument?, url: URL?) {
         self.info = PDFDocumentInfoBuilder.build(document: document, url: url)
-        outlineView.reloadData()
-        outlineView.expandItem(nil, expandChildren: true)
+        rebuildViews()
         Log.pdfinfo.info("reload sections=\(self.info.sections.count)")
     }
-}
 
-// MARK: - NSOutlineViewDataSource
-
-extension InfoPanelViewController: NSOutlineViewDataSource {
-
-    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        if item == nil {
-            return info.sections.count
+    private func rebuildViews() {
+        // 既存の子View全削除
+        for v in contentStack.arrangedSubviews {
+            contentStack.removeArrangedSubview(v)
+            v.removeFromSuperview()
         }
-        if let sec = item as? InfoSection {
-            return sec.rows.count
+        guard !info.sections.isEmpty else {
+            let label = NSTextField(labelWithString: "(no document)")
+            label.textColor = .secondaryLabelColor
+            contentStack.addArrangedSubview(label)
+            return
         }
-        return 0
-    }
-
-    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        if item == nil {
-            return info.sections[index]
+        for section in info.sections {
+            contentStack.addArrangedSubview(makeSectionView(section))
         }
-        if let sec = item as? InfoSection {
-            return RowRef(section: sec, index: index)
-        }
-        return 0
     }
 
-    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        return item is InfoSection
-    }
-}
+    private func makeSectionView(_ section: InfoSection) -> NSView {
+        let sectionStack = NSStackView()
+        sectionStack.orientation = .vertical
+        sectionStack.alignment = .leading
+        sectionStack.distribution = .fill
+        sectionStack.spacing = 4
+        sectionStack.translatesAutoresizingMaskIntoConstraints = false
 
-// 子アイテムは struct なので identity を持たせるためラッパー
-final class RowRef {
-    let section: InfoSection
-    let index: Int
-    init(section: InfoSection, index: Int) {
-        self.section = section
-        self.index = index
-    }
-    var row: InfoRow { section.rows[index] }
-}
+        let header = NSTextField(labelWithString: section.title)
+        header.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize)
+        header.textColor = .secondaryLabelColor
+        sectionStack.addArrangedSubview(header)
 
-// MARK: - NSOutlineViewDelegate
-
-extension InfoPanelViewController: NSOutlineViewDelegate {
-
-    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
-        return item is InfoSection
-    }
-
-    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
-        // テキスト選択優先方式 (B): 行選択は無効
-        return false
-    }
-
-    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        let colID = tableColumn?.identifier.rawValue
-
-        if let sec = item as? InfoSection {
-            // Group row: セクション見出し
-            if colID == "key" {
-                return makeSectionHeaderCell(title: sec.title)
-            }
-            return makeTextCell(text: "", bold: false)
+        for row in section.rows {
+            sectionStack.addArrangedSubview(makeRowView(row))
         }
 
-        if let ref = item as? RowRef {
-            switch ref.row {
-            case .keyValue(let k, let v):
-                if colID == "key" {
-                    return makeTextCell(text: k, bold: false, secondary: true)
-                } else {
-                    return makeTextCell(text: v, bold: false)
-                }
-            case .longText(let label, let value):
-                if colID == "key" {
-                    return makeTextCell(text: label, bold: false, secondary: true)
-                } else {
-                    return makeTextCell(text: value, bold: false, monospace: true)
-                }
-            }
+        // セクションは親stack幅いっぱいに広げたい
+        sectionStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        return sectionStack
+    }
+
+    private func makeRowView(_ row: InfoRow) -> NSView {
+        switch row {
+        case .keyValue(let key, let value):
+            return makeKeyValueRow(key: key, value: value, monospaceValue: false)
+        case .longText(let label, let value):
+            return makeKeyValueRow(key: label, value: value, monospaceValue: true)
         }
-        return nil
     }
 
-    // MARK: - Cell factories
+    private func makeKeyValueRow(key: String, value: String, monospaceValue: Bool) -> NSView {
+        let row = NSStackView()
+        row.orientation = .horizontal
+        row.alignment = .firstBaseline
+        row.distribution = .fill
+        row.spacing = 8
+        row.translatesAutoresizingMaskIntoConstraints = false
 
-    private func makeSectionHeaderCell(title: String) -> NSView {
-        let container = NSTableCellView()
-        let label = NSTextField(labelWithString: title)
-        label.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize)
-        label.textColor = .secondaryLabelColor
-        label.isSelectable = false
-        label.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
-            label.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -4),
-            label.topAnchor.constraint(equalTo: container.topAnchor, constant: 4),
-            label.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -2),
-        ])
-        return container
-    }
+        let keyLabel = NSTextField(labelWithString: key)
+        keyLabel.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        keyLabel.textColor = .secondaryLabelColor
+        keyLabel.lineBreakMode = .byTruncatingTail
+        keyLabel.maximumNumberOfLines = 1
+        keyLabel.alignment = .right
+        keyLabel.translatesAutoresizingMaskIntoConstraints = false
+        keyLabel.widthAnchor.constraint(equalToConstant: keyColumnWidth).isActive = true
+        keyLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-    private func makeTextCell(text: String, bold: Bool, secondary: Bool = false, monospace: Bool = false) -> NSView {
-        let container = NSTableCellView()
-        let tf = NSTextField()
-        tf.stringValue = text
-        tf.isEditable = false
-        tf.isSelectable = true
-        tf.isBordered = false
-        tf.drawsBackground = false
-        tf.lineBreakMode = .byWordWrapping
-        tf.maximumNumberOfLines = 0
-        tf.usesSingleLineMode = false
-        tf.cell?.wraps = true
-        tf.cell?.isScrollable = false
-        if monospace {
-            tf.font = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
+        let valueField = NSTextField(wrappingLabelWithString: value)
+        valueField.isSelectable = true
+        valueField.isEditable = false
+        valueField.isBordered = false
+        valueField.drawsBackground = false
+        valueField.allowsEditingTextAttributes = false
+        valueField.lineBreakMode = .byWordWrapping
+        valueField.maximumNumberOfLines = 0
+        if monospaceValue {
+            valueField.font = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
         } else {
-            tf.font = bold ? NSFont.boldSystemFont(ofSize: NSFont.systemFontSize) : NSFont.systemFont(ofSize: NSFont.systemFontSize)
+            valueField.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
         }
-        if secondary {
-            tf.textColor = .secondaryLabelColor
-        }
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(tf)
-        NSLayoutConstraint.activate([
-            tf.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
-            tf.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -4),
-            tf.topAnchor.constraint(equalTo: container.topAnchor, constant: 2),
-            tf.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -2),
-        ])
-        return container
+        valueField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        valueField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        valueField.translatesAutoresizingMaskIntoConstraints = false
+
+        row.addArrangedSubview(keyLabel)
+        row.addArrangedSubview(valueField)
+
+        row.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        return row
     }
+}
+
+/// 上原点（top-left）のスクロールビュー用documentView
+private final class FlippedView: NSView {
+    override var isFlipped: Bool { true }
 }
