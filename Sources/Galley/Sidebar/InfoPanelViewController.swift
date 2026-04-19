@@ -156,7 +156,7 @@ final class InfoPanelViewController: NSViewController {
         keyLabel.widthAnchor.constraint(equalToConstant: keyColumnWidth).isActive = true
         keyLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        let valueField = NSTextField(wrappingLabelWithString: value)
+        let valueField = WrappingLabel(wrappingLabelWithString: value)
         valueField.isSelectable = true
         valueField.isEditable = false
         valueField.isBordered = false
@@ -184,4 +184,16 @@ final class InfoPanelViewController: NSViewController {
 /// 上原点（top-left）のスクロールビュー用documentView
 private final class FlippedView: NSView {
     override var isFlipped: Bool { true }
+}
+
+/// リサイズ時に preferredMaxLayoutWidth を追従させて無限ループを防ぐラベル
+private final class WrappingLabel: NSTextField {
+    override func layout() {
+        let w = bounds.width
+        if abs(preferredMaxLayoutWidth - w) > 0.5 {
+            preferredMaxLayoutWidth = w
+            invalidateIntrinsicContentSize()
+        }
+        super.layout()
+    }
 }
