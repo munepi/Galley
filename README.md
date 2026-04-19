@@ -1,37 +1,38 @@
 # Galley ![Galley Icon](GalleyPDF.png)
 
-**Galley** is a lightweight PDF previewer for macOS, designed with TeX/LaTeX authors and typesetters in mind. Developed by **Munehiro Yamamoto (@munepi)**, it removes unnecessary toolbars and status bars so you can focus on your document.
+Galley is a lightweight PDF previewer for macOS, designed with TeX/LaTeX authors and typesetters in mind. Developed by Munehiro Yamamoto (@munepi), it removes unnecessary toolbars and status bars so you can focus on your document.
 
 ## The Core Philosophy: 1-to-1 Correspondence
 
-Galley maintains a strict **1-to-1 correspondence** between your TeX source and its PDF output. It enforces a **single-window policy** — one source, one PDF, one window — so that SyncTeX operations always target the correct context without ambiguity.
+Galley maintains a strict 1-to-1 correspondence between your TeX source and its PDF output. It enforces a single-window policy — one source, one PDF, one window — so that SyncTeX operations always target the correct context without ambiguity.
 
 ## System Requirements
 
-* **OS:** macOS 11.0 (Big Sur) or later.
-* **Architecture:** Universal Binary (Native support for both Apple Silicon and Intel Macs).
+* OS: macOS 11.0 (Big Sur) or later.
+* Architecture: Universal Binary (native support for both Apple Silicon and Intel Macs).
 
 ## Key Features
 
-* **Auto-Reload**: Monitors the PDF file for changes and reloads automatically, preserving your scroll position and zoom level.
-* **SyncTeX Integration**:
-  * **Forward Search**: Jump from your editor to the corresponding position in the PDF, highlighted with a fading red dot centered in the window.
-  * **Inverse Search**: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports **Emacs**, **Visual Studio Code**, and **custom editors** via CLI.
-* **Character Inspection**: Right-click a selected character to view its Unicode code point, name, plane, general category, embedded font name (PostScript), family, traits, point size (pt / mm / Q), vertical metrics (ascent / descent / leading), and Glyph ID (with CID notation for CJK).
-* **Rectangular Selection & Measurement**: `Shift + Drag` to create a selection rectangle with real-time dimensions in mm. Drag inside an existing marquee to reposition it, or drag its edges/corners to resize. `Cmd + C` copies the selected area as a vector PDF.
-* **Lightweight Rendering**: Galley draws only the PDF page itself — no annotation overlays or editing tools — so page rendering stays light even when flipping through pages quickly.
+* Auto-Reload: monitors the PDF file for changes and reloads automatically, preserving your scroll position and zoom level.
+* SyncTeX Integration:
+  * Forward Search: jump from your editor to the corresponding position in the PDF, highlighted with a fading red dot centered in the window.
+  * Inverse Search: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports Emacs, Visual Studio Code, and custom editors via CLI.
+* Character Inspection: right-click a selected character to view its Unicode code point, name, plane, general category, embedded font name (PostScript), family, traits, point size (pt / mm / Q), vertical metrics (ascent / descent / leading), and Glyph ID (with CID notation for CJK).
+* Rectangular Selection & Measurement: `Shift + Drag` to create a selection rectangle with real-time dimensions in mm. Drag inside an existing marquee to reposition it, or drag its edges/corners to resize. `Cmd + C` copies the selected area as a vector PDF.
+* Lightweight Rendering: Galley draws only the PDF page itself — no annotation overlays or editing tools — so page rendering stays light even when flipping through pages quickly.
 
 
 ## Installation
 
 ### Download Binaries
 
-Pre-compiled **Universal Binaries** are available under the [Releases](https://github.com/munepi/Galley/releases) section. 
+Pre-compiled Universal Binaries are available under the [Releases](https://github.com/munepi/Galley/releases) section.
 
 1. Download `GalleyPDF_<version>.dmg`.
 2. Double-click to mount the disk image.
 3. Double-click `GalleyPDF.pkg` inside the mounted volume.
-4. Follow the on-screen instructions to install **GalleyPDF.app**.
+4. Follow the on-screen instructions to install `GalleyPDF.app`.
+
 ### Building from Source
 
 If you prefer to build it yourself, ensure you have the Swift compiler installed (via Xcode or Command Line Tools).
@@ -57,12 +58,12 @@ Galley registers a custom URL scheme (`galleypdf://`) with macOS LaunchServices,
 
 Available endpoints:
 
-* **Force Reload**
+* Force Reload
   ~~~bash
   open -g "galleypdf://reload"
   ~~~
 
-* **Forward Search**
+* Forward Search
   ~~~bash
   open -g "galleypdf://forward?line=<line>&pdfpath=<absolute_pdf_path>"
 
@@ -79,7 +80,7 @@ Available endpoints:
 > [!WARNING]
 > **Security Note on First Forward Search**
 > The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions.
-> Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in **System Settings > Privacy & Security > Automation**.
+> Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in System Settings > Privacy & Security > Automation.
 
 
 
@@ -173,23 +174,23 @@ For [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Y
 }
 ~~~
 
-To execute Forward Search, press `Cmd + Opt + J` (or run **LaTeX Workshop: SyncTeX from cursor** from the Command Palette).
+To execute Forward Search, press `Cmd + Opt + J` (or run `LaTeX Workshop: SyncTeX from cursor` from the Command Palette).
 
 
 ### 3. Selecting your Editor (Inverse Search)
 
-You can select your preferred editor for Inverse Search (`Cmd + Click`) directly from the **SyncTeX** menu in the menu bar:
+You can select your preferred editor for Inverse Search (`Cmd + Click`) directly from the SyncTeX menu in the menu bar:
 
-* **Emacs**: Uses `emacsclient`. (Default)
+* Emacs: uses `emacsclient`. (Default)
   * Galley automatically searches for the executable in the following default locations:
     1. `/Applications/Emacs.app/Contents/MacOS/bin/emacsclient`
     2. `/opt/homebrew/bin/emacsclient`
     3. `/usr/local/bin/emacsclient`
-* **Visual Studio Code**: Uses the native `vscode://` URL scheme.
-* **Custom**: Uses a user-defined shell command.
+* Visual Studio Code: uses the native `vscode://` URL scheme.
+* Custom: uses a user-defined shell command.
 
 #### Custom Editor Command
-When **"Custom..."** is selected, Galley executes the command stored in the `customEditorCommand` preference. You can use `%file` and `%line` as placeholders.
+When `Custom...` is selected, Galley executes the command stored in the `customEditorCommand` preference. You can use `%file` and `%line` as placeholders.
 
 Set your custom command via Terminal:
 
@@ -213,18 +214,19 @@ defaults write com.github.munepi.galley emacsclientPath "/path/to/your/emacsclie
 
 Galley emits structured logs via Apple's unified logging system (`os_log`) under the subsystem `com.github.munepi.galley`. Use this to verify SyncTeX coordinate data, inspect reload behavior, or troubleshoot Forward/Inverse Search.
 
-* **Stream logs in Terminal**
+Stream logs in Terminal:
+
 ~~~bash
 log stream --predicate 'subsystem == "com.github.munepi.galley"' --level info
 ~~~
 
-  A convenience target is also available in the source tree:
-  ~~~bash
-  make log
-  ~~~
+A convenience target is also available in the source tree:
 
-* **Inspect in Console.app**
-  Open **Console.app**, select your Mac under *Devices*, and filter by `subsystem:com.github.munepi.galley`.
+~~~bash
+make log
+~~~
+
+Alternatively, open Console.app, select your Mac under *Devices*, and filter by `subsystem:com.github.munepi.galley`.
 
 
 
@@ -232,31 +234,31 @@ log stream --predicate 'subsystem == "com.github.munepi.galley"' --level info
 
 | Action | Shortcut / Gesture |
 | :--- | :--- |
-| **Open File** | `Cmd + O` or `open -a GalleyPDF document.pdf` |
-| **Print** | `Cmd + P` |
-| **Find** | `Cmd + F` (toggle search bar) |
-| **Find Next / Previous** | `Enter` / `Shift + Enter` (while search bar is open) |
-| **Zoom In/Out** | `Cmd + "+"` / `Cmd + "-"` |
-| **Actual Size** | `Cmd + 0` |
-| **Auto Resize** | `Cmd + _` |
-| **Single Page** | `Cmd + 1` |
-| **Single Page Continuous** | `Shift + Cmd + 1` |
-| **Two Pages** | `Cmd + 2` |
-| **Two Pages Continuous** | `Shift + Cmd + 2` |
-| **Next Page** | `Space` or `Opt + J` |
-| **Previous Page** | `Shift + Space` or `Opt + K` |
-| **Jump to Page** | Type page number or label (e.g., `123`, `iv`, `cover`) |
-| **Clear Selection / Cancel** | `Esc` |
-| **Inverse Search** | `Cmd + Click` on PDF |
-| **Character Inspection** | Right-click on selected text |
-| **Measure / Move / Resize Area** | `Shift + Drag` (drag inside an existing marquee to move it; drag edges/corners to resize) |
-| **Copy Selection** | `Cmd + C` (while area is selected, copies as vector PDF) |
+| Open File | `Cmd + O` or `open -a GalleyPDF document.pdf` |
+| Print | `Cmd + P` |
+| Find | `Cmd + F` (toggle search bar) |
+| Find Next / Previous | `Enter` / `Shift + Enter` (while search bar is open) |
+| Zoom In/Out | `Cmd + "+"` / `Cmd + "-"` |
+| Actual Size | `Cmd + 0` |
+| Auto Resize | `Cmd + _` |
+| Single Page | `Cmd + 1` |
+| Single Page Continuous | `Shift + Cmd + 1` |
+| Two Pages | `Cmd + 2` |
+| Two Pages Continuous | `Shift + Cmd + 2` |
+| Next Page | `Space` or `Opt + J` |
+| Previous Page | `Shift + Space` or `Opt + K` |
+| Jump to Page | Type page number or label (e.g., `123`, `iv`, `cover`) |
+| Clear Selection / Cancel | `Esc` |
+| Inverse Search | `Cmd + Click` on PDF |
+| Character Inspection | Right-click on selected text |
+| Measure / Move / Resize Area | `Shift + Drag` (drag inside an existing marquee to move it; drag edges/corners to resize) |
+| Copy Selection | `Cmd + C` (while area is selected, copies as vector PDF) |
 
 ### Page Navigation & Interface Notes
-* **Direct Jump**: When you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly. The input auto-commits after 1 second of inactivity.
-* **Window Title Info**: To keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`).
-* **Link Preview**: Hovering over a PDF link for 0.3 seconds shows a popover with a real-size snippet of the target page (internal links) or the URL text (external links). Clicking a link follows it normally.
-* **Persistence**: Galley automatically remembers your Display Mode, Book Mode, and RTL settings using `UserDefaults`.
+* Direct Jump: when you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly. The input auto-commits after 1 second of inactivity.
+* Window Title Info: to keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`).
+* Link Preview: hovering over a PDF link for 0.3 seconds shows a popover with a real-size snippet of the target page (internal links) or the URL text (external links). Clicking a link follows it normally.
+* Persistence: Galley automatically remembers your Display Mode, Book Mode, and RTL settings using `UserDefaults`.
 
 
 ## Roadmap: The "Galley Pro" Ambitions
@@ -264,13 +266,13 @@ log stream --predicate 'subsystem == "com.github.munepi.galley"' --level info
 Galley is currently a focused, lightweight viewer. The following features are under consideration or in early exploration:
 
 ### 1. Universal SyncTeX Bridge: `pandoc-synctex`
-A bidirectional synchronization bridge between structured text formats and Galley. By leveraging ASTs (like Pandoc's `+sourcepos`) and custom Lua filters, this would enable Forward/Inverse Search from the PDF back to sources in formats such as **Typst, SATySFi, Vivliostyle (VFM), AsciiDoc, and Re:VIEW**.
+A bidirectional synchronization bridge between structured text formats and Galley. By leveraging ASTs (like Pandoc's `+sourcepos`) and custom Lua filters, this would enable Forward/Inverse Search from the PDF back to sources in formats such as Typst, SATySFi, Vivliostyle (VFM), AsciiDoc, and Re:VIEW.
 
 ### 2. Hybrid Rendering Engine & Typography Inspector (Poppler + HarfBuzz + FreeType)
 Apple's `PDFKit` is optimized for screen rendering and does not expose all print-related data. A hybrid backend using C++ libraries could provide:
-* **Output Preview:** Extracting CMYK and Spot Color (e.g., DIC, PANTONE) values via **Poppler** in `/Separation` and `/DeviceN` modes.
-* **Typography Inspector:** Displaying embedded font names, raw CIDs/GIDs, and subset statuses from the PDF stream.
-* **OpenType Shaping Validation:** Using **HarfBuzz** and **FreeType** to verify whether glyph positioning matches the font's kerning, ligatures, and complex text layout rules.
+* Output Preview: extracting CMYK and Spot Color (e.g., DIC, PANTONE) values via Poppler in `/Separation` and `/DeviceN` modes.
+* Typography Inspector: displaying embedded font names, raw CIDs/GIDs, and subset statuses from the PDF stream.
+* OpenType Shaping Validation: using HarfBuzz and FreeType to verify whether glyph positioning matches the font's kerning, ligatures, and complex text layout rules.
 
 ### 3. PDF/X & PDF/A Preflight and Fixup
 Native PDF/X (X-1a, X-4) and PDF/A validation and fixup, including transparency flattening, bleed box generation, color conversions (via macOS ColorSync), and ICC profile tagging (`/OutputIntents`).
@@ -279,21 +281,21 @@ Native PDF/X (X-1a, X-4) and PDF/A validation and fixup, including transparency 
 Expanding the `galleypdf://` URL scheme to expose more features for editor integration and automation.
 
 *The following endpoints are tentative:*
-* **Advanced Navigation**: `galleypdf://page?num=iv` or `galleypdf://find?query=Theorem1`
-* **Build Integration**: `galleypdf://highlight?page=5&rect=x,y,w,h` (Visualizing compiler errors or Overfull hboxes directly on the PDF)
-* **Dynamic Configuration**: `galleypdf://set?editor=vscode` (Changing the target editor per project without restarting)
-* **Preflight & Visualization**:
-    * `galleypdf://boxes?show=trim,bleed` (Overlaying TrimBox and BleedBox lines)
-    * `galleypdf://fonts?audit=true` (Highlighting un-embedded or Type 3 fonts)
-    * `galleypdf://ink?tac=300` (Highlighting Total Area Coverage violations)
-    * `galleypdf://audit?warn=hairline&threshold=0.25` (Detecting hairlines that might disappear in print)
-* **Document Manipulation & Diff**:
-    * `galleypdf://props?set=openaction&mode=UseOutlines` (Forcing PDF open actions)
-    * `galleypdf://diff?target=/path/to/old.pdf&mode=difference` (Visual diffing for proofreaders)
-* **Export & Conversion**:
+* Advanced Navigation: `galleypdf://page?num=iv` or `galleypdf://find?query=Theorem1`
+* Build Integration: `galleypdf://highlight?page=5&rect=x,y,w,h` (visualizing compiler errors or Overfull hboxes directly on the PDF)
+* Dynamic Configuration: `galleypdf://set?editor=vscode` (changing the target editor per project without restarting)
+* Preflight & Visualization:
+    * `galleypdf://boxes?show=trim,bleed` (overlaying TrimBox and BleedBox lines)
+    * `galleypdf://fonts?audit=true` (highlighting un-embedded or Type 3 fonts)
+    * `galleypdf://ink?tac=300` (highlighting Total Area Coverage violations)
+    * `galleypdf://audit?warn=hairline&threshold=0.25` (detecting hairlines that might disappear in print)
+* Document Manipulation & Diff:
+    * `galleypdf://props?set=openaction&mode=UseOutlines` (forcing PDF open actions)
+    * `galleypdf://diff?target=/path/to/old.pdf&mode=difference` (visual diffing for proofreaders)
+* Export & Conversion:
     * `galleypdf://convert?format=pdfx4&input=<pdf>&output=<pdf>`
-    * `galleypdf://convert?action=vivid-cmyk&n-colors=5` (Algorithmic RGB-to-CMYK conversion mitigating gamut clipping, optionally injecting `/Separation` or `/DeviceN` for wide-gamut and vivid print results)
-    * `galleypdf://imposition?layout=booklet` (Dynamic N-up/Booklet preview and generation)
+    * `galleypdf://convert?action=vivid-cmyk&n-colors=5` (algorithmic RGB-to-CMYK conversion mitigating gamut clipping, optionally injecting `/Separation` or `/DeviceN` for wide-gamut and vivid print results)
+    * `galleypdf://imposition?layout=booklet` (dynamic N-up/Booklet preview and generation)
 
 ### 5. Command Line Interface (CLI)
 Providing CLI access to preflight, export, imposition, and viewer control so that any GUI operation can also be scripted from the terminal.
@@ -310,7 +312,7 @@ Instead, it aims to be a reliable companion for your text editor, updating your 
 
 ## License
 
-Distributed under the **BSD 3-Clause License**. See `LICENSE` for more information.
+Distributed under the BSD 3-Clause License. See `LICENSE` for more information.
 
 Copyright © 2026 Munehiro Yamamoto. All rights reserved.
 
