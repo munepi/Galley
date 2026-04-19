@@ -62,7 +62,6 @@ final class AnnotationsPanelViewController: NSViewController, SidebarPanelViewCo
         // 右クリックメニュー
         let menu = NSMenu()
         menu.addItem(withTitle: "Copy Content", action: #selector(copyContent(_:)), keyEquivalent: "")
-        menu.addItem(withTitle: "Copy as Markdown", action: #selector(copyAsMarkdown(_:)), keyEquivalent: "")
         for mi in menu.items { mi.target = self }
         tableView.menu = menu
 
@@ -166,16 +165,6 @@ final class AnnotationsPanelViewController: NSViewController, SidebarPanelViewCo
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(text, forType: .string)
-    }
-
-    @objc private func copyAsMarkdown(_ sender: Any?) {
-        let row = targetRow()
-        guard row >= 0, row < items.count else { return }
-        let item = items[row]
-        let md = "- **p.\(item.pageLabel)** `[\(item.typeName)]` \(item.preview)"
-        let pb = NSPasteboard.general
-        pb.clearContents()
-        pb.setString(md, forType: .string)
     }
 
     /// ⌘C でのコピーに対応（NSTableView が pasteboardWriterForRow を通じて処理）
