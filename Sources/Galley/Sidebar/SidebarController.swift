@@ -4,12 +4,14 @@
 // All rights reserved.
 
 import AppKit
+import PDFKit
 
 final class SidebarController: NSSplitViewController {
 
     private let mainContainer: NSView
     private(set) var leftItem: NSSplitViewItem!
     private(set) var mainItem: NSSplitViewItem!
+    private(set) var infoPanel: InfoPanelViewController!
 
     private static let leftVisibleKey = "sidebar.leftVisible"
 
@@ -28,12 +30,10 @@ final class SidebarController: NSSplitViewController {
         splitView.autosaveName = "galley.sidebar.splitview"
         splitView.dividerStyle = .thin
 
-        let leftVC = NSViewController()
-        let leftPlaceholder = NSView()
-        leftPlaceholder.wantsLayer = true
-        leftVC.view = leftPlaceholder
+        let infoVC = InfoPanelViewController()
+        self.infoPanel = infoVC
 
-        let leftItem = NSSplitViewItem(sidebarWithViewController: leftVC)
+        let leftItem = NSSplitViewItem(sidebarWithViewController: infoVC)
         leftItem.canCollapse = true
         leftItem.minimumThickness = 180
         leftItem.maximumThickness = 500
@@ -62,5 +62,9 @@ final class SidebarController: NSSplitViewController {
 
     var isLeftVisible: Bool {
         !leftItem.isCollapsed
+    }
+
+    func notifyDocumentChanged(_ document: PDFDocument?, url: URL?) {
+        infoPanel?.reload(document: document, url: url)
     }
 }
