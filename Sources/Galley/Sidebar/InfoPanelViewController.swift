@@ -85,7 +85,11 @@ final class InfoPanelViewController: NSViewController {
         }
         keyColumnWidth = computeKeyColumnWidth()
         for section in info.sections {
-            contentStack.addArrangedSubview(makeSectionView(section))
+            let sv = makeSectionView(section)
+            contentStack.addArrangedSubview(sv)
+            // 親stack幅いっぱいに広げる（edgeInsets 考慮）
+            sv.leadingAnchor.constraint(equalTo: contentStack.leadingAnchor, constant: contentStack.edgeInsets.left).isActive = true
+            sv.trailingAnchor.constraint(equalTo: contentStack.trailingAnchor, constant: -contentStack.edgeInsets.right).isActive = true
         }
     }
 
@@ -121,10 +125,13 @@ final class InfoPanelViewController: NSViewController {
         sectionStack.addArrangedSubview(header)
 
         for row in section.rows {
-            sectionStack.addArrangedSubview(makeRowView(row))
+            let rv = makeRowView(row)
+            sectionStack.addArrangedSubview(rv)
+            // セクション幅いっぱいに広げる → valueField に幅が伝播する
+            rv.leadingAnchor.constraint(equalTo: sectionStack.leadingAnchor).isActive = true
+            rv.trailingAnchor.constraint(equalTo: sectionStack.trailingAnchor).isActive = true
         }
 
-        // セクションは親stack幅いっぱいに広げたい
         sectionStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
         return sectionStack
     }
