@@ -78,23 +78,7 @@ final class SidebarController: NSSplitViewController {
         infoPanel?.reload(document: document, url: url)
     }
 
-    // ドラッグ操作で左ペインを折りたたませない（⌘I によるプログラム的な折り畳みのみ許可）
-    override func splitView(_ splitView: NSSplitView,
-                            canCollapseSubview subview: NSView) -> Bool {
-        return false
-    }
-
-    // ドラッグで左ペインを最小幅より狭くできないよう、分割位置の最小座標を固定
-    override func splitView(_ splitView: NSSplitView,
-                            constrainMinCoordinate proposedMinimumPosition: CGFloat,
-                            ofSubviewAt dividerIndex: Int) -> CGFloat {
-        if dividerIndex == 0 {
-            return leftItem.minimumThickness
-        }
-        return proposedMinimumPosition
-    }
-
-    // 追加の保険: 途中位置もクランプ
+    // ドラッグで左ペインを最小幅より狭くできないよう制約（collapsed 中は何もしない）
     override func splitView(_ splitView: NSSplitView,
                             constrainSplitPosition proposedPosition: CGFloat,
                             ofSubviewAt dividerIndex: Int) -> CGFloat {
