@@ -18,7 +18,7 @@ Galley maintains a strict **1-to-1 correspondence** between your TeX source and 
   * **Forward Search**: Jump from your editor to the corresponding position in the PDF, highlighted with a fading red dot centered in the window.
   * **Inverse Search**: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports **Emacs**, **Visual Studio Code**, and **custom editors** via CLI.
 * **Character Inspection**: Right-click a selected character to view its Unicode code point, name, plane, general category, embedded font name (PostScript), family, traits, point size (pt / mm / Q), vertical metrics (ascent / descent / leading), and Glyph ID (with CID notation for CJK).
-* **Rectangular Selection & Measurement**: `Shift + Drag` to create a selection rectangle with real-time dimensions in mm. Drag inside an existing marquee to reposition it. `Cmd + C` copies the selected area as a vector PDF.
+* **Rectangular Selection & Measurement**: `Shift + Drag` to create a selection rectangle with real-time dimensions in mm. Drag inside an existing marquee to reposition it, or drag its edges/corners to resize. `Cmd + C` copies the selected area as a vector PDF.
 * **Lightweight Rendering**: Galley draws only the PDF page itself — no annotation overlays or editing tools — so page rendering stays light even when flipping through pages quickly.
 
 
@@ -223,19 +223,22 @@ defaults write com.github.munepi.galley emacsclientPath "/path/to/your/emacsclie
 ~~~
 
 
-### 4. Debug Mode
+### 4. Debug Logging
 
-If you need to verify SyncTeX coordinate data or troubleshoot Forward Search, you can enable the HUD (Head-Up Display):
+Galley emits structured logs via Apple's unified logging system (`os_log`) under the subsystem `com.github.munepi.galley`. Use this to verify SyncTeX coordinate data, inspect reload behavior, or troubleshoot Forward/Inverse Search.
 
-* **Option 1: Permanent Enable**
+* **Stream logs in Terminal**
 ~~~bash
-defaults write com.github.munepi.galley debugMode -bool true
+log stream --predicate 'subsystem == "com.github.munepi.galley"' --level info
 ~~~
 
-* **Option 2: Temporary Enable (Terminal)**
-~~~bash
-/Applications/GalleyPDF.app/Contents/MacOS/GalleyPDF /path/to/document.pdf -debugMode YES
-~~~
+  A convenience target is also available in the source tree:
+  ~~~bash
+  make log
+  ~~~
+
+* **Inspect in Console.app**
+  Open **Console.app**, select your Mac under *Devices*, and filter by `subsystem:com.github.munepi.galley`.
 
 
 
@@ -250,13 +253,17 @@ defaults write com.github.munepi.galley debugMode -bool true
 | **Zoom In/Out** | `Cmd + "+"` / `Cmd + "-"` |
 | **Actual Size** | `Cmd + 0` |
 | **Auto Resize** | `Cmd + _` |
+| **Single Page** | `Cmd + 1` |
+| **Single Page Continuous** | `Shift + Cmd + 1` |
+| **Two Pages** | `Cmd + 2` |
+| **Two Pages Continuous** | `Shift + Cmd + 2` |
 | **Next Page** | `Space` or `Opt + J` |
 | **Previous Page** | `Shift + Space` or `Opt + K` |
 | **Jump to Page** | Type page number or label (e.g., `123`, `iv`, `cover`) |
 | **Clear Selection / Cancel** | `Esc` |
 | **Inverse Search** | `Cmd + Click` on PDF |
 | **Character Inspection** | Right-click on selected text |
-| **Measure / Move Area** | `Shift + Drag` (drag inside an existing marquee to move it) |
+| **Measure / Move / Resize Area** | `Shift + Drag` (drag inside an existing marquee to move it; drag edges/corners to resize) |
 | **Copy Selection** | `Cmd + C` (while area is selected, copies as vector PDF) |
 
 ### Page Navigation & Interface Notes
