@@ -13,7 +13,9 @@ final class InfoPanelViewController: NSViewController {
     private var contentStack: NSStackView!
     private var documentView: FlippedView!
 
-    private let keyColumnWidth: CGFloat = 140
+    private var keyColumnWidth: CGFloat = 140
+    private let keyColumnMin: CGFloat = 80
+    private let keyColumnMax: CGFloat = 220
 
     override func loadView() {
         let root = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 600))
@@ -81,9 +83,28 @@ final class InfoPanelViewController: NSViewController {
             contentStack.addArrangedSubview(label)
             return
         }
+        keyColumnWidth = computeKeyColumnWidth()
         for section in info.sections {
             contentStack.addArrangedSubview(makeSectionView(section))
         }
+    }
+
+    private func computeKeyColumnWidth() -> CGFloat {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let attrs: [NSAttributedString.Key: Any] = [.font: font]
+        var maxWidth: CGFloat = 0
+        for section in info.sections {
+            for row in section.rows {
+                let key: String
+                switch row {
+                case .keyValue(let k, _): key = k
+                case .longText(let l, _): key = l
+                }
+                let width = (key as NSString).size(withAttributes: attrs).width
+                if width > maxWidth { maxWidth = width }
+            }
+        }
+        return min(max(ceil(maxWidth) + 4, keyColumnMin), keyColumnMax)
     }
 
     private func makeSectionView(_ section: InfoSection) -> NSView {
