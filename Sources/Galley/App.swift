@@ -121,6 +121,12 @@ struct GalleyApp {
 
         viewMenu.addItem(NSMenuItem.separator())
 
+        // サイドバー系
+        let pdfInfoItem = NSMenuItem(title: "PDF Info", action: #selector(AppDelegate.toggleInfoSidebar(_:)), keyEquivalent: "i")
+        viewMenu.addItem(pdfInfoItem)
+
+        viewMenu.addItem(NSMenuItem.separator())
+
         // ページナビゲーション系
         let nextPageItem = NSMenuItem(title: "Next Page", action: #selector(AppDelegate.nextPageAction(_:)), keyEquivalent: " ")
         nextPageItem.keyEquivalentModifierMask = []
@@ -204,6 +210,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(changeSyncTexEditor(_:)) {
             return self.validateSyncTexMenuItem(menuItem)
+        }
+
+        if menuItem.action == #selector(toggleInfoSidebar(_:)) {
+            return self.validateSidebarMenuItem(menuItem)
         }
 
         // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御

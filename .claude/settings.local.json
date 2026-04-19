@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/munepi/work/texlive/Galley/.claude/worktrees/**)",
+      "Read(//Users/munepi/work/texlive/Galley/**)",
+      "Bash(gls /Users/munepi/work/texlive/Galley/.claude/worktrees/determined-mestorf-6f7bfa/Sources/Galley/)",
+      "Bash(git add *)",
+      "Bash(git restore *)"
+    ]
+  }
+}
