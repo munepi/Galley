@@ -8,12 +8,28 @@ import AppKit
 extension AppDelegate {
 
     @objc func toggleInfoSidebar(_ sender: Any?) {
-        sidebarController?.toggleLeft()
+        sidebarController?.activatePanel(.info)
+    }
+
+    @objc func toggleBookmarksSidebar(_ sender: Any?) {
+        sidebarController?.activatePanel(.bookmarks)
+    }
+
+    @objc func toggleAnnotationsSidebar(_ sender: Any?) {
+        sidebarController?.activatePanel(.annotations)
     }
 
     func validateSidebarMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        if menuItem.action == #selector(toggleInfoSidebar(_:)) {
-            menuItem.state = (sidebarController?.isLeftVisible == true) ? .on : .off
+        guard let ctrl = sidebarController else { return true }
+        switch menuItem.action {
+        case #selector(toggleInfoSidebar(_:)):
+            menuItem.state = (ctrl.isLeftVisible && ctrl.activePanelKind == .info) ? .on : .off
+        case #selector(toggleBookmarksSidebar(_:)):
+            menuItem.state = (ctrl.isLeftVisible && ctrl.activePanelKind == .bookmarks) ? .on : .off
+        case #selector(toggleAnnotationsSidebar(_:)):
+            menuItem.state = (ctrl.isLeftVisible && ctrl.activePanelKind == .annotations) ? .on : .off
+        default:
+            break
         }
         return true
     }
