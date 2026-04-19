@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: BSD-3-Clause
+//
+// Copyright (c) 2026, Munehiro Yamamoto <munepixyz@gmail.com>
+// All rights reserved.
+
+import AppKit
+
+final class SidebarController: NSSplitViewController {
+
+    private let mainContainer: NSView
+    private(set) var leftItem: NSSplitViewItem!
+    private(set) var mainItem: NSSplitViewItem!
+
+    private static let leftVisibleKey = "sidebar.leftVisible"
+
+    init(mainContainer: NSView) {
+        self.mainContainer = mainContainer
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        splitView.autosaveName = "galley.sidebar.splitview"
+        splitView.dividerStyle = .thin
+
+        let leftVC = NSViewController()
+        let leftPlaceholder = NSView()
+        leftPlaceholder.wantsLayer = true
+        leftVC.view = leftPlaceholder
+
+        let leftItem = NSSplitViewItem(sidebarWithViewController: leftVC)
+        leftItem.canCollapse = true
+        leftItem.minimumThickness = 180
+        leftItem.maximumThickness = 500
+        leftItem.isCollapsed = !UserDefaults.standard.bool(forKey: Self.leftVisibleKey)
+        self.leftItem = leftItem
+
+        let mainVC = NSViewController()
+        mainVC.view = mainContainer
+        let mainItem = NSSplitViewItem(viewController: mainVC)
+        mainItem.canCollapse = false
+        mainItem.minimumThickness = 300
+        self.mainItem = mainItem
+
+        addSplitViewItem(leftItem)
+        addSplitViewItem(mainItem)
+
+        Log.sidebar.info("SidebarController loaded leftCollapsed=\(leftItem.isCollapsed)")
+    }
+
+    func toggleLeft() {
+        let newCollapsed = !leftItem.isCollapsed
+        leftItem.animator().isCollapsed = newCollapsed
+        UserDefaults.standard.set(!newCollapsed, forKey: Self.leftVisibleKey)
+        Log.sidebar.info("toggleLeft collapsed=\(newCollapsed)")
+    }
+
+    var isLeftVisible: Bool {
+        !leftItem.isCollapsed
+    }
+}

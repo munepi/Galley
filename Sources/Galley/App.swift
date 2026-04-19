@@ -176,6 +176,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var pdfViewA: GalleyPDFView!
     var pdfViewB: GalleyPDFView!
     var isShowingA = true
+    var sidebarController: SidebarController?
 
     var activePDFView: GalleyPDFView { isShowingA ? pdfViewA : pdfViewB }
     var hiddenPDFView: GalleyPDFView { isShowingA ? pdfViewB : pdfViewA }
@@ -315,12 +316,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         container.addSubview(pdfViewB)
         container.addSubview(pdfViewA)
 
+        let sidebar = SidebarController(mainContainer: container)
+        self.sidebarController = sidebar
+
         let window = NSWindow(
             contentRect: container.bounds,
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered, defer: false)
         window.center()
-        window.contentView = container
+        window.contentViewController = sidebar
         self.window = window
 
         if let url = self.fileURL {
