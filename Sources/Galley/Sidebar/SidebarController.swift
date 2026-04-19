@@ -51,6 +51,9 @@ final class SidebarController: NSSplitViewController {
         bookmarksPanel.onNavigate = { [weak self] dest in
             self?.onNavigateToDestination?(dest)
         }
+        annotationsPanel.onNavigate = { [weak self] dest in
+            self?.onNavigateToDestination?(dest)
+        }
 
         // 保存された初期パネル
         let savedRaw = UserDefaults.standard.string(forKey: Self.panelKindKey) ?? SidebarPanelKind.info.rawValue

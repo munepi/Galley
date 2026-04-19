@@ -39,7 +39,3 @@ final class FontsSubPanelViewController: PlaceholderSubPanelViewController {
     required init?(coder: NSCoder) { fatalError() }
 }
 
-final class AnnotationsPanelViewController: PlaceholderSubPanelViewController, SidebarPanelViewController {
-    init() { super.init(message: "Annotations (coming soon)") }
-    required init?(coder: NSCoder) { fatalError() }
-}
