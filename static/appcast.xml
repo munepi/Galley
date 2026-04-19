@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Galley</title>
+    <link>https://munepi.github.io/Galley/appcast.xml</link>
+    <description>Most recent updates to Galley.</description>
+    <item>
+      <title>Version 0.2</title>
+      <pubDate>Sun, 19 Apr 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.2</sparkle:shortVersionString>
+      <sparkle:version>83</sparkle:version>
+      <description><![CDATA[
+        <h3>✨ New Features</h3>
+        <ul>
+          <li>Sparkle 2 auto-update support ("Check for Updates..." menu)</li>
+          <li>Daily automatic update checks against the stable appcast</li>
+          <li>Marquee selection UX improvements in PDF view</li>
+          <li>Debug logging via os_log with subsystem filtering</li>
+          <li>Generation token guard against race conditions on PDF reload</li>
+        </ul>
+        <h3>🛠 Improvements</h3>
+        <ul>
+          <li>Refined page input HUD behavior</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.2/GalleyPDF_0.2.dmg"
+        sparkle:edSignature="QauDKGtusSkBrPf8Ef9zEbb0DEglx7ddg4dEywRlVHUCmDdTZVtB9rELA/Ima93sLZVVt7LnBzm4iyjYtL69CQ=="
+        length="9319817"
+        type="application/octet-stream" />
+    </item>
+
+  </channel>
+</rss>
