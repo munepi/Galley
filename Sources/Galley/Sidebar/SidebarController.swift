@@ -52,8 +52,8 @@ final class SidebarController: NSSplitViewController {
 
         let leftItem = NSSplitViewItem(sidebarWithViewController: rootVC)
         leftItem.canCollapse = true
-        leftItem.minimumThickness = 180
-        leftItem.maximumThickness = 500
+        leftItem.minimumThickness = 300
+        leftItem.maximumThickness = 600
         leftItem.isCollapsed = !UserDefaults.standard.bool(forKey: Self.leftVisibleKey)
         self.leftItem = leftItem
 
