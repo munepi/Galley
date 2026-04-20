@@ -7,7 +7,7 @@ import AppKit
 import PDFKit
 
 /// Info パネル: 上部の NSSegmentedControl で Info / Fonts / XMP を切り替えるコンテナ
-final class InfoPanelViewController: NSViewController, SidebarPanelViewController {
+final class InfoPanelViewController: NSViewController, SidebarPanelViewController, ExportableContent {
 
     enum SubTab: Int, CaseIterable {
         case info = 0
@@ -123,5 +123,23 @@ final class InfoPanelViewController: NSViewController, SidebarPanelViewControlle
         self.currentDocument = document
         self.currentURL = url
         reloadCurrentSub()
+    }
+
+    // MARK: - ExportableContent: 現在のサブタブに委譲
+
+    private var currentExportable: ExportableContent? {
+        switch currentTab {
+        case .info: return infoVC
+        case .fonts: return fontsVC as? ExportableContent
+        case .xmp: return xmpVC
+        }
+    }
+
+    func exportedMarkdown() -> String? {
+        currentExportable?.exportedMarkdown()
+    }
+
+    func exportedJSON() -> String? {
+        currentExportable?.exportedJSON()
     }
 }

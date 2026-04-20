@@ -17,3 +17,9 @@ enum SidebarPanelKind: String {
 protocol SidebarPanelViewController: NSViewController {
     func reload(document: PDFDocument?, url: URL?)
 }
+
+/// 現在のパネル/サブタブの内容を Markdown / JSON に書き出せることを示すプロトコル
+protocol ExportableContent: AnyObject {
+    func exportedMarkdown() -> String?
+    func exportedJSON() -> String?
+}

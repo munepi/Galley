@@ -105,9 +105,10 @@ enum PDFDocumentInfoBuilder {
         return "\(value)"
     }
 
-    // MARK: - PDF/X, PDF/A, PDF/UA compliance (XMP 由来)
+    // MARK: - PDF/A, PDF/UA compliance (XMP 由来)
+    // PDF/X は /Info 辞書に必須記載されるため Document Info セクションで既に可視。
 
-    private static let complianceTitles: Set<String> = ["PDF/X", "PDF/A", "PDF/UA"]
+    private static let complianceTitles: Set<String> = ["PDF/A", "PDF/UA"]
 
     private static func extractComplianceSections(from doc: PDFDocument) -> [InfoSection] {
         let xmp = CGPDFMetadataExtractor.extract(from: doc)

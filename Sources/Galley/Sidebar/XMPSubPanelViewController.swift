@@ -7,10 +7,11 @@ import AppKit
 import PDFKit
 
 /// Info パネル内「XMP」サブタブ: XMP メタデータをパースして Info 形式で表示
-final class XMPSubPanelViewController: NSViewController, SidebarPanelViewController {
+final class XMPSubPanelViewController: NSViewController, SidebarPanelViewController, ExportableContent {
 
     private var listView: SectionedInfoListView!
     private var emptyLabel: NSTextField!
+    private var currentInfo: PDFDocumentInfo = .empty
 
     override func loadView() {
         let root = NSView()
@@ -40,23 +41,28 @@ final class XMPSubPanelViewController: NSViewController, SidebarPanelViewControl
 
     func reload(document: PDFDocument?, url: URL?) {
         guard let doc = document else {
+            currentInfo = .empty
             showEmpty("(no document)")
             return
         }
         let result = CGPDFMetadataExtractor.extract(from: doc)
         if !result.isPresent {
+            currentInfo = .empty
             showEmpty("No XMP metadata embedded in this PDF.")
             return
         }
         guard let xml = result.xml else {
+            currentInfo = .empty
             showEmpty("XMP stream present (\(result.byteCount) bytes) but could not be decoded as text.")
             return
         }
         let info = XMPParser.parse(xml)
         if info.sections.isEmpty {
+            currentInfo = .empty
             showEmpty("XMP metadata present but no known namespaces found (\(result.byteCount) bytes).")
             return
         }
+        currentInfo = info
         emptyLabel.isHidden = true
         listView.isHidden = false
         listView.setInfo(info)
@@ -67,5 +73,15 @@ final class XMPSubPanelViewController: NSViewController, SidebarPanelViewControl
         emptyLabel.stringValue = message
         emptyLabel.isHidden = false
         listView.isHidden = true
+    }
+
+    func exportedMarkdown() -> String? {
+        guard !currentInfo.sections.isEmpty else { return nil }
+        return PDFInfoExporter.markdown(currentInfo, title: "XMP Metadata")
+    }
+
+    func exportedJSON() -> String? {
+        guard !currentInfo.sections.isEmpty else { return nil }
+        return PDFInfoExporter.json(currentInfo)
     }
 }

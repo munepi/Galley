@@ -7,7 +7,7 @@ import AppKit
 import PDFKit
 
 /// Bookmarks パネル: PDF の栞 (outlineRoot) をツリー表示し、クリックでその位置へジャンプ
-final class BookmarksPanelViewController: NSViewController, SidebarPanelViewController {
+final class BookmarksPanelViewController: NSViewController, SidebarPanelViewController, ExportableContent {
 
     /// 栞クリック時に通知するコールバック（SidebarController 経由で AppDelegate が受ける）
     var onNavigate: ((PDFDestination) -> Void)?
@@ -109,6 +109,80 @@ final class BookmarksPanelViewController: NSViewController, SidebarPanelViewCont
         } else if let action = o.action as? PDFActionGoTo {
             onNavigate?(action.destination)
         }
+    }
+
+    // MARK: - ExportableContent
+
+    func exportedMarkdown() -> String? {
+        guard let root = outlineRoot, root.numberOfChildren > 0 else { return nil }
+        var out = "# Bookmarks\n\n"
+        for i in 0..<root.numberOfChildren {
+            if let child = root.child(at: i) {
+                appendMarkdown(outline: child, depth: 0, into: &out)
+            }
+        }
+        return out
+    }
+
+    private func appendMarkdown(outline: PDFOutline, depth: Int, into out: inout String) {
+        let indent = String(repeating: "  ", count: depth)
+        let label = outline.label ?? "(untitled)"
+        let pageInfo = pageInfo(for: outline)
+        if let p = pageInfo {
+            out += "\(indent)- \(label) *(p.\(p))*\n"
+        } else {
+            out += "\(indent)- \(label)\n"
+        }
+        for i in 0..<outline.numberOfChildren {
+            if let child = outline.child(at: i) {
+                appendMarkdown(outline: child, depth: depth + 1, into: &out)
+            }
+        }
+    }
+
+    func exportedJSON() -> String? {
+        guard let root = outlineRoot, root.numberOfChildren > 0 else { return nil }
+        var children: [[String: Any]] = []
+        for i in 0..<root.numberOfChildren {
+            if let c = root.child(at: i) {
+                children.append(outlineToDict(c))
+            }
+        }
+        let payload: [String: Any] = ["bookmarks": children]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
+              let s = String(data: data, encoding: .utf8) else { return nil }
+        return s
+    }
+
+    private func outlineToDict(_ outline: PDFOutline) -> [String: Any] {
+        var dict: [String: Any] = ["label": outline.label ?? ""]
+        if let p = pageInfo(for: outline) {
+            dict["page"] = p
+        }
+        if outline.numberOfChildren > 0 {
+            var kids: [[String: Any]] = []
+            for i in 0..<outline.numberOfChildren {
+                if let c = outline.child(at: i) {
+                    kids.append(outlineToDict(c))
+                }
+            }
+            dict["children"] = kids
+        }
+        return dict
+    }
+
+    private func pageInfo(for outline: PDFOutline) -> String? {
+        let dest: PDFDestination?
+        if let d = outline.destination {
+            dest = d
+        } else if let a = outline.action as? PDFActionGoTo {
+            dest = a.destination
+        } else {
+            dest = nil
+        }
+        guard let page = dest?.page, let doc = page.document else { return nil }
+        let index = doc.index(for: page)
+        return page.label ?? "\(index + 1)"
     }
 }
 
