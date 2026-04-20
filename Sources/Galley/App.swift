@@ -81,6 +81,37 @@ struct GalleyApp {
         fileMenuItem.submenu = fileMenu
         fileMenu.addItem(withTitle: "Open PDF file...", action: #selector(AppDelegate.openDocument(_:)), keyEquivalent: "o")
         fileMenu.addItem(NSMenuItem.separator())
+
+        // Export サブメニュー
+        let exportItem = NSMenuItem(title: "Export", action: nil, keyEquivalent: "")
+        let exportMenu = NSMenu(title: "Export")
+        exportItem.submenu = exportMenu
+
+        func addExport(_ title: String, scope: AppDelegate.ExportScope, isJSON: Bool) {
+            let item = NSMenuItem(title: title,
+                                  action: #selector(AppDelegate.exportSidebarContent(_:)),
+                                  keyEquivalent: "")
+            item.tag = AppDelegate.exportMenuTag(scope: scope, isJSON: isJSON)
+            exportMenu.addItem(item)
+        }
+
+        addExport("All as Markdown...", scope: .all, isJSON: false)
+        addExport("All as JSON...", scope: .all, isJSON: true)
+        exportMenu.addItem(NSMenuItem.separator())
+        addExport("Info as Markdown...", scope: .info, isJSON: false)
+        addExport("Info as JSON...", scope: .info, isJSON: true)
+        addExport("Fonts as Markdown...", scope: .fonts, isJSON: false)
+        addExport("Fonts as JSON...", scope: .fonts, isJSON: true)
+        addExport("XMP as Markdown...", scope: .xmp, isJSON: false)
+        addExport("XMP as JSON...", scope: .xmp, isJSON: true)
+        addExport("Bookmarks as Markdown...", scope: .bookmarks, isJSON: false)
+        addExport("Bookmarks as JSON...", scope: .bookmarks, isJSON: true)
+        addExport("Annotations as Markdown...", scope: .annotations, isJSON: false)
+        addExport("Annotations as JSON...", scope: .annotations, isJSON: true)
+
+        fileMenu.addItem(exportItem)
+
+        fileMenu.addItem(NSMenuItem.separator())
         fileMenu.addItem(withTitle: "Print PDF file...", action: #selector(AppDelegate.printDocument(_:)), keyEquivalent: "p")
 
         // --- 3. Edit メニュー (Cmd + C 用) ---
@@ -130,6 +161,16 @@ struct GalleyApp {
 
         viewMenu.addItem(bookModeItem)
         viewMenu.addItem(rtlItem)
+
+        viewMenu.addItem(NSMenuItem.separator())
+
+        // サイドバー系
+        let pdfInfoItem = NSMenuItem(title: "PDF Info", action: #selector(AppDelegate.toggleInfoSidebar(_:)), keyEquivalent: "i")
+        let pdfBookmarksItem = NSMenuItem(title: "PDF Bookmarks", action: #selector(AppDelegate.toggleBookmarksSidebar(_:)), keyEquivalent: "b")
+        let pdfAnnotationsItem = NSMenuItem(title: "PDF Annotations", action: #selector(AppDelegate.toggleAnnotationsSidebar(_:)), keyEquivalent: "n")
+        viewMenu.addItem(pdfInfoItem)
+        viewMenu.addItem(pdfBookmarksItem)
+        viewMenu.addItem(pdfAnnotationsItem)
 
         viewMenu.addItem(NSMenuItem.separator())
 
@@ -202,6 +243,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var pdfViewA: GalleyPDFView!
     var pdfViewB: GalleyPDFView!
     var isShowingA = true
+    var sidebarController: SidebarController?
 
     var activePDFView: GalleyPDFView { isShowingA ? pdfViewA : pdfViewB }
     var hiddenPDFView: GalleyPDFView { isShowingA ? pdfViewB : pdfViewA }
@@ -229,6 +271,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(changeSyncTexEditor(_:)) {
             return self.validateSyncTexMenuItem(menuItem)
+        }
+
+        if menuItem.action == #selector(toggleInfoSidebar(_:)) ||
+           menuItem.action == #selector(toggleBookmarksSidebar(_:)) ||
+           menuItem.action == #selector(toggleAnnotationsSidebar(_:)) {
+            return self.validateSidebarMenuItem(menuItem)
+        }
+
+        if menuItem.action == #selector(exportSidebarContent(_:)) {
+            return self.validateExportMenuItem(menuItem)
         }
 
         // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
@@ -341,12 +393,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         container.addSubview(pdfViewB)
         container.addSubview(pdfViewA)
 
+        let sidebar = SidebarController(mainContainer: container)
+        sidebar.onNavigateToDestination = { [weak self] dest in
+            self?.activePDFView.go(to: dest)
+        }
+        self.sidebarController = sidebar
+
         let window = NSWindow(
             contentRect: container.bounds,
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered, defer: false)
         window.center()
-        window.contentView = container
+        window.contentViewController = sidebar
         self.window = window
 
         if let url = self.fileURL {
