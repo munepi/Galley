@@ -34,10 +34,4 @@ class PlaceholderSubPanelViewController: NSViewController {
     }
 }
 
-final class FontsSubPanelViewController: PlaceholderSubPanelViewController, ExportableContent {
-    init() { super.init(message: "Fonts (coming soon)") }
-    required init?(coder: NSCoder) { fatalError() }
-    func exportedMarkdown() -> String? { nil }
-    func exportedJSON() -> String? { nil }
-}
 
