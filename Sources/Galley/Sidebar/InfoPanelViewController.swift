@@ -122,7 +122,10 @@ final class InfoPanelViewController: NSViewController, SidebarPanelViewControlle
     func reload(document: PDFDocument?, url: URL?) {
         self.currentDocument = document
         self.currentURL = url
-        reloadCurrentSub()
+        // 全サブVCを reload して、見えていない XMP/Fonts の Export も機能するようにする
+        infoVC.reload(document: document, url: url)
+        fontsVC.reload(document: document, url: url)
+        xmpVC.reload(document: document, url: url)
     }
 
     // MARK: - ExportableContent: 現在のサブタブに委譲
