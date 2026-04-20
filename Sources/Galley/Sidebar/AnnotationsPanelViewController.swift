@@ -230,10 +230,10 @@ extension AnnotationsPanelViewController: NSTableViewDelegate {
         header.drawsBackground = false
         header.translatesAutoresizingMaskIntoConstraints = false
 
-        let body = NSTextField(labelWithString: item.preview)
+        let body = WrappingLabel(wrappingLabelWithString: item.preview)
         body.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
-        body.lineBreakMode = .byTruncatingTail
-        body.maximumNumberOfLines = 2
+        body.lineBreakMode = .byWordWrapping
+        body.maximumNumberOfLines = 0
         body.isSelectable = false
         body.isEditable = false
         body.isBordered = false
