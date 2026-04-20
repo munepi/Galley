@@ -130,7 +130,7 @@ final class InfoPanelViewController: NSViewController, SidebarPanelViewControlle
     private var currentExportable: ExportableContent? {
         switch currentTab {
         case .info: return infoVC
-        case .fonts: return fontsVC as? ExportableContent
+        case .fonts: return fontsVC
         case .xmp: return xmpVC
         }
     }

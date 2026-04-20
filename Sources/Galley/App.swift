@@ -69,8 +69,36 @@ struct GalleyApp {
         fileMenuItem.submenu = fileMenu
         fileMenu.addItem(withTitle: "Open PDF file...", action: #selector(AppDelegate.openDocument(_:)), keyEquivalent: "o")
         fileMenu.addItem(NSMenuItem.separator())
-        fileMenu.addItem(withTitle: "Export PDF Info as Markdown...", action: #selector(AppDelegate.exportPDFInfoAsMarkdown(_:)), keyEquivalent: "")
-        fileMenu.addItem(withTitle: "Export PDF Info as JSON...", action: #selector(AppDelegate.exportPDFInfoAsJSON(_:)), keyEquivalent: "")
+
+        // Export サブメニュー
+        let exportItem = NSMenuItem(title: "Export", action: nil, keyEquivalent: "")
+        let exportMenu = NSMenu(title: "Export")
+        exportItem.submenu = exportMenu
+
+        func addExport(_ title: String, scope: AppDelegate.ExportScope, isJSON: Bool) {
+            let item = NSMenuItem(title: title,
+                                  action: #selector(AppDelegate.exportSidebarContent(_:)),
+                                  keyEquivalent: "")
+            item.tag = AppDelegate.exportMenuTag(scope: scope, isJSON: isJSON)
+            exportMenu.addItem(item)
+        }
+
+        addExport("All as Markdown...", scope: .all, isJSON: false)
+        addExport("All as JSON...", scope: .all, isJSON: true)
+        exportMenu.addItem(NSMenuItem.separator())
+        addExport("Info as Markdown...", scope: .info, isJSON: false)
+        addExport("Info as JSON...", scope: .info, isJSON: true)
+        addExport("Fonts as Markdown...", scope: .fonts, isJSON: false)
+        addExport("Fonts as JSON...", scope: .fonts, isJSON: true)
+        addExport("XMP as Markdown...", scope: .xmp, isJSON: false)
+        addExport("XMP as JSON...", scope: .xmp, isJSON: true)
+        addExport("Bookmarks as Markdown...", scope: .bookmarks, isJSON: false)
+        addExport("Bookmarks as JSON...", scope: .bookmarks, isJSON: true)
+        addExport("Annotations as Markdown...", scope: .annotations, isJSON: false)
+        addExport("Annotations as JSON...", scope: .annotations, isJSON: true)
+
+        fileMenu.addItem(exportItem)
+
         fileMenu.addItem(NSMenuItem.separator())
         fileMenu.addItem(withTitle: "Print PDF file...", action: #selector(AppDelegate.printDocument(_:)), keyEquivalent: "p")
 
