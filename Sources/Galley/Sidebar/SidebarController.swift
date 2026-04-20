@@ -201,7 +201,10 @@ final class SidebarController: NSSplitViewController {
     func notifyDocumentChanged(_ document: PDFDocument?, url: URL?) {
         currentDocument = document
         currentURL = url
-        rootVC.reloadCurrent(document: document, url: url)
+        // 非表示パネルも含めて全パネルの内部データを更新（File > Export や menu validation のため）
+        infoPanel.reload(document: document, url: url)
+        bookmarksPanel.reload(document: document, url: url)
+        annotationsPanel.reload(document: document, url: url)
     }
 
     // MARK: - NSSplitView delegate
