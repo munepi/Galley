@@ -253,6 +253,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             return self.validateSidebarMenuItem(menuItem)
         }
 
+        if menuItem.action == #selector(exportSidebarContent(_:)) {
+            return self.validateExportMenuItem(menuItem)
+        }
+
         // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
         let currentView = self.activePDFView
 

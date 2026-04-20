@@ -48,6 +48,12 @@ final class SidebarController: NSSplitViewController {
         bookmarksPanel = BookmarksPanelViewController()
         annotationsPanel = AnnotationsPanelViewController()
 
+        // 全パネルの view を事前ロードして sub-VC 等のインスタンスを確定させる
+        // (File メニューの Export が初期非表示のパネルにもアクセスするため)
+        _ = infoPanel.view
+        _ = bookmarksPanel.view
+        _ = annotationsPanel.view
+
         bookmarksPanel.onNavigate = { [weak self] dest in
             self?.onNavigateToDestination?(dest)
         }
@@ -131,6 +137,30 @@ final class SidebarController: NSSplitViewController {
 
     /// 現在表示中のパネル種別
     var activePanelKind: SidebarPanelKind { currentPanelKind }
+
+    // MARK: - Availability (File メニューの有効/無効判定用)
+
+    func hasExportable(panel: SidebarPanelKind) -> Bool {
+        switch panel {
+        case .info:
+            return infoPanel.infoVC.exportedMarkdown() != nil
+                || infoPanel.xmpVC.exportedMarkdown() != nil
+                || infoPanel.fontsVC.exportedMarkdown() != nil
+        case .bookmarks:
+            return bookmarksPanel.exportedMarkdown() != nil
+        case .annotations:
+            return annotationsPanel.exportedMarkdown() != nil
+        }
+    }
+
+    func hasInfoBasic() -> Bool { infoPanel.infoVC.exportedMarkdown() != nil }
+    func hasFonts() -> Bool { infoPanel.fontsVC.exportedMarkdown() != nil }
+    func hasXMP() -> Bool { infoPanel.xmpVC.exportedMarkdown() != nil }
+    func hasBookmarks() -> Bool { bookmarksPanel.exportedMarkdown() != nil }
+    func hasAnnotations() -> Bool { annotationsPanel.exportedMarkdown() != nil }
+    func hasAny() -> Bool {
+        hasInfoBasic() || hasFonts() || hasXMP() || hasBookmarks() || hasAnnotations()
+    }
 
     // MARK: - Combined export (File メニュー経由)
 
