@@ -167,6 +167,7 @@ final class SidebarController: NSSplitViewController {
     func exportAllAsMarkdown() -> String {
         var parts: [String] = []
         if let md = infoPanel.infoVC.exportedMarkdown() { parts.append(md) }
+        if let md = infoPanel.fontsVC.exportedMarkdown() { parts.append(md) }
         if let md = infoPanel.xmpVC.exportedMarkdown() { parts.append(md) }
         if let md = bookmarksPanel.exportedMarkdown() { parts.append(md) }
         if let md = annotationsPanel.exportedMarkdown() { parts.append(md) }
@@ -178,6 +179,10 @@ final class SidebarController: NSSplitViewController {
         if let s = infoPanel.infoVC.exportedJSON(),
            let obj = try? JSONSerialization.jsonObject(with: Data(s.utf8)) {
             payload["info"] = obj
+        }
+        if let s = infoPanel.fontsVC.exportedJSON(),
+           let obj = try? JSONSerialization.jsonObject(with: Data(s.utf8)) {
+            payload["fonts"] = obj
         }
         if let s = infoPanel.xmpVC.exportedJSON(),
            let obj = try? JSONSerialization.jsonObject(with: Data(s.utf8)) {
