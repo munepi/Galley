@@ -7,6 +7,8 @@ import AppKit
 
 extension AppDelegate {
 
+    // MARK: - View メニュー: ⌘I / ⌘B / ⌘N
+
     @objc func toggleInfoSidebar(_ sender: Any?) {
         sidebarController?.activatePanel(.info)
     }
@@ -34,23 +36,74 @@ extension AppDelegate {
         return true
     }
 
-    // MARK: - File メニュー: Export PDF Info...
+    // MARK: - File メニュー: Export ▸ ...
 
-    @objc func exportPDFInfoAsMarkdown(_ sender: Any?) {
-        let content = sidebarController?.exportAllAsMarkdown() ?? ""
-        saveExport(content: content, ext: "md", defaultName: exportBaseName() + ".md")
-    }
+    /// Export 対象。File メニュー項目の tag から復元する
+    enum ExportScope: Int {
+        case all = 0
+        case info = 1
+        case fonts = 2
+        case xmp = 3
+        case bookmarks = 4
+        case annotations = 5
 
-    @objc func exportPDFInfoAsJSON(_ sender: Any?) {
-        let content = sidebarController?.exportAllAsJSON() ?? "{}"
-        saveExport(content: content, ext: "json", defaultName: exportBaseName() + ".json")
-    }
-
-    private func exportBaseName() -> String {
-        if let url = self.fileURL {
-            return url.deletingPathExtension().lastPathComponent + "-info"
+        var fileSuffix: String {
+            switch self {
+            case .all: return "all"
+            case .info: return "info"
+            case .fonts: return "fonts"
+            case .xmp: return "xmp"
+            case .bookmarks: return "bookmarks"
+            case .annotations: return "annotations"
+            }
         }
-        return "pdf-info"
+    }
+
+    /// tag = scope * 10 + (0=Markdown, 1=JSON)
+    static func exportMenuTag(scope: ExportScope, isJSON: Bool) -> Int {
+        return scope.rawValue * 10 + (isJSON ? 1 : 0)
+    }
+
+    @objc func exportSidebarContent(_ sender: NSMenuItem) {
+        let scope = ExportScope(rawValue: sender.tag / 10) ?? .all
+        let isJSON = (sender.tag % 10) == 1
+        let ext = isJSON ? "json" : "md"
+
+        guard let (content, baseName) = buildExport(scope: scope, isJSON: isJSON) else {
+            NSSound.beep()
+            Log.pdfinfo.warning("Export skipped: no content for scope=\(scope.rawValue) json=\(isJSON)")
+            return
+        }
+        saveExport(content: content, ext: ext, defaultName: baseName + "." + ext)
+    }
+
+    private func buildExport(scope: ExportScope, isJSON: Bool) -> (content: String, baseName: String)? {
+        guard let sidebar = sidebarController else { return nil }
+        let content: String?
+        switch scope {
+        case .all:
+            content = isJSON ? sidebar.exportAllAsJSON() : sidebar.exportAllAsMarkdown()
+        case .info:
+            content = isJSON ? sidebar.infoPanel.infoVC.exportedJSON() : sidebar.infoPanel.infoVC.exportedMarkdown()
+        case .fonts:
+            let vc = sidebar.infoPanel.fontsVC as ExportableContent
+            content = isJSON ? vc.exportedJSON() : vc.exportedMarkdown()
+        case .xmp:
+            content = isJSON ? sidebar.infoPanel.xmpVC.exportedJSON() : sidebar.infoPanel.xmpVC.exportedMarkdown()
+        case .bookmarks:
+            content = isJSON ? sidebar.bookmarksPanel.exportedJSON() : sidebar.bookmarksPanel.exportedMarkdown()
+        case .annotations:
+            content = isJSON ? sidebar.annotationsPanel.exportedJSON() : sidebar.annotationsPanel.exportedMarkdown()
+        }
+        guard let c = content, !c.isEmpty else { return nil }
+        return (c, pdfBaseName() + "-" + scope.fileSuffix)
+    }
+
+    private func pdfBaseName() -> String {
+        if let url = self.fileURL {
+            return url.deletingPathExtension().lastPathComponent
+        }
+        return "pdf"
     }
 
     private func saveExport(content: String, ext: String, defaultName: String) {
