@@ -69,6 +69,9 @@ struct GalleyApp {
         fileMenuItem.submenu = fileMenu
         fileMenu.addItem(withTitle: "Open PDF file...", action: #selector(AppDelegate.openDocument(_:)), keyEquivalent: "o")
         fileMenu.addItem(NSMenuItem.separator())
+        fileMenu.addItem(withTitle: "Export PDF Info as Markdown...", action: #selector(AppDelegate.exportPDFInfoAsMarkdown(_:)), keyEquivalent: "")
+        fileMenu.addItem(withTitle: "Export PDF Info as JSON...", action: #selector(AppDelegate.exportPDFInfoAsJSON(_:)), keyEquivalent: "")
+        fileMenu.addItem(NSMenuItem.separator())
         fileMenu.addItem(withTitle: "Print PDF file...", action: #selector(AppDelegate.printDocument(_:)), keyEquivalent: "p")
 
         // --- 3. Edit メニュー (Cmd + C 用) ---

@@ -33,4 +33,41 @@ extension AppDelegate {
         }
         return true
     }
+
+    // MARK: - File メニュー: Export PDF Info...
+
+    @objc func exportPDFInfoAsMarkdown(_ sender: Any?) {
+        let content = sidebarController?.exportAllAsMarkdown() ?? ""
+        saveExport(content: content, ext: "md", defaultName: exportBaseName() + ".md")
+    }
+
+    @objc func exportPDFInfoAsJSON(_ sender: Any?) {
+        let content = sidebarController?.exportAllAsJSON() ?? "{}"
+        saveExport(content: content, ext: "json", defaultName: exportBaseName() + ".json")
+    }
+
+    private func exportBaseName() -> String {
+        if let url = self.fileURL {
+            return url.deletingPathExtension().lastPathComponent + "-info"
+        }
+        return "pdf-info"
+    }
+
+    private func saveExport(content: String, ext: String, defaultName: String) {
+        guard let window = self.window else { return }
+        let panel = NSSavePanel()
+        panel.allowedFileTypes = [ext]
+        panel.nameFieldStringValue = defaultName
+        panel.canCreateDirectories = true
+        panel.beginSheetModal(for: window) { result in
+            guard result == .OK, let url = panel.url else { return }
+            do {
+                try content.write(to: url, atomically: true, encoding: .utf8)
+                Log.pdfinfo.info("Exported to \(url.lastPathComponent, privacy: .public)")
+            } catch {
+                Log.pdfinfo.error("Export failed: \(error.localizedDescription, privacy: .public)")
+                NSSound.beep()
+            }
+        }
+    }
 }

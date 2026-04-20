@@ -132,6 +132,42 @@ final class SidebarController: NSSplitViewController {
     /// 現在表示中のパネル種別
     var activePanelKind: SidebarPanelKind { currentPanelKind }
 
+    // MARK: - Combined export (File メニュー経由)
+
+    func exportAllAsMarkdown() -> String {
+        var parts: [String] = []
+        if let md = infoPanel.infoVC.exportedMarkdown() { parts.append(md) }
+        if let md = infoPanel.xmpVC.exportedMarkdown() { parts.append(md) }
+        if let md = bookmarksPanel.exportedMarkdown() { parts.append(md) }
+        if let md = annotationsPanel.exportedMarkdown() { parts.append(md) }
+        return parts.joined(separator: "\n\n")
+    }
+
+    func exportAllAsJSON() -> String {
+        var payload: [String: Any] = [:]
+        if let s = infoPanel.infoVC.exportedJSON(),
+           let obj = try? JSONSerialization.jsonObject(with: Data(s.utf8)) {
+            payload["info"] = obj
+        }
+        if let s = infoPanel.xmpVC.exportedJSON(),
+           let obj = try? JSONSerialization.jsonObject(with: Data(s.utf8)) {
+            payload["xmp"] = obj
+        }
+        if let s = bookmarksPanel.exportedJSON(),
+           let obj = try? JSONSerialization.jsonObject(with: Data(s.utf8)) {
+            payload["bookmarks"] = obj
+        }
+        if let s = annotationsPanel.exportedJSON(),
+           let obj = try? JSONSerialization.jsonObject(with: Data(s.utf8)) {
+            payload["annotations"] = obj
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
+              let s = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+        return s
+    }
+
     func notifyDocumentChanged(_ document: PDFDocument?, url: URL?) {
         currentDocument = document
         currentURL = url
