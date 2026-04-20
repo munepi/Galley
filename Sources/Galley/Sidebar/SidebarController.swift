@@ -58,7 +58,7 @@ final class SidebarController: NSSplitViewController {
         // 保存された初期パネル
         let savedRaw = UserDefaults.standard.string(forKey: Self.panelKindKey) ?? SidebarPanelKind.info.rawValue
         currentPanelKind = SidebarPanelKind(rawValue: savedRaw) ?? .info
-        rootVC.loadViewIfNeeded()
+        _ = rootVC.view  // view プロパティにアクセスして loadView() を発火させる
         rootVC.showPanel(panelVC(for: currentPanelKind))
 
         let leftItem = NSSplitViewItem(sidebarWithViewController: rootVC)
