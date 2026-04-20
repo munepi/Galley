@@ -403,8 +403,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             contentRect: container.bounds,
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered, defer: false)
-        window.center()
         window.contentViewController = sidebar
+        // Persist window frame (size + position) across launches.
+        if !window.setFrameAutosaveName("GalleyMainWindow") {
+            window.center()
+        }
         self.window = window
 
         if let url = self.fileURL {
