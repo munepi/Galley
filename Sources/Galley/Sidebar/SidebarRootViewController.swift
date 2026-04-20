@@ -79,7 +79,7 @@ final class SidebarRootViewController: NSViewController {
     private func rebuildExportMenu() {
         let menu = NSMenu()
         // pullsDown: 先頭はボタンラベル
-        let titleItem = NSMenuItem(title: "Export", action: nil, keyEquivalent: "")
+        let titleItem = NSMenuItem(title: "Copy", action: nil, keyEquivalent: "")
         menu.addItem(titleItem)
 
         let mdItem = NSMenuItem(title: "Copy as Markdown", action: #selector(copyMarkdownAction(_:)), keyEquivalent: "")
