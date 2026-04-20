@@ -68,6 +68,11 @@ final class InfoPanelViewController: NSViewController, SidebarPanelViewControlle
         fontsVC = FontsSubPanelViewController()
         xmpVC = XMPSubPanelViewController()
 
+        // 非表示サブタブにも reload/Export を通すため事前に view をロード
+        _ = infoVC.view
+        _ = fontsVC.view
+        _ = xmpVC.view
+
         // 保存されたサブタブを復元
         let savedRaw = UserDefaults.standard.integer(forKey: Self.subTabKey)
         let saved = SubTab(rawValue: savedRaw) ?? .info
