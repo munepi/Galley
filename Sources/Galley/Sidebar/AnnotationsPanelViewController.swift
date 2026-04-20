@@ -7,7 +7,7 @@ import AppKit
 import PDFKit
 
 /// Annotations パネル: PDF内の注釈を一覧表示し、クリックで該当位置へジャンプ
-final class AnnotationsPanelViewController: NSViewController, SidebarPanelViewController {
+final class AnnotationsPanelViewController: NSViewController, SidebarPanelViewController, ExportableContent {
 
     var onNavigate: ((PDFDestination) -> Void)?
 
@@ -170,6 +170,33 @@ final class AnnotationsPanelViewController: NSViewController, SidebarPanelViewCo
     /// ⌘C でのコピーに対応（NSTableView が pasteboardWriterForRow を通じて処理）
     @objc func copy(_ sender: Any?) {
         copyContent(sender)
+    }
+
+    // MARK: - ExportableContent
+
+    func exportedMarkdown() -> String? {
+        guard !items.isEmpty else { return nil }
+        var out = "# Annotations\n\n"
+        for item in items {
+            out += "- **p.\(item.pageLabel)** `[\(item.typeName)]` \(item.preview.replacingOccurrences(of: "\n", with: " "))\n"
+        }
+        return out
+    }
+
+    func exportedJSON() -> String? {
+        guard !items.isEmpty else { return nil }
+        let arr: [[String: Any]] = items.map { item in
+            [
+                "page": item.pageLabel,
+                "pageIndex": item.pageIndex + 1,
+                "type": item.typeName,
+                "content": item.preview
+            ]
+        }
+        let payload: [String: Any] = ["annotations": arr]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
+              let s = String(data: data, encoding: .utf8) else { return nil }
+        return s
     }
 }
 

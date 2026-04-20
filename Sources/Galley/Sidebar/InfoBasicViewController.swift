@@ -7,7 +7,7 @@ import AppKit
 import PDFKit
 
 /// Info パネル内「Info」サブタブ: File/Document Info/Security/Pages/Features の5セクションを表示
-final class InfoBasicViewController: NSViewController, SidebarPanelViewController {
+final class InfoBasicViewController: NSViewController, SidebarPanelViewController, ExportableContent {
 
     private var info: PDFDocumentInfo = .empty
     private var listView: SectionedInfoListView!
@@ -31,5 +31,15 @@ final class InfoBasicViewController: NSViewController, SidebarPanelViewControlle
         self.info = PDFDocumentInfoBuilder.build(document: document, url: url)
         listView.setInfo(info)
         Log.pdfinfo.info("InfoBasic reload sections=\(self.info.sections.count)")
+    }
+
+    func exportedMarkdown() -> String? {
+        guard !info.sections.isEmpty else { return nil }
+        return PDFInfoExporter.markdown(info, title: "PDF Info")
+    }
+
+    func exportedJSON() -> String? {
+        guard !info.sections.isEmpty else { return nil }
+        return PDFInfoExporter.json(info)
     }
 }
