@@ -69,7 +69,6 @@ final class FontsSubPanelViewController: NSViewController, SidebarPanelViewContr
             rows.append(.keyValue(key: "Embedded", value: f.isEmbedded ? "Yes" : "No"))
             rows.append(.keyValue(key: "Subset", value: f.subsetPrefix != nil ? "Yes" : "No"))
             rows.append(.keyValue(key: "ToUnicode", value: f.hasToUnicode ? "Yes" : "No"))
-            rows.append(.keyValue(key: "Pages", value: Self.formatPageRanges(f.pages)))
             sections.append(InfoSection(id: .fonts, title: f.displayName, rows: rows))
         }
         return PDFDocumentInfo(sections: sections)
@@ -93,22 +92,4 @@ final class FontsSubPanelViewController: NSViewController, SidebarPanelViewContr
         return PDFInfoExporter.json(currentInfo)
     }
 
-    // MARK: - Utility
-
-    /// [1,2,3,5,6,8] → "1-3, 5-6, 8"
-    static func formatPageRanges(_ pages: [Int]) -> String {
-        guard !pages.isEmpty else { return "—" }
-        let sorted = Array(Set(pages)).sorted()
-        var parts: [String] = []
-        var start = sorted[0]
-        var prev = sorted[0]
-        for p in sorted.dropFirst() {
-            if p == prev + 1 { prev = p; continue }
-            parts.append(start == prev ? "\(start)" : "\(start)-\(prev)")
-            start = p
-            prev = p
-        }
-        parts.append(start == prev ? "\(start)" : "\(start)-\(prev)")
-        return parts.joined(separator: ", ")
-    }
 }

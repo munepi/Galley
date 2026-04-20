@@ -9,10 +9,13 @@ import PDFKit
 /// CGPDFDocument から pdffonts 相当のフォント情報を抽出する。
 /// PDFKit の PDFPage.fonts は Helvetica にフォールバックするため、低レベルAPI直叩きが必須。
 ///
-/// 各ページから以下を再帰的に辿ってフォントを収集する:
-/// - ページの /Resources（直接 + /Pages ツリーの親から継承）
+/// ドキュメント全体を一度だけ走査し、以下を再帰的に辿る:
+/// - 各ページの /Resources（直接 + /Pages ツリーの親から継承）
 /// - Form XObject（例: InDesignの図版）の /Resources を再帰
 /// - Tiling Pattern の /Resources を再帰
+///
+/// Resources 辞書のポインタ同一性でメモ化することで、複数ページから共有される
+/// 継承 Resources や共有 XObject を重複走査しない。
 enum CGPDFFontScanner {
 
     struct Font {
@@ -24,52 +27,29 @@ enum CGPDFFontScanner {
         let encoding: String
         let isEmbedded: Bool
         let hasToUnicode: Bool
-        let pages: [Int]
     }
 
     static func scan(_ document: PDFDocument) -> [Font] {
         guard let cgDoc = document.documentRef else { return [] }
-        var byKey: [String: Font] = [:]
-        var pagesByKey: [String: Set<Int>] = [:]
-
         guard cgDoc.numberOfPages >= 1 else { return [] }
+
+        let state = ScanState()
         for i in 1...cgDoc.numberOfPages {
             guard let page = cgDoc.page(at: i),
                   let pageDict = page.dictionary else { continue }
-
-            let state = ScanState()
             collectResourcesForPage(pageDict, state: state)
-
-            for font in state.fonts {
-                let key = "\(font.displayName)|\(font.subtype)"
-                if byKey[key] == nil {
-                    byKey[key] = font
-                    pagesByKey[key] = []
-                }
-                pagesByKey[key]?.insert(i)
-            }
         }
 
-        return byKey.map { key, f in
-            Font(
-                displayName: f.displayName,
-                baseName: f.baseName,
-                subsetPrefix: f.subsetPrefix,
-                typeDisplay: f.typeDisplay,
-                subtype: f.subtype,
-                encoding: f.encoding,
-                isEmbedded: f.isEmbedded,
-                hasToUnicode: f.hasToUnicode,
-                pages: (pagesByKey[key] ?? []).sorted()
-            )
-        }
-        .sorted { $0.displayName.lowercased() < $1.displayName.lowercased() }
+        return state.fontsByKey.values
+            .sorted { $0.displayName.lowercased() < $1.displayName.lowercased() }
     }
 
-    // MARK: - Scan state (per-page)
+    // MARK: - Scan state (document-wide)
 
     fileprivate final class ScanState {
-        var fonts: [Font] = []
+        /// displayName|subtype → Font (ドキュメント全体で一意化)
+        var fontsByKey: [String: Font] = [:]
+        /// 訪問済み Resources 辞書（ポインタ同一性）
         var seenResources: Set<Int> = []
     }
 
@@ -103,7 +83,7 @@ enum CGPDFFontScanner {
         // /Font
         var fontsDict: CGPDFDictionaryRef?
         if CGPDFDictionaryGetDictionary(resources, "Font", &fontsDict), let fd = fontsDict {
-            state.fonts.append(contentsOf: extractFonts(from: fd))
+            appendFonts(from: fd, state: state)
         }
 
         // /XObject (Form XObjectの内部 /Resources を再帰)
@@ -135,7 +115,6 @@ enum CGPDFFontScanner {
             CGPDFDictionaryApplyFunction(pd, { (_, obj, info) in
                 guard let info = info else { return }
                 let st = Unmanaged<ScanState>.fromOpaque(info).takeUnretainedValue()
-                // Pattern は stream (Tiling) か dict (Shading) のどちらか
                 var stream: CGPDFStreamRef?
                 if CGPDFObjectGetValue(obj, .stream, &stream), let s = stream,
                    let patternDict = CGPDFStreamGetDictionary(s) {
@@ -150,21 +129,21 @@ enum CGPDFFontScanner {
 
     // MARK: - Font dict parsing
 
-    fileprivate static func extractFonts(from fontResourcesDict: CGPDFDictionaryRef) -> [Font] {
-        var out: [Font] = []
-        withUnsafeMutablePointer(to: &out) { ptr in
-            CGPDFDictionaryApplyFunction(fontResourcesDict, { (_, obj, info) in
-                guard let info = info else { return }
-                let outPtr = info.assumingMemoryBound(to: [Font].self)
-                var fontDict: CGPDFDictionaryRef?
-                guard CGPDFObjectGetValue(obj, .dictionary, &fontDict),
-                      let fd = fontDict else { return }
-                if let font = CGPDFFontScanner.parseFont(dict: fd) {
-                    outPtr.pointee.append(font)
+    fileprivate static func appendFonts(from fontResourcesDict: CGPDFDictionaryRef, state: ScanState) {
+        let ctx = Unmanaged.passUnretained(state).toOpaque()
+        CGPDFDictionaryApplyFunction(fontResourcesDict, { (_, obj, info) in
+            guard let info = info else { return }
+            let st = Unmanaged<ScanState>.fromOpaque(info).takeUnretainedValue()
+            var fontDict: CGPDFDictionaryRef?
+            guard CGPDFObjectGetValue(obj, .dictionary, &fontDict),
+                  let fd = fontDict else { return }
+            if let font = CGPDFFontScanner.parseFont(dict: fd) {
+                let key = "\(font.displayName)|\(font.subtype)"
+                if st.fontsByKey[key] == nil {
+                    st.fontsByKey[key] = font
                 }
-            }, UnsafeMutableRawPointer(ptr))
-        }
-        return out
+            }
+        }, ctx)
     }
 
     fileprivate static func parseFont(dict fontDict: CGPDFDictionaryRef) -> Font? {
@@ -214,8 +193,7 @@ enum CGPDFFontScanner {
             subtype: subtype,
             encoding: encoding,
             isEmbedded: isEmbedded,
-            hasToUnicode: hasToUnicode,
-            pages: []
+            hasToUnicode: hasToUnicode
         )
     }
 
