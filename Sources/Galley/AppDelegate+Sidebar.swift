@@ -36,6 +36,19 @@ extension AppDelegate {
         return true
     }
 
+    func validateExportMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        guard let ctrl = sidebarController else { return false }
+        let scope = ExportScope(rawValue: menuItem.tag / 10) ?? .all
+        switch scope {
+        case .all: return ctrl.hasAny()
+        case .info: return ctrl.hasInfoBasic()
+        case .fonts: return ctrl.hasFonts()
+        case .xmp: return ctrl.hasXMP()
+        case .bookmarks: return ctrl.hasBookmarks()
+        case .annotations: return ctrl.hasAnnotations()
+        }
+    }
+
     // MARK: - File メニュー: Export ▸ ...
 
     /// Export 対象。File メニュー項目の tag から復元する
