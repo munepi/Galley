@@ -26,6 +26,10 @@ weight = 10
 | Character Inspection    | Right-click on selected text                                                   |
 | Measure / Move / Resize Area | `Shift + Drag` (drag inside marquee to move; drag edges/corners to resize) |
 | Copy Selection          | `Cmd + C` (copies as vector PDF)                                               |
+| Toggle PDF Info Sidebar | `Cmd + I`                                                                      |
+| Toggle PDF Bookmarks Sidebar | `Cmd + B`                                                                 |
+| Toggle PDF Annotations Sidebar | `Cmd + N`                                                               |
+| Copy Annotation Content | `Cmd + C` (with an Annotations row selected)                                   |
 
 ## Page Navigation & Interface Notes
 

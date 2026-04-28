@@ -14,3 +14,4 @@ feature is intentionally narrow in scope.
 - [Character Inspection]({{< relref "character-inspection" >}})
 - [Rectangular Selection & Measurement]({{< relref "rectangular-selection" >}})
 - [Lightweight Rendering]({{< relref "lightweight-rendering" >}})
+- [PDF Info Sidebar]({{< relref "pdf-info-sidebar" >}})
