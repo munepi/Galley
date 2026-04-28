@@ -24,6 +24,7 @@
       <enclosure
         url="https://github.com/munepi/Galley/releases/download/v0.3/GalleyPDF_0.3.dmg"
         sparkle:edSignature="XiF4QhTpu5YzHR9yXxRUGH/8BQELWwavhygUZMmNUJNMaEiilF97TPnGBNJseGcGcVxTP/0ecKxBxy2Sj7MtCQ=="
+        sparkle:installationType="package"
         length="9762257"
         type="application/octet-stream" />
     </item>
@@ -50,6 +51,7 @@
       <enclosure
         url="https://github.com/munepi/Galley/releases/download/v0.2/GalleyPDF_0.2.dmg"
         sparkle:edSignature="QauDKGtusSkBrPf8Ef9zEbb0DEglx7ddg4dEywRlVHUCmDdTZVtB9rELA/Ima93sLZVVt7LnBzm4iyjYtL69CQ=="
+        sparkle:installationType="package"
         length="9319817"
         type="application/octet-stream" />
     </item>
