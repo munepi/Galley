@@ -7,6 +7,27 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.3</title>
+      <pubDate>Tue, 28 Apr 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.3</sparkle:shortVersionString>
+      <sparkle:version>146</sparkle:version>
+      <description><![CDATA[
+        <h3>✨ New Features</h3>
+        <ul>
+          <li>PDF Info sidebar with five panels — Info (Document Info, PDF/X, PDF/A, PDF/UA, Security, Pages, Features), Fonts (CGPDFDocument scan walking inherited page resources and Form XObjects), XMP (raw packet parsed into sections), Bookmarks (click-to-navigate), and Annotations (click-to-navigate, Cmd+C copies content)</li>
+          <li>View menu shortcuts: PDF Info (Cmd+I), PDF Bookmarks (Cmd+B), PDF Annotations (Cmd+N)</li>
+          <li>Export PDF Info as Markdown or JSON via File ▸ Export ▸ … (All / Info / Fonts / XMP / Bookmarks / Annotations) and the in-panel Export dropdown</li>
+          <li>Main window position and size are now persisted across launches</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.3/GalleyPDF_0.3.dmg"
+        sparkle:edSignature="XiF4QhTpu5YzHR9yXxRUGH/8BQELWwavhygUZMmNUJNMaEiilF97TPnGBNJseGcGcVxTP/0ecKxBxy2Sj7MtCQ=="
+        length="9762257"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.2</title>
       <pubDate>Sun, 19 Apr 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
