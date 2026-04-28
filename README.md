@@ -19,6 +19,10 @@ Galley maintains a strict 1-to-1 correspondence between your TeX source and its 
   * Inverse Search: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports Emacs, Visual Studio Code, and custom editors via CLI.
 * Character Inspection: right-click a selected character to view its Unicode code point, name, plane, general category, embedded font name (PostScript), family, traits, point size (pt / mm / Q), vertical metrics (ascent / descent / leading), and Glyph ID (with CID notation for CJK).
 * Rectangular Selection & Measurement: `Shift + Drag` to create a selection rectangle with real-time dimensions in mm. Drag inside an existing marquee to reposition it, or drag its edges/corners to resize. `Cmd + C` copies the selected area as a vector PDF.
+* PDF Info Sidebar: a side panel with five views, each toggled from the View menu. Sidebar contents can be exported as Markdown or JSON via File ▸ Export… or the in-panel Export dropdown.
+  * Info (`Cmd + I`): Document Info, PDF/X, PDF/A, PDF/UA, Security, Pages, Features, Fonts (embedded font scan via `CGPDFDocument` covering inherited page resources and Form XObjects), and the raw XMP packet parsed into sections.
+  * Bookmarks (`Cmd + B`): the document outline, click-to-navigate.
+  * Annotations (`Cmd + N`): all annotations with click-to-navigate; `Cmd + C` copies the selected annotation content.
 * Lightweight Rendering: Galley draws only the PDF page itself — no annotation overlays or editing tools — so page rendering stays light even when flipping through pages quickly.
 
 
@@ -253,6 +257,9 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 | Character Inspection | Right-click on selected text |
 | Measure / Move / Resize Area | `Shift + Drag` (drag inside an existing marquee to move it; drag edges/corners to resize) |
 | Copy Selection | `Cmd + C` (while area is selected, copies as vector PDF) |
+| Toggle PDF Info Sidebar | `Cmd + I` |
+| Toggle PDF Bookmarks Sidebar | `Cmd + B` |
+| Toggle PDF Annotations Sidebar | `Cmd + N` |
 
 ### Page Navigation & Interface Notes
 * Direct Jump: when you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly. The input auto-commits after 1 second of inactivity.
