@@ -581,7 +581,7 @@ static synctex_open_s __synctex_open_v2(const char * output, synctex_io_mode_t i
     }
     /*  we have reserved for synctex enough memory to copy output (including its 2 eventual quotes), both suffices,
      *  including the terminating character. size is free now. */
-    if (open.synctex != strcpy(open.synctex,output)) {
+    if (open.synctex != (char *)strncpy(open.synctex,output,size-1)) {
         _synctex_error("!  __synctex_open_v2: Copy problem\n");
     return_on_error:
         free(open.synctex);
@@ -698,7 +698,7 @@ static synctex_open_s _synctex_open_v2(const char * output, const char * build_d
         synctex_bool_t is_absolute;
         build_output = NULL;
         lpc = _synctex_last_path_component(output);
-        size = strlen(build_directory)+strlen(lpc)+2;   /*  One for the '/' and one for the '\0'.   */
+        size = strlen(build_directory)+strlen(lpc)+strlen(output)+2;   /*  One for the '/' and one for the '\0'.   */
         is_absolute = _synctex_path_is_absolute(build_directory);
         if (!is_absolute) {
             size += strlen(output);
@@ -707,7 +707,7 @@ static synctex_open_s _synctex_open_v2(const char * output, const char * build_d
             if (is_absolute) {
                 build_output[0] = '\0';
             } else {
-                if (build_output != strcpy(build_output,output)) {
+                if (build_output != (char *)strncpy(build_output,output,size-1)) {
                     _synctex_free(build_output);
                     return open;
                 }
@@ -761,7 +761,7 @@ static synctex_reader_p synctex_reader_init_with_output_file(synctex_reader_p re
         /*  make a private copy of output */
         if (NULL == (reader->output = (char *)_synctex_malloc(strlen(output)+1))){
             _synctex_error("!  synctex_scanner_new_with_output_file: Memory problem (2), reader's output is not reliable.");
-        } else if (reader->output != strcpy(reader->output,output)) {
+        } else if (reader->output != (char *)strncpy(reader->output,output,strlen(output)+1)) {
             _synctex_free(reader->output);
             reader->output = NULL;
             _synctex_error("!  synctex_scanner_new_with_output_file: Copy problem, reader's output is not reliable.");
