@@ -163,6 +163,14 @@ final class SidebarController: NSSplitViewController {
     /// 現在表示中のパネル種別
     var activePanelKind: SidebarPanelKind { currentPanelKind }
 
+    /// アプリ終了直前のフック。Info パネルがアクティブな状態で終了するなら、
+    /// サブタブが Fonts/XMP のままでも次回起動時に Info に戻るよう保存値を上書きする。
+    func prepareForTermination() {
+        if currentPanelKind == .info {
+            infoPanel.persistSubTabAsInfo()
+        }
+    }
+
     // MARK: - Availability (File メニューの有効/無効判定用)
 
     func hasExportable(panel: SidebarPanelKind) -> Bool {

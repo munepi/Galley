@@ -429,4 +429,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
     }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        sidebarController?.prepareForTermination()
+    }
 }

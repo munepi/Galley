@@ -114,6 +114,12 @@ final class InfoPanelViewController: NSViewController, SidebarPanelViewControlle
         swapToCurrentSubPanel()
     }
 
+    /// アプリ終了時に呼ばれ、サブタブの保存値を Info に書き戻す。
+    /// Fonts を開いたまま終了すると次回起動時にフォント走査でスピナが回ることがあるため。
+    func persistSubTabAsInfo() {
+        UserDefaults.standard.set(SubTab.info.rawValue, forKey: Self.subTabKey)
+    }
+
     private func swapToCurrentSubPanel() {
         for child in children {
             child.view.removeFromSuperview()
