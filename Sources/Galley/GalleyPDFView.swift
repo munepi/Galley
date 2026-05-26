@@ -656,7 +656,7 @@ class GalleyPDFView: PDFView {
 
         let widthMM = rect.width * 25.4 / 72.0
         let heightMM = rect.height * 25.4 / 72.0
-        label.stringValue = String(format: " %.1f mm × %.1f mm ", widthMM, heightMM)
+        label.stringValue = String(format: " %.2f mm × %.2f mm ", widthMM, heightMM)
         label.sizeToFit()
 
         var labelFrame = label.frame
