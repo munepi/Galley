@@ -226,6 +226,13 @@ defaults write com.github.munepi.galley customEditorCommand "/opt/homebrew/bin/c
 defaults write com.github.munepi.galley customEditorCommand "/opt/homebrew/bin/subl '%file':%line"
 ~~~
 
+Galley's `%file` and `%line` placeholders carry the same meaning as Skim's, so a command written for Skim can usually be reused as-is. This also covers Vim plugins that use a different protocol from VimTeX. For example, [vim-skim-synctex](https://github.com/ryota2357/vim-skim-synctex) runs an HTTP server inside the editor instead of launching a headless instance, so it is driven with `curl` rather than the built-in `Vim/Neovim (VimTeX)` entry:
+
+~~~bash
+# Example for vim-skim-synctex (adjust the port to match synctex#option('port', ...))
+defaults write com.github.munepi.galley customEditorCommand "curl localhost:8080 -XPUT -d '%line %file'"
+~~~
+
 #### Specifying Emacsclient Path
 If your `emacsclient` is located in a path other than the default locations listed above, you must specify its absolute path here:
 
