@@ -47,6 +47,9 @@ struct GalleyApp {
             "displaysRTL": false,
             "syncTexEditor": "emacs",
             "emacsclientPath": "",
+            "vimtexFlavor": "auto",
+            "vimPath": "",
+            "nvimPath": "",
             "customEditorCommand": ""
         ])
 
@@ -203,10 +206,12 @@ struct GalleyApp {
 
         let emacsItem = NSMenuItem(title: "Emacs", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
         let vscodeItem = NSMenuItem(title: "Visual Studio Code", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
+        let vimtexItem = NSMenuItem(title: "Vim/Neovim (VimTeX)", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
         let customItem = NSMenuItem(title: "Custom", action: #selector(AppDelegate.changeSyncTexEditor(_:)), keyEquivalent: "")
 
         syncTexMenu.addItem(emacsItem)
         syncTexMenu.addItem(vscodeItem)
+        syncTexMenu.addItem(vimtexItem)
         syncTexMenu.addItem(NSMenuItem.separator())
         syncTexMenu.addItem(customItem)
 
