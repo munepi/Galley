@@ -41,6 +41,8 @@ extension AppDelegate {
         switch sender.title {
         case "Visual Studio Code":
             editor = "vscode"
+        case "Vim/Neovim (VimTeX)":
+            editor = "vimtex"
         case "Custom":
             editor = "custom"
         default:
@@ -58,6 +60,8 @@ extension AppDelegate {
             menuItem.state = (currentEditor == "emacs") ? .on : .off
         case "Visual Studio Code":
             menuItem.state = (currentEditor == "vscode") ? .on : .off
+        case "Vim/Neovim (VimTeX)":
+            menuItem.state = (currentEditor == "vimtex") ? .on : .off
         case "Custom":
             menuItem.state = (currentEditor == "custom") ? .on : .off
         default:

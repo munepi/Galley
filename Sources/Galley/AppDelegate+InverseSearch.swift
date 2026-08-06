@@ -77,6 +77,8 @@ extension AppDelegate {
                 switch selectedEditor {
                 case "vscode":
                     openInVSCode(file: srcPath, line: line)
+                case "vimtex":
+                    openInVimTeX(file: srcPath, line: line)
                 case "custom":
                     openInCustom(file: srcPath, line: line)
                 default:
@@ -128,6 +130,101 @@ extension AppDelegate {
         if let encodedString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
            let url = URL(string: encodedString) {
             NSWorkspace.shared.open(url)
+        }
+    }
+
+    // --- Vim / Neovim (VimTeX) の実行ファイルを解決する ---
+    // 明示指定 (vimPath / nvimPath) を最優先し、無ければ既定の場所を探索する。
+    // 見つからなければ nil を返す。
+    private func resolveVimExecutable(isNeovim: Bool) -> String? {
+        let savedPath = UserDefaults.standard.string(forKey: isNeovim ? "nvimPath" : "vimPath") ?? ""
+        if !savedPath.isEmpty { return savedPath }
+
+        let name = isNeovim ? "nvim" : "vim"
+        let searchPaths = ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"].map { "\($0)/\(name)" }
+        return searchPaths.first(where: { FileManager.default.isExecutableFile(atPath: $0) })
+    }
+
+    // --- Vim / Neovim (VimTeX) で開く ---
+    // Skim の VimTeX 設定と同じ方式。headless で起動した vim/nvim が
+    // :VimtexInverseSearch を実行し、clientserver/RPC 経由で編集中の
+    // インスタンスへジャンプを転送したあと自身は終了する。
+    // 転送方式の違いは VimTeX 側が吸収するため、Galley が意識するのは
+    // 起動フラグの差だけ。
+    //   vim  -v --not-a-term -T dumb -c "VimtexInverseSearch <line> '<file>'"
+    //   nvim --headless             -c "VimtexInverseSearch <line> '<file>'"
+    func openInVimTeX(file: String, line: Int32) {
+        // どちらのバイナリを使うかは vimtexFlavor で決める
+        //   "auto" (既定): Neovim を優先し、無ければ Vim を使う
+        //   "nvim" / "vim": 明示的に固定する
+        let flavor = UserDefaults.standard.string(forKey: "vimtexFlavor") ?? "auto"
+
+        let isNeovim: Bool
+        let executablePath: String
+        switch flavor {
+        case "vim":
+            isNeovim = false
+            executablePath = resolveVimExecutable(isNeovim: false) ?? "/usr/bin/vim"
+        case "nvim", "neovim":
+            isNeovim = true
+            executablePath = resolveVimExecutable(isNeovim: true) ?? "/opt/homebrew/bin/nvim"
+        default:
+            if let path = resolveVimExecutable(isNeovim: true) {
+                isNeovim = true
+                executablePath = path
+            } else if let path = resolveVimExecutable(isNeovim: false) {
+                isNeovim = false
+                executablePath = path
+            } else {
+                Log.inverseSearch.error("Neither nvim nor vim was found for VimTeX inverse search.")
+                DispatchQueue.main.async {
+                    self.showNotification("Neither nvim nor vim was found.\nSet 'nvimPath' or 'vimPath' to the absolute path of your binary.")
+                }
+                return
+            }
+        }
+
+        let editorName = isNeovim ? "Neovim" : "Vim"
+        let defaultsKey = isNeovim ? "nvimPath" : "vimPath"
+
+        // VimtexInverseSearch はファイル名を囲む引用符を1組だけ取り除く。
+        // パスに ' が含まれる場合は " で囲み、両方含む場合は囲まない。
+        let quotedFile: String
+        if !file.contains("'") {
+            quotedFile = "'\(file)'"
+        } else if !file.contains("\"") {
+            quotedFile = "\"\(file)\""
+        } else {
+            quotedFile = file
+        }
+
+        let exCommand = "VimtexInverseSearch \(line) \(quotedFile)"
+        let arguments = isNeovim
+            ? ["--headless", "-c", exCommand]
+            : ["-v", "--not-a-term", "-T", "dumb", "-c", exCommand]
+
+        let commandString = ([executablePath] + arguments).joined(separator: " ")
+        Log.inverseSearch.debug("Executing \(editorName, privacy: .public) Command: \(commandString, privacy: .public)")
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executablePath)
+        process.arguments = arguments
+        // headless 起動時の出力が Galley の標準出力へ混ざらないようにする
+        process.standardInput = FileHandle.nullDevice
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+
+        var env = ProcessInfo.processInfo.environment
+        env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+        process.environment = env
+
+        do {
+            try process.run()
+        } catch {
+            Log.inverseSearch.error("Failed to launch \(editorName, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            DispatchQueue.main.async {
+                self.showNotification("Failed to launch \(editorName).\nSet '\(defaultsKey)' to the absolute path of your binary.")
+            }
         }
     }
 
