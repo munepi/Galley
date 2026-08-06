@@ -16,7 +16,7 @@ Galley maintains a strict 1-to-1 correspondence between your TeX source and its 
 * Auto-Reload: monitors the PDF file for changes and reloads automatically, preserving your scroll position and zoom level.
 * SyncTeX Integration:
   * Forward Search: jump from your editor to the corresponding position in the PDF, highlighted with a fading red dot centered in the window.
-  * Inverse Search: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports Emacs, Visual Studio Code, and custom editors via CLI.
+  * Inverse Search: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports Emacs, Visual Studio Code, Vim/Neovim (VimTeX), and custom editors via CLI.
 * Character Inspection: right-click a selected character to view its Unicode code point, name, plane, general category, embedded font name (PostScript), family, traits, point size (pt / mm / Q), vertical metrics (ascent / descent / leading), and Glyph ID (with CID notation for CJK).
 * Rectangular Selection & Measurement: `Shift + Drag` to create a selection rectangle with real-time dimensions in mm. Drag inside an existing marquee to reposition it, or drag its edges/corners to resize. `Cmd + C` copies the selected area as a vector PDF.
 * PDF Info Sidebar: a side panel with five views, each toggled from the View menu. Sidebar contents can be exported as Markdown or JSON via File ▸ Export… or the in-panel Export dropdown.
@@ -181,7 +181,20 @@ For [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Y
 To execute Forward Search, press `Cmd + Opt + J` (or run `LaTeX Workshop: SyncTeX from cursor` from the Command Palette).
 
 
-### 3. Selecting your Editor (Inverse Search)
+### 3. Vim / Neovim Setup (Forward Search)
+
+[VimTeX](https://github.com/lervag/vimtex) v2.18 and later ships with native Galley support. Add the following to your `vimrc` / `init.vim`:
+
+~~~vim
+let g:vimtex_view_method = 'galley'
+~~~
+
+Galley is opened and updated in the background by default. Set `g:vimtex_view_galley_activate` to `1` to bring it to the foreground after a forward search.
+
+To execute Forward Search, run `:VimtexView` (default mapping: `<localleader>lv`).
+
+
+### 4. Selecting your Editor (Inverse Search)
 
 You can select your preferred editor for Inverse Search (`Cmd + Click`) directly from the SyncTeX menu in the menu bar:
 
@@ -191,6 +204,13 @@ You can select your preferred editor for Inverse Search (`Cmd + Click`) directly
     2. `/opt/homebrew/bin/emacsclient`
     3. `/usr/local/bin/emacsclient`
 * Visual Studio Code: uses the native `vscode://` URL scheme.
+* Vim/Neovim (VimTeX): runs `:VimtexInverseSearch` in a headless instance, which forwards the jump to your running Vim or Neovim (the same approach as the VimTeX preset for Skim). Requires the [VimTeX](https://github.com/lervag/vimtex) plugin.
+  * Galley runs one of the following commands. Only the startup flags differ; VimTeX itself absorbs the difference between Vim's `clientserver` and Neovim's RPC:
+    ~~~bash
+    vim  -v --not-a-term -T dumb -c "VimtexInverseSearch <line> '<file>'"
+    nvim --headless              -c "VimtexInverseSearch <line> '<file>'"
+    ~~~
+  * Which binary to launch is decided by the `vimtexFlavor` preference. See [Selecting Vim or Neovim](#selecting-vim-or-neovim) below.
 * Custom: uses a user-defined shell command.
 
 #### Custom Editor Command
@@ -213,8 +233,31 @@ If your `emacsclient` is located in a path other than the default locations list
 defaults write com.github.munepi.galley emacsclientPath "/path/to/your/emacsclient"
 ~~~
 
+#### Selecting Vim or Neovim
+By default (`vimtexFlavor = auto`), Galley launches `nvim` if it can find one and falls back to `vim` otherwise. Pin it explicitly if you have both installed:
 
-### 4. Debug Logging
+~~~bash
+defaults write com.github.munepi.galley vimtexFlavor "vim"   # or "nvim", or "auto"
+~~~
+
+The executable is searched for in `/opt/homebrew/bin`, `/usr/local/bin`, and `/usr/bin`, in that order. If your binary lives elsewhere, specify its absolute path:
+
+~~~bash
+defaults write com.github.munepi.galley vimPath "/path/to/your/vim"
+defaults write com.github.munepi.galley nvimPath "/path/to/your/nvim"
+~~~
+
+> [!NOTE]
+> The `vim` bundled with macOS (`/usr/bin/vim`) is built without `+clientserver`, so inverse search silently does nothing with it. Check with `vim --version | grep clientserver`, and point `vimPath` at a build that has it (typically MacVim):
+>
+> ~~~bash
+> defaults write com.github.munepi.galley vimPath "/Applications/MacVim.app/Contents/MacOS/Vim"
+> ~~~
+>
+> Neovim has RPC built in and needs no equivalent setup.
+
+
+### 5. Debug Logging
 
 Galley emits structured logs via Apple's unified logging system (`os_log`) under the subsystem `com.github.munepi.galley`. Use this to verify SyncTeX coordinate data, inspect reload behavior, or troubleshoot Forward/Inverse Search.
 
