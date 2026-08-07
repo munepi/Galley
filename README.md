@@ -28,14 +28,22 @@ Galley maintains a strict 1-to-1 correspondence between your TeX source and its 
 
 ## Installation
 
+### Homebrew
+
+~~~bash
+brew install --cask munepi/galley/galley
+~~~
+
+This installs `GalleyPDF.app` into `/Applications` and puts the bundled
+[`galleypdf`](#command-line-galleypdf) command on your `PATH`.
+
 ### Download Binaries
 
 Pre-compiled Universal Binaries are available under the [Releases](https://github.com/munepi/Galley/releases) section.
+Both downloads contain the same signed and notarized build — pick whichever you prefer.
 
-1. Download `GalleyPDF_<version>.dmg`.
-2. Double-click to mount the disk image.
-3. Double-click `GalleyPDF.pkg` inside the mounted volume.
-4. Follow the on-screen instructions to install `GalleyPDF.app`.
+* `GalleyPDF_<version>.dmg` — double-click to mount, then drag `GalleyPDF.app` onto the `Applications` shortcut.
+* `GalleyPDF_<version>.pkg` — double-click and follow the guided installer.
 
 ### Building from Source
 
@@ -48,6 +56,10 @@ cd Galley
 
 # Build Universal Binary
 make app
+
+# Copy GalleyPDF.app to /Applications, then link the CLI onto your PATH
+make install
+sudo make install-cli          # override the location with CLI_PREFIX=...
 ~~~
 
 
@@ -55,6 +67,35 @@ make app
 ## Integration & Automation
 
 Galley communicates with external editors and scripts via its URL scheme.
+The `galleypdf` command is a thin front end over that same scheme, so both routes behave identically.
+
+### Command Line (`galleypdf`)
+
+`galleypdf` ships inside the application bundle at `GalleyPDF.app/Contents/MacOS/bin/galleypdf` — the same layout Emacs uses for `emacsclient`.
+Homebrew links it onto your `PATH` automatically; for `.pkg`/`.dmg` or source installs, run `sudo make install-cli` or create the symlink yourself.
+
+~~~bash
+galleypdf paper.pdf                 # open a PDF
+galleypdf open -p 12 paper.pdf      # open it at page 12
+galleypdf open -g paper.pdf         # ... without stealing focus
+galleypdf reload                    # force a reload of the current PDF
+galleypdf forward -g -l 120 -c 8 -s paper.tex paper.pdf
+galleypdf displayline -g 120 paper.pdf paper.tex
+~~~
+
+| Command | Description |
+| --- | --- |
+| `open [-g] [-p PAGE] <file.pdf>` | Open a PDF, optionally jumping to a page. Also the default when the first argument is a file. |
+| `reload` | Force Galley to reload the PDF it is currently showing. |
+| `forward [-g] -l LINE [-c COL] [-s SRC] <file.pdf>` | SyncTeX forward search. |
+| `displayline [-g] LINE <file.pdf> [SRC]` | Same as `forward`, using Skim's `displayline` argument order. |
+| `--app-path`, `--version`, `--help` | Report the bundle in use, its version, or usage. |
+
+`-g` (`--background`) performs the action without bringing Galley to the foreground.
+Relative paths are resolved against the working directory, and paths containing spaces or non-ASCII characters are percent-encoded for you.
+
+The command talks to the bundle it was launched from, so a symlink from any prefix resolves to the right copy of Galley.
+Set `GALLEYPDF_APP` to target a different bundle, or `GALLEYPDF_DRY_RUN=1` to print the `galleypdf://` URL instead of sending it.
 
 ### URL Scheme (`galleypdf://`)
 
@@ -67,6 +108,13 @@ Available endpoints:
   open -g "galleypdf://reload"
   ~~~
 
+* Open a PDF
+  ~~~bash
+  open "galleypdf://open?pdfpath=<absolute_pdf_path>"
+
+  open "galleypdf://open?pdfpath=<absolute_pdf_path>&page=<page>"
+  ~~~
+
 * Forward Search
   ~~~bash
   open -g "galleypdf://forward?line=<line>&pdfpath=<absolute_pdf_path>"
@@ -76,6 +124,8 @@ Available endpoints:
   open -g "galleypdf://forward?line=<line>&column=<column>&pdfpath=<absolute_pdf_path>&srcpath=<absolute_src_path>"
   ~~~
   *(Note: URL parameters must be URL-encoded, especially if paths contain spaces.)*
+
+Every endpoint accepts `background=1`, which pairs with `open -g`: Galley shows the window but leaves your editor in the foreground.
 
 > [!TIP]
 > **SyncTeX "Column 0" Workaround**
