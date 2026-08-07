@@ -40,10 +40,10 @@ This installs `GalleyPDF.app` into `/Applications` and puts the bundled
 ### Download Binaries
 
 Pre-compiled Universal Binaries are available under the [Releases](https://github.com/munepi/Galley/releases) section.
-Both downloads contain the same signed and notarized build — pick whichever you prefer.
 
-* `GalleyPDF_<version>.dmg` — double-click to mount, then drag `GalleyPDF.app` onto the `Applications` shortcut.
-* `GalleyPDF_<version>.pkg` — double-click and follow the guided installer.
+1. Download `GalleyPDF_<version>.dmg`. It is signed with a Developer ID and notarized by Apple.
+2. Double-click to mount the disk image.
+3. Drag `GalleyPDF.app` onto the `Applications` shortcut.
 
 ### Building from Source
 
