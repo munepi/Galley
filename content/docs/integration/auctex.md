@@ -27,3 +27,17 @@ to your `init.el` or `.emacs`:
 
 Execute Forward Search in AUCTeX with `C-c C-v` (or `C-c C-c` and select
 `View`).
+
+## Using the `galleypdf` command
+
+With the [`galleypdf` command]({{< relref "/docs/reference/galleypdf" >}}) on
+your `PATH`, the viewer entry takes ordinary arguments instead of a URL:
+
+```elisp
+(add-to-list 'TeX-view-program-list
+             '("Galley" "galleypdf forward -g -l %n -c %c -s \"%b\" \"%o\""))
+```
+
+Both forms do the same thing. The URL version depends on nothing but `open`,
+so it works however Emacs was started; this one is easier to read and quotes
+paths the way you would expect.
