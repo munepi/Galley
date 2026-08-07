@@ -1,0 +1,51 @@
+% Page Color / dark mode の目視確認用サンプル。
+%   - 本文の黒
+%   - hyperref の青リンク / xcolor の飽和色 (単純な RGB 反転だと色相が回る)
+%   - TikZ のベクタ図
+%   - 埋め込みラスタ画像 (SPI なら反転されないはず)
+\documentclass[a4paper,11pt]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\begin{document}
+
+\section{Page Color test}
+\label{sec:top}
+
+Plain black body text. Cross reference to Section~\ref{sec:top} renders in the
+default hyperref blue, and \url{https://github.com/munepi/Galley} is a URL link.
+
+\medskip
+\noindent
+\textcolor{red}{Saturated red.}\quad
+\textcolor{blue}{Saturated blue.}\quad
+\textcolor{ForestGreen}{Green.}\quad
+\textcolor{Orange}{Orange.}\quad
+\textcolor{gray}{Gray 50\%.}
+
+\medskip
+\noindent
+Vector figure (TikZ):
+
+\begin{center}
+\begin{tikzpicture}
+  \fill[black]        (0,0)   rectangle (1.2,1.2);
+  \fill[blue]         (1.5,0) rectangle (2.7,1.2);
+  \fill[red]          (3.0,0) rectangle (4.2,1.2);
+  \fill[ForestGreen]  (4.5,0) rectangle (5.7,1.2);
+  \fill[gray]         (6.0,0) rectangle (7.2,1.2);
+  \draw[thick] (0,-0.4) -- (7.2,-0.4);
+\end{tikzpicture}
+\end{center}
+
+\noindent
+Raster image (should stay a positive image in Dark mode):
+
+\begin{center}
+  \includegraphics[width=0.5\linewidth]{photo.png}
+\end{center}
+
+\end{document}
