@@ -72,7 +72,18 @@ The `galleypdf` command is a thin front end over that same scheme, so both route
 ### Command Line (`galleypdf`)
 
 `galleypdf` ships inside the application bundle at `GalleyPDF.app/Contents/MacOS/bin/galleypdf` — the same layout Emacs uses for `emacsclient`.
-Homebrew links it onto your `PATH` automatically; for `.pkg`/`.dmg` or source installs, run `sudo make install-cli` or create the symlink yourself.
+
+Homebrew puts it on your `PATH` for you. If you installed from the disk image, pick whichever of these you prefer — both keep working across updates, because they point into the bundle rather than at a copy:
+
+~~~bash
+# Add the bundle's bin directory to PATH (no administrator rights needed)
+export PATH="/Applications/GalleyPDF.app/Contents/MacOS/bin:$PATH"
+
+# ...or link the command into a directory already on your PATH
+sudo ln -sf /Applications/GalleyPDF.app/Contents/MacOS/bin/galleypdf /usr/local/bin/galleypdf
+~~~
+
+Building from source? `sudo make install-cli` creates the same symlink, and honours `CLI_PREFIX`.
 
 ~~~bash
 galleypdf paper.pdf                 # open a PDF
