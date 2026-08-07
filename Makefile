@@ -9,8 +9,14 @@ INSTALLER_CODE_SIGN_IDENTITY ?=
 
 BUNDLE_NAME := $(APP_NAME).app
 BUILD_PATH := .build/apple/Products/Release/$(APP_NAME)
+# The galleypdf command. Built as GalleyPDFCLI because the build directory is
+# case-insensitive on APFS and `galleypdf` would collide with `GalleyPDF`.
+CLI_BUILD_PATH := .build/apple/Products/Release/$(APP_NAME)CLI
 CONTENTS_DIR := $(BUNDLE_NAME)/Contents
 MACOS_DIR := $(CONTENTS_DIR)/MacOS
+# Auxiliary executables live under Contents/MacOS per Apple's nested code
+# layout; the same shape as Emacs.app/Contents/MacOS/bin/emacsclient.
+CLI_DIR := $(MACOS_DIR)/bin
 RESOURCES_DIR := $(CONTENTS_DIR)/Resources
 FRAMEWORKS_DIR := $(CONTENTS_DIR)/Frameworks
 
@@ -33,9 +39,13 @@ else
 GIT_SUFFIX = -$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 endif
 
-PKG_NAME := $(APP_NAME).pkg
+PKG_NAME := $(APP_NAME)_$(VERSION)$(GIT_SUFFIX).pkg
 DMG_FILENAME := $(APP_NAME)_$(VERSION)$(GIT_SUFFIX).dmg
 VOL_NAME := $(APP_NAME)
+
+# Where `make install-cli` symlinks the galleypdf command for source builds.
+# Homebrew users get the same symlink from the cask's `binary` stanza instead.
+CLI_PREFIX ?= /usr/local
 
 PKG_TEMP_DIR := .build/pkg_temp
 COMPONENT_PKG := $(PKG_TEMP_DIR)/component.pkg
@@ -73,6 +83,7 @@ build:
 app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
 	@echo "Packaging $(BUNDLE_NAME)..."
 	mkdir -p $(MACOS_DIR)
+	mkdir -p $(CLI_DIR)
 	mkdir -p $(RESOURCES_DIR)/en.lproj
 	mkdir -p $(FRAMEWORKS_DIR)
 	echo 'CFBundleName = "Galley";\nCFBundleDisplayName = "Galley";' > $(RESOURCES_DIR)/en.lproj/InfoPlist.strings
@@ -81,6 +92,9 @@ app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
 	cp $(APP_NAME).icns $(RESOURCES_DIR)/
 	cp $(APP_NAME).png $(RESOURCES_DIR)/
 	chmod +x $(MACOS_DIR)/$(APP_NAME)
+	# --- Command line front end (symlinked onto PATH by the Homebrew cask) ---
+	cp $(CLI_BUILD_PATH) $(CLI_DIR)/galleypdf
+	chmod +x $(CLI_DIR)/galleypdf
 	# --- Embed Sparkle.framework (required for runtime) ---
 	@echo "Embedding Sparkle.framework..."
 	rsync -a --delete $(SPARKLE_FW) $(FRAMEWORKS_DIR)/
@@ -103,11 +117,23 @@ install: app
 	xattr -rc /Applications/$(BUNDLE_NAME)
 	@echo "Installation complete!"
 
+.PHONY: install-cli
+install-cli:
+	@echo "Linking galleypdf into $(CLI_PREFIX)/bin/..."
+	mkdir -p $(CLI_PREFIX)/bin
+	ln -sf /Applications/$(BUNDLE_NAME)/Contents/MacOS/bin/galleypdf $(CLI_PREFIX)/bin/galleypdf
+	@echo "Done! Run 'galleypdf --help' to get started."
+
 .PHONY: uninstall
-uninstall:
+uninstall: uninstall-cli
 	@echo "Uninstalling $(BUNDLE_NAME) from /Applications/..."
 	rm -rf /Applications/$(BUNDLE_NAME)
 	@echo "Uninstallation complete!"
+
+.PHONY: uninstall-cli
+uninstall-cli:
+	@rm -f $(CLI_PREFIX)/bin/galleypdf 2>/dev/null || \
+	    echo "Skipped $(CLI_PREFIX)/bin/galleypdf (not writable; rerun with sudo if needed)."
 
 .PHONY: codesign
 codesign: app
@@ -134,22 +160,30 @@ codesign-pkg: pkg
 	INSTALLER_CODE_SIGN_IDENTITY="$(INSTALLER_CODE_SIGN_IDENTITY)" \
 	    scripts/codesign-pkg.sh $(PKG_NAME)
 
+# The disk image carries GalleyPDF.app itself (plus the customary
+# /Applications symlink) so that `brew install --cask` can mount it and copy
+# the bundle straight out. The guided installer ships as a separate .pkg.
 .PHONY: dmg
-dmg: codesign-pkg
+dmg: codesign
 	@echo "Creating disk image ($(DMG_FILENAME)) in ULMO format..."
 	@rm -f $(DMG_FILENAME)
+	@rm -rf .build/dmg_temp
 	@mkdir -p .build/dmg_temp
-	@cp $(PKG_NAME) .build/dmg_temp/
+	ditto $(BUNDLE_NAME) .build/dmg_temp/$(BUNDLE_NAME)
+	@ln -s /Applications .build/dmg_temp/Applications
 	@cp README.md .build/dmg_temp/README.txt
 	hdiutil create -volname $(VOL_NAME) -srcfolder .build/dmg_temp -ov -format ULMO $(DMG_FILENAME)
 	@rm -rf .build/dmg_temp
 	@echo "Done! $(DMG_FILENAME) created."
 
 .PHONY: notarize
-notarize: dmg
+notarize: dmg codesign-pkg
 	xcrun notarytool submit $(DMG_FILENAME) \
 	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
 	xcrun stapler staple $(DMG_FILENAME)
+	xcrun notarytool submit $(PKG_NAME) \
+	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
+	xcrun stapler staple $(PKG_NAME)
 	@echo "Notarization complete."
 
 .PHONY: log

@@ -260,6 +260,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var swapWorkItem: DispatchWorkItem?
     var loadGeneration: Int = 0
 
+    // `open -g "galleypdf://...?background=1"` で起動された場合に、
+    // 起動完了時の強制アクティベーションを抑止するためのフラグ。
+    var launchedInBackground = false
+
     // --- 検索バー用プロパティ ---
     var searchBarContainer: NSView?
     var searchBarTopConstraint: NSLayoutConstraint?
@@ -340,11 +344,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             params[item.name] = item.value
         }
 
+        // background=1 は URL を配送した `open -g` と対になる指定。
+        // 起動そのものがこの URL で誘発された場合に備え、非同期ブロックの外で立てる。
+        let background = ["1", "true", "yes"].contains(params["background"]?.lowercased() ?? "")
+        if background {
+            self.launchedInBackground = true
+        }
+
         DispatchQueue.main.async {
             switch host {
             case "reload":
                 // 外部から強制リロード (例: open "galleypdf://reload")
                 self.reloadPDF()
+
+            case "open":
+                // 外部から PDF を開く
+                // 例: open "galleypdf://open?pdfpath=/path/to/main.pdf&page=3"
+                guard let pdfPath = params["pdfpath"], !pdfPath.isEmpty else { break }
+                self.loadPDF(url: URL(fileURLWithPath: pdfPath).absoluteURL, activate: !background)
+                if let pageStr = params["page"], let page = Int(pageStr) {
+                    self.goToPage(page)
+                }
 
             case "forward":
                 // 外部からの Forward Search 実行
@@ -358,7 +378,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
                         column = col
                     }
 
-                    self.processForwardSearch(line: line, column: column, pdfPath: pdfPath, srcPath: srcPath)
+                    self.processForwardSearch(line: line, column: column,
+                                              pdfPath: pdfPath, srcPath: srcPath,
+                                              background: background)
                 }
 
             default:
@@ -427,8 +449,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
                 if self.fileURL == nil { self.openDocument(nil) }
             }
         }
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        if self.launchedInBackground {
+            // `open -g` で起動したときはフォアグラウンドを奪わずに窓だけ見せる
+            window.orderFrontRegardless()
+        } else {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
