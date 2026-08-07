@@ -47,6 +47,9 @@ VOL_NAME := $(APP_NAME)
 # Homebrew users get the same symlink from the cask's `binary` stanza instead.
 CLI_PREFIX ?= /usr/local
 
+# Throwaway archive used to submit the bundle itself to the notary service.
+APP_ZIP := .build/$(APP_NAME)_$(VERSION)$(GIT_SUFFIX).zip
+
 PKG_TEMP_DIR := .build/pkg_temp
 COMPONENT_PKG := $(PKG_TEMP_DIR)/component.pkg
 DIST_XML := $(PKG_TEMP_DIR)/Distribution.xml
@@ -160,11 +163,34 @@ codesign-pkg: pkg
 	INSTALLER_CODE_SIGN_IDENTITY="$(INSTALLER_CODE_SIGN_IDENTITY)" \
 	    scripts/codesign-pkg.sh $(PKG_NAME)
 
+# Notarize the bundle itself and staple the ticket into it. Without this a copy
+# dragged out of the disk image carries no ticket, so its first launch needs a
+# network round trip to the notary service.
+#
+# Nothing may re-sign the bundle afterwards: codesign rewrites the seal and the
+# stapled ticket goes with it.
+.PHONY: notarize-app
+notarize-app: codesign
+	@rm -f $(APP_ZIP)
+	@mkdir -p $(dir $(APP_ZIP))
+	ditto -c -k --keepParent $(BUNDLE_NAME) $(APP_ZIP)
+	xcrun notarytool submit $(APP_ZIP) \
+	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
+	xcrun stapler staple $(BUNDLE_NAME)
+	@rm -f $(APP_ZIP)
+	@echo "App notarization complete."
+
 # The disk image carries GalleyPDF.app itself (plus the customary
 # /Applications symlink) so that `brew install --cask` can mount it and copy
 # the bundle straight out. The guided installer ships as a separate .pkg.
+#
+# This packages the bundle as it stands, and deliberately declares no
+# prerequisites: `app` hangs off the phony `build`, so naming it here would
+# rebuild and re-copy the bundle after `notarize-app` stapled it.
 .PHONY: dmg
-dmg: codesign
+dmg:
+	@test -d $(BUNDLE_NAME) || \
+	    { echo "Error: $(BUNDLE_NAME) not found. Run 'make app' first."; exit 1; }
 	@echo "Creating disk image ($(DMG_FILENAME)) in ULMO format..."
 	@rm -f $(DMG_FILENAME)
 	@rm -rf .build/dmg_temp
@@ -176,8 +202,13 @@ dmg: codesign
 	@rm -rf .build/dmg_temp
 	@echo "Done! $(DMG_FILENAME) created."
 
+# The whole release, in the one order that works: sign, notarize and staple the
+# bundle, wrap the stapled bundle in the disk image, then notarize and staple
+# the image. Driven with recursive make so the steps stay ordered even under -j.
 .PHONY: notarize
-notarize: dmg
+notarize:
+	$(MAKE) notarize-app
+	$(MAKE) dmg
 	xcrun notarytool submit $(DMG_FILENAME) \
 	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
 	xcrun stapler staple $(DMG_FILENAME)
@@ -197,8 +228,10 @@ notarize-pkg: codesign-pkg
 log:
 	log stream --predicate 'subsystem == "$(BUNDLE_ID)"' --level info
 
+# Kept as the old spelling of `make notarize`; the disk image is built as part
+# of it, so it must not be listed as a separate prerequisite here.
 .PHONY: notarized-dmg
-notarized-dmg: dmg notarize
+notarized-dmg: notarize
 
 # Sparkle helpers ----------------------------------------------------------
 
