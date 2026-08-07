@@ -51,7 +51,9 @@ CLI_PREFIX ?= /usr/local
 APP_ZIP := .build/$(APP_NAME)_$(VERSION)$(GIT_SUFFIX).zip
 
 PKG_TEMP_DIR := .build/pkg_temp
+PKG_ROOT := $(PKG_TEMP_DIR)/root
 COMPONENT_PKG := $(PKG_TEMP_DIR)/component.pkg
+COMPONENT_PLIST := $(PKG_TEMP_DIR)/component.plist
 DIST_XML := $(PKG_TEMP_DIR)/Distribution.xml
 RESOURCES_DIR_PKG := $(PKG_TEMP_DIR)/Resources
 
@@ -149,7 +151,20 @@ pkg $(PKG_NAME): codesign
 	@rm -f $(PKG_NAME)
 	@rm -rf $(PKG_TEMP_DIR)
 	@mkdir -p $(RESOURCES_DIR_PKG)
-	pkgbuild --component $(BUNDLE_NAME) --install-location /Applications $(COMPONENT_PKG)
+	@mkdir -p $(PKG_ROOT)
+	ditto $(BUNDLE_NAME) $(PKG_ROOT)/$(BUNDLE_NAME)
+	# Both of these default to true, and together they make the installer do
+	# surprising things whenever another bundle with this identifier exists
+	# somewhere on disk -- a development build, a copy still in ~/Downloads.
+	# Relocation makes it install over that copy instead of /Applications;
+	# version checking makes it skip the payload entirely when the copy is
+	# newer, while still writing a receipt. Off, the package always installs
+	# what it carries, where it says it will.
+	pkgbuild --analyze --root $(PKG_ROOT) $(COMPONENT_PLIST)
+	plutil -replace 0.BundleIsRelocatable -bool NO $(COMPONENT_PLIST)
+	plutil -replace 0.BundleIsVersionChecked -bool NO $(COMPONENT_PLIST)
+	pkgbuild --root $(PKG_ROOT) --component-plist $(COMPONENT_PLIST) \
+	    --install-location /Applications $(COMPONENT_PKG)
 	productbuild --synthesize --package $(COMPONENT_PKG) $(DIST_XML)
 	cp README.md $(RESOURCES_DIR_PKG)/README.txt
 	cp LICENSE $(RESOURCES_DIR_PKG)/LICENSE.txt
