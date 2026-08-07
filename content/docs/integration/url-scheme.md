@@ -68,10 +68,3 @@ every build want both.
 > `column=0` and automatically shifts the search target to `line + 1` to
 > avoid this.
 
-> [!WARNING]
-> **First Forward Search**
->
-> The first time you execute a forward search, macOS will present a security
-> prompt asking for Automation permissions. Please click **OK (Allow)**. You
-> can later manage this in System Settings → Privacy & Security →
-> Automation.
