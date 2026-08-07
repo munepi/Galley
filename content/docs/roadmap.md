@@ -41,5 +41,13 @@ and export / conversion.
 
 ## 5. Command Line Interface (CLI)
 
-Providing CLI access to preflight, export, imposition, and viewer control
-so that any GUI operation can also be scripted from the terminal.
+Viewer control landed in v0.4 as the
+[`galleypdf` command]({{< relref "/docs/reference/galleypdf" >}}): opening a
+PDF, jumping to a page, reloading, and SyncTeX forward search all work from
+the terminal today.
+
+What remains is the half that has to answer back — preflight, export and
+imposition need to return results, not just fire an action. The groundwork is
+there: `galleypdf` is a compiled client, so it can send the Apple Event
+itself and wait for the reply, which costs about three milliseconds more than
+not waiting.
