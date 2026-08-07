@@ -25,3 +25,27 @@ users, add the following to your `settings.json`:
 
 Execute Forward Search with `Cmd + Opt + J` (or run **LaTeX Workshop:
 SyncTeX from cursor** from the Command Palette).
+
+## Using the `galleypdf` command
+
+The [`galleypdf` command]({{< relref "/docs/reference/galleypdf" >}}) can take
+the place of `open`:
+
+```json
+{
+  "latex-workshop.view.pdf.viewer": "external",
+  "latex-workshop.view.pdf.external.synctex.command": "/opt/homebrew/bin/galleypdf",
+  "latex-workshop.view.pdf.external.synctex.args": [
+    "forward", "-g",
+    "-l", "%LINE%",
+    "-c", "0",
+    "-s", "%TEX%",
+    "%PDF%"
+  ]
+}
+```
+
+The full path matters here: Visual Studio Code launched from the Dock does
+not inherit your shell's `PATH`, so a bare `galleypdf` may not resolve. On an
+Intel Mac, or with a symlink of your own, point it wherever your `galleypdf`
+lives — `galleypdf --app-path` confirms which bundle it talks to.

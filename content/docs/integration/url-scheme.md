@@ -9,11 +9,28 @@ Galley registers a custom URL scheme with macOS LaunchServices for
 zero-overhead, instantaneous communication with external editors and
 scripts.
 
+The [`galleypdf` command]({{< relref "/docs/reference/galleypdf" >}}) is a
+front end over the very same scheme, so anything below can also be expressed
+as a subcommand. Use the URLs directly where an editor plugin wants a viewer
+command; reach for `galleypdf` in scripts and Makefiles, where its argument
+handling is easier to read.
+
 ## Force Reload
 
 ```bash
 open -g "galleypdf://reload"
 ```
+
+## Open a PDF
+
+```bash
+open "galleypdf://open?pdfpath=<absolute_pdf_path>"
+
+open "galleypdf://open?pdfpath=<absolute_pdf_path>&page=<page>"
+```
+
+`pdfpath` is required. `page` is optional and 1-based; values outside the
+document clamp to the first or last page.
 
 ## Forward Search
 
@@ -29,6 +46,20 @@ open -g "galleypdf://forward?line=<line>&column=<column>&pdfpath=<absolute_pdf_p
 `srcpath` is optional and is needed only when SyncTeX cannot determine the
 source from the PDF alone (multi-file projects).
 
+## Background Operation
+
+Every endpoint accepts `background=1`, which pairs with `open -g`: Galley
+brings its window up but leaves your editor in the foreground.
+
+```bash
+open -g "galleypdf://open?pdfpath=<absolute_pdf_path>&background=1"
+```
+
+`open -g` alone keeps a *running* Galley in the background. Adding
+`background=1` extends that to a cold start, where Galley would otherwise
+activate itself as it finishes launching. Editor integrations that fire on
+every build want both.
+
 > [!TIP]
 > **SyncTeX "Column 0" Workaround**
 >
@@ -37,10 +68,3 @@ source from the PDF alone (multi-file projects).
 > `column=0` and automatically shifts the search target to `line + 1` to
 > avoid this.
 
-> [!WARNING]
-> **First Forward Search**
->
-> The first time you execute a forward search, macOS will present a security
-> prompt asking for Automation permissions. Please click **OK (Allow)**. You
-> can later manage this in System Settings → Privacy & Security →
-> Automation.

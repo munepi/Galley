@@ -7,6 +7,32 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.4</title>
+      <pubDate>Fri, 07 Aug 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.4</sparkle:shortVersionString>
+      <sparkle:version>166</sparkle:version>
+      <description><![CDATA[
+        <h3>✨ New Features</h3>
+        <ul>
+          <li>New <code>galleypdf</code> command, shipped inside the application bundle — open a PDF, jump to a page, force a reload, or run a SyncTeX forward search from your shell, your editor, or a build script</li>
+          <li>Homebrew tap: <code>brew install --cask munepi/galley/galley</code> installs Galley and puts <code>galleypdf</code> on your PATH</li>
+          <li>New URL scheme endpoint <code>galleypdf://open?pdfpath=&lt;path&gt;&amp;page=&lt;page&gt;</code></li>
+          <li>Every <code>galleypdf://</code> endpoint now accepts <code>background=1</code>, so a forward search never takes focus away from your editor</li>
+        </ul>
+        <h3>🔄 Changes</h3>
+        <ul>
+          <li>The disk image now contains GalleyPDF.app itself instead of a .pkg installer, so updates no longer ask for an administrator password</li>
+          <li><code>displayline.bash</code> has been replaced by <code>galleypdf displayline</code>, which takes the same arguments without the AppleScript round trip</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.4/GalleyPDF_0.4.dmg"
+        sparkle:edSignature="lRnnypACdzW8M2zA1Py2Q9t2doddxaOfOX6xvbowMCVogzhaO16GeI4BelZEboslhfZA8pWbHTzptPxdBO5KDg=="
+        length="8883439"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.3</title>
       <pubDate>Tue, 28 Apr 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>

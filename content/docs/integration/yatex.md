@@ -36,3 +36,33 @@ your `init.el` or `.emacs`:
           (lambda ()
             (YaTeX-define-key "\C-j" 'YaTeX:galley-forward-search)))
 ```
+
+## Using the `galleypdf` command
+
+With the [`galleypdf` command]({{< relref "/docs/reference/galleypdf" >}}) on
+your `PATH`, the arguments go straight to `start-process`, so there is no URL
+to assemble and nothing to percent-encode:
+
+```elisp
+(defun YaTeX:galley-forward-search ()
+  "Perform a precise Forward Search using the galleypdf command."
+  (interactive)
+  (let* ((line (number-to-string (save-restriction
+                                   (widen)
+                                   (count-lines (point-min) (point)))))
+         (column (number-to-string (current-column)))
+         (pdf-file (expand-file-name
+                    (concat (file-name-sans-extension
+                             (or YaTeX-parent-file
+                                 (save-excursion
+                                   (YaTeX-visit-main t)
+                                   buffer-file-name)))
+                            ".pdf")))
+         (tex-file buffer-file-name))
+    (start-process "galley-forward" nil "galleypdf" "forward" "-g"
+                   "-l" line "-c" column "-s" tex-file pdf-file)))
+```
+
+Emacs started from the Dock does not inherit your shell's `PATH`. If
+`galleypdf` is not found, give `start-process` the full path
+(`/opt/homebrew/bin/galleypdf`) or keep the URL scheme version above.
