@@ -21,7 +21,7 @@ let package = Package(
             ],
             path: "Sources/Galley",
             linkerSettings: [
-                .unsafeFlags(["-Wl,-rpath,@executable_path/../Frameworks"]),
+                .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"]),
             ]
         ),
         // The `galleypdf` command. Deliberately free of Sparkle and CSynctex so

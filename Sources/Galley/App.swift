@@ -45,6 +45,7 @@ struct GalleyApp {
             "displayMode": PDFDisplayMode.singlePageContinuous.rawValue,
             "displaysAsBook": false,
             "displaysRTL": false,
+            "pageColorMode": PageColorMode.normal.rawValue,
             "syncTexEditor": "emacs",
             "emacsclientPath": "",
             "vimtexFlavor": "auto",
@@ -164,6 +165,21 @@ struct GalleyApp {
 
         viewMenu.addItem(bookModeItem)
         viewMenu.addItem(rtlItem)
+
+        viewMenu.addItem(NSMenuItem.separator())
+
+        // ページの配色 (アクセシビリティ)
+        let pageColorItem = NSMenuItem(title: "Page Color", action: nil, keyEquivalent: "")
+        let pageColorMenu = NSMenu(title: "Page Color")
+        for mode in PageColorMode.allCases {
+            let item = NSMenuItem(title: mode.menuTitle,
+                                  action: #selector(AppDelegate.changePageColorMode(_:)),
+                                  keyEquivalent: "")
+            item.tag = mode.rawValue
+            pageColorMenu.addItem(item)
+        }
+        pageColorItem.submenu = pageColorMenu
+        viewMenu.addItem(pageColorItem)
 
         viewMenu.addItem(NSMenuItem.separator())
 
@@ -292,6 +308,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             return self.validateExportMenuItem(menuItem)
         }
 
+        if menuItem.action == #selector(changePageColorMode(_:)) {
+            return self.validatePageColorMenuItem(menuItem)
+        }
+
         // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
         let currentView = self.activePDFView
 
@@ -405,6 +425,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             view!.displaysRTL = savedRTL
             view!.backgroundColor = NSColor.windowBackgroundColor
         }
+
+        // `.normal` のときは何も呼ばれない (レンダリング経路を素のままに保つ)
+        self.setupPageColorMode()
 
         // ページ移動イベントを監視してタイトルを更新するように設定
         NotificationCenter.default.addObserver(self, selector: #selector(handlePageChanged(_:)), name: .PDFViewPageChanged, object: nil)
