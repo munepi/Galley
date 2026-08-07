@@ -152,12 +152,6 @@ Every endpoint accepts `background=1`, which pairs with `open -g`: Galley shows 
 > **SyncTeX "Column 0" Workaround**
 > Many PDF viewers have a known SyncTeX issue where forward search from the beginning of a line (column 0) incorrectly jumps to the end of the previous line. Galley detects `column=0` and automatically shifts the search target to `line + 1` to avoid this.
 
-> [!WARNING]
-> **Security Note on First Forward Search**
-> The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions.
-> Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in System Settings > Privacy & Security > Automation.
-
-
 
 ## Configuration
 
