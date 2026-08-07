@@ -177,14 +177,21 @@ dmg: codesign
 	@echo "Done! $(DMG_FILENAME) created."
 
 .PHONY: notarize
-notarize: dmg codesign-pkg
+notarize: dmg
 	xcrun notarytool submit $(DMG_FILENAME) \
 	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
 	xcrun stapler staple $(DMG_FILENAME)
+	@echo "Notarization complete."
+
+# The .pkg is not part of a normal release; the disk image is what ships and
+# what Sparkle and the Homebrew cask consume. Build this only when a guided
+# installer is wanted alongside it.
+.PHONY: notarize-pkg
+notarize-pkg: codesign-pkg
 	xcrun notarytool submit $(PKG_NAME) \
 	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
 	xcrun stapler staple $(PKG_NAME)
-	@echo "Notarization complete."
+	@echo "Package notarization complete."
 
 .PHONY: log
 log:
