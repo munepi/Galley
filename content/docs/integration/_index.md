@@ -12,6 +12,8 @@ Galley communicates with external editors and scripts via its URL scheme.
   reference for the `open`, `reload` and `forward` endpoints.
 - [AUCTeX]({{< relref "auctex" >}}) — Emacs setup for forward search.
 - [YaTeX]({{< relref "yatex" >}}) — Emacs (YaTeX) setup for forward search.
+- [VimTeX]({{< relref "vimtex" >}}) — Vim / Neovim, with native Galley
+  support since VimTeX v2.18.
 - [Visual Studio Code]({{< relref "vscode" >}}) — LaTeX Workshop setup.
 
 For build scripts and Makefiles, the

@@ -11,7 +11,9 @@ feature is intentionally narrow in scope.
 
 - [Auto-Reload]({{< relref "auto-reload" >}})
 - [SyncTeX Integration]({{< relref "synctex" >}})
+- [Text Search]({{< relref "text-search" >}})
 - [Character Inspection]({{< relref "character-inspection" >}})
 - [Rectangular Selection & Measurement]({{< relref "rectangular-selection" >}})
+- [Display Modes]({{< relref "display-modes" >}})
 - [Lightweight Rendering]({{< relref "lightweight-rendering" >}})
 - [PDF Info Sidebar]({{< relref "pdf-info-sidebar" >}})
