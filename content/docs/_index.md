@@ -22,11 +22,13 @@ If you already have Galley installed, jump to
   requirements, and installation.
 - [Features]({{< relref "features" >}}) — a tour of what Galley does.
 - [Integration]({{< relref "integration" >}}) — `galleypdf://` URL scheme,
-  AUCTeX, YaTeX, and VS Code (LaTeX Workshop).
+  AUCTeX, YaTeX, VimTeX, and VS Code (LaTeX Workshop).
 - [Configuration]({{< relref "configuration" >}}) — inverse search editor
   selection, custom editor command, debug mode, and other `defaults` keys.
-- [Reference]({{< relref "reference" >}}) — keyboard shortcuts and the full
-  list of `UserDefaults` keys.
+- [Reference]({{< relref "reference" >}}) — keyboard shortcuts, the full list
+  of `UserDefaults` keys, and the `galleypdf` command.
+- [Release Notes]({{< relref "release-notes" >}}) — what changed in each
+  version.
 - [Roadmap]({{< relref "roadmap" >}}) — the "Galley Pro" ambitions.
 
 ## License
