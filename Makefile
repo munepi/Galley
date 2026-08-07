@@ -39,7 +39,7 @@ else
 GIT_SUFFIX = -$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 endif
 
-PKG_NAME := $(APP_NAME).pkg
+PKG_NAME := $(APP_NAME)_$(VERSION)$(GIT_SUFFIX).pkg
 DMG_FILENAME := $(APP_NAME)_$(VERSION)$(GIT_SUFFIX).dmg
 VOL_NAME := $(APP_NAME)
 
@@ -160,22 +160,30 @@ codesign-pkg: pkg
 	INSTALLER_CODE_SIGN_IDENTITY="$(INSTALLER_CODE_SIGN_IDENTITY)" \
 	    scripts/codesign-pkg.sh $(PKG_NAME)
 
+# The disk image carries GalleyPDF.app itself (plus the customary
+# /Applications symlink) so that `brew install --cask` can mount it and copy
+# the bundle straight out. The guided installer ships as a separate .pkg.
 .PHONY: dmg
-dmg: codesign-pkg
+dmg: codesign
 	@echo "Creating disk image ($(DMG_FILENAME)) in ULMO format..."
 	@rm -f $(DMG_FILENAME)
+	@rm -rf .build/dmg_temp
 	@mkdir -p .build/dmg_temp
-	@cp $(PKG_NAME) .build/dmg_temp/
+	ditto $(BUNDLE_NAME) .build/dmg_temp/$(BUNDLE_NAME)
+	@ln -s /Applications .build/dmg_temp/Applications
 	@cp README.md .build/dmg_temp/README.txt
 	hdiutil create -volname $(VOL_NAME) -srcfolder .build/dmg_temp -ov -format ULMO $(DMG_FILENAME)
 	@rm -rf .build/dmg_temp
 	@echo "Done! $(DMG_FILENAME) created."
 
 .PHONY: notarize
-notarize: dmg
+notarize: dmg codesign-pkg
 	xcrun notarytool submit $(DMG_FILENAME) \
 	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
 	xcrun stapler staple $(DMG_FILENAME)
+	xcrun notarytool submit $(PKG_NAME) \
+	    --keychain-profile "$(NOTARIZE_PROFILE)" --wait
+	xcrun stapler staple $(PKG_NAME)
 	@echo "Notarization complete."
 
 .PHONY: log
