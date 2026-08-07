@@ -24,5 +24,17 @@ let package = Package(
                 .unsafeFlags(["-Wl,-rpath,@executable_path/../Frameworks"]),
             ]
         ),
+        // The `galleypdf` command. Deliberately free of Sparkle and CSynctex so
+        // it stays a few milliseconds of process start; it only builds a
+        // galleypdf:// URL and hands it to LaunchServices.
+        //
+        // The product is named GalleyPDFCLI rather than galleypdf because the
+        // build directory is case-insensitive on APFS and would collide with
+        // the GalleyPDF executable. The Makefile installs it into the bundle
+        // under its real name.
+        .executableTarget(
+            name: "GalleyPDFCLI",
+            path: "Sources/GalleyPDFCLI"
+        ),
     ]
 )
