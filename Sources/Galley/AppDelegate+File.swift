@@ -36,11 +36,10 @@ import PDFKit
 // ==========================================
 extension AppDelegate {
 
-    // NOTE: (0.1, 0.2, 0.05)でも大丈夫そう
     struct DelaySettings {
-        static let pollingInterval: TimeInterval = 0.1  // 0.2 // ファイル変更を監視する間隔
-        static let reloadWait: TimeInterval = 0.2       // 0.4 // 変更検知からリロード処理を開始するまでの待機時間
-        static let swapWait: TimeInterval = 0.05        // 0.15 // 裏で読み込みが完了してから画面を入れ替えるまでの待機時間
+        static let pollingInterval: TimeInterval = 0.2  // ファイル変更を監視する間隔
+        static let reloadWait: TimeInterval = 0.4       // 変更検知からリロード処理を開始するまでの待機時間
+        static let swapWait: TimeInterval = 0.15        // 裏で読み込みが完了してから画面を入れ替えるまでの待機時間
     }
 
     @objc func openDocument(_ sender: Any?) {
@@ -64,7 +63,10 @@ extension AppDelegate {
         return true
     }
 
-    func loadPDF(url: URL) {
+    /// PDF を読み込む。
+    /// - Parameter activate: `false` を渡すと Galley をフォアグラウンドに出さない
+    ///   （`open -g "galleypdf://open?...&background=1"` 用）。
+    func loadPDF(url: URL, activate: Bool = true) {
         if let modal = NSApp.modalWindow, modal is NSOpenPanel {
             NSApp.stopModal()
             modal.close()
@@ -94,8 +96,21 @@ extension AppDelegate {
         startMonitoring(url: url)
 
         // open -a 経由で開いた場合にウィンドウを前面化
-        self.window?.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        if activate {
+            self.window?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        } else {
+            self.window?.orderFrontRegardless()
+        }
+    }
+
+    /// 1 始まりのページ番号へ移動する（範囲外は端に丸める）。
+    func goToPage(_ pageNumber: Int) {
+        guard let document = self.activePDFView.document, document.pageCount > 0 else { return }
+        let index = min(max(pageNumber, 1), document.pageCount) - 1
+        guard let page = document.page(at: index) else { return }
+        Log.file.info("goToPage: requested=\(pageNumber) index=\(index) of \(document.pageCount)")
+        self.activePDFView.go(to: page)
     }
 
     @objc func printDocument(_ sender: Any?) {

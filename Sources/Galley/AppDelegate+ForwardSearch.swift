@@ -56,7 +56,8 @@ extension AppDelegate {
         replyEvent.setDescriptor(NSAppleEventDescriptor(string: "OK"), forKeyword: keyDirectObject)
     }
 
-    func processForwardSearch(line: Int32, column: Int32? = nil, pdfPath: String?, srcPath: String?) {
+    func processForwardSearch(line: Int32, column: Int32? = nil, pdfPath: String?, srcPath: String?,
+                              background: Bool = false) {
         let pdfName = (pdfPath as NSString?)?.lastPathComponent ?? "nil"
 
         // 1. srcPath が省略された場合、PDFのパスから .tex ファイルを推測するフォールバック
@@ -70,7 +71,7 @@ extension AppDelegate {
         if let pPath = pdfPath {
             let url = URL(fileURLWithPath: pPath).absoluteURL
             if self.fileURL?.path != url.path {
-                self.loadPDF(url: url)
+                self.loadPDF(url: url, activate: !background)
             }
         }
         guard let currentPDFPath = self.fileURL?.path else { return }
