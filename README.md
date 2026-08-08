@@ -325,6 +325,20 @@ defaults write com.github.munepi.galley nvimPath "/path/to/your/nvim"
 > Neovim has RPC built in and needs no equivalent setup.
 
 
+#### Adjusting the Dark Page Color
+
+`View > Page Color > Dark` uses the same paper color as Preview (`#1E1E1E`). If you find it too heavy, you can lighten it:
+
+~~~bash
+defaults write com.github.munepi.galley pageColorDarkPaper "#303030"
+~~~
+
+Delete the key to return to the default. Colors whose relative luminance exceeds 0.10 are ignored, so that light text keeps a WCAG AAA (7:1) contrast ratio against the page.
+
+> [!NOTE]
+> This is an unadvertised preference that rides on a private PDFKit facility, and it exists only because the default suits some readers and not others. It may be removed or stop working in a future release of Galley or of macOS. Nothing else depends on it — if it goes away, `Dark` simply returns to the default paper color.
+
+
 ### 5. Debug Logging
 
 Galley emits structured logs via Apple's unified logging system (`os_log`) under the subsystem `com.github.munepi.galley`. Use this to verify SyncTeX coordinate data, inspect reload behavior, or troubleshoot Forward/Inverse Search.

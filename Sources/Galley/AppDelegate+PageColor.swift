@@ -92,6 +92,25 @@ extension AppDelegate {
         NSSelectorFromString("setAllowsDarkAppearanceContent:")
     private static let allowsDarkContentKey = "allowsDarkAppearanceContent"
 
+    /// 同じ SPI にある紙色の設定子。既定 (未設定) では PDFKit が Apple 準拠の
+    /// #1E1E1E を使う。「もう少し薄いダーク」が欲しい人のための隠し設定で、
+    /// メニューには出さない。SPI に依存しているので予告なく無くなりうる。
+    private static let setDarkPaperSelector =
+        NSSelectorFromString("setDarkModeBackgroundColor:")
+    private static let darkPaperKey = "darkModeBackgroundColor"
+    static let darkPaperDefaultsKey = "pageColorDarkPaper"
+
+    /// `defaults write com.github.munepi.galley pageColorDarkPaper "#303030"`
+    ///
+    /// 明色インクに対して AAA (7:1) を保つため、相対輝度 0.10 を超える色は
+    /// 受け付けず、PDFKit の既定にフォールバックする。
+    private static var darkPaperOverride: NSColor? {
+        guard let spec = UserDefaults.standard.string(forKey: darkPaperDefaultsKey),
+              let color = NSColor(galleyHexString: spec) else { return nil }
+
+        return color.galleyRelativeLuminance <= 0.10 ? color : nil
+    }
+
     var pageColorMode: PageColorMode {
         PageColorMode(rawValue: UserDefaults.standard.integer(forKey: Self.pageColorDefaultsKey)) ?? .normal
     }
@@ -153,6 +172,9 @@ extension AppDelegate {
         if view.responds(to: setAllowsDarkContentSelector) {
             view.setValue(false, forKey: allowsDarkContentKey)
         }
+        if view.responds(to: setDarkPaperSelector) {
+            view.setValue(nil, forKey: darkPaperKey)
+        }
         view.appearance = nil
         view.documentView?.layer?.filters = nil
         self.removeTintLayer(from: view)
@@ -168,6 +190,11 @@ extension AppDelegate {
                 // macOS 26+: PDFKit 自身の実装に委譲する (Preview.app と同じ挙動)。
                 // NOTE: BOOL 引数は perform(_:with:) では正しく渡らないため KVC を使う。
                 view.setValue(true, forKey: allowsDarkContentKey)
+
+                if view.responds(to: setDarkPaperSelector) {
+                    // nil を渡すと PDFKit の既定 (#1E1E1E) に戻る
+                    view.setValue(self.darkPaperOverride, forKey: darkPaperKey)
+                }
             } else {
                 // macOS 25 以前へのフォールバック。合成後のピクセルにしか触れないため、
                 // 埋め込み画像も反転する (Classic Invert 相当)。また layer.filters は
@@ -268,5 +295,34 @@ extension AppDelegate {
         DispatchQueue.main.async {
             self.applyPageColorMode(self.pageColorMode)
         }
+    }
+}
+
+private extension NSColor {
+
+    /// "#RRGGBB" / "RRGGBB" を sRGB の色として読む。
+    convenience init?(galleyHexString string: String) {
+        var hex = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        if hex.hasPrefix("#") { hex.removeFirst() }
+
+        guard hex.count == 6, let value = UInt32(hex, radix: 16) else { return nil }
+
+        self.init(srgbRed: CGFloat((value >> 16) & 0xFF) / 255.0,
+                  green: CGFloat((value >> 8) & 0xFF) / 255.0,
+                  blue: CGFloat(value & 0xFF) / 255.0,
+                  alpha: 1)
+    }
+
+    /// WCAG 2.x の相対輝度。コントラスト比 = (明 + 0.05) / (暗 + 0.05)。
+    var galleyRelativeLuminance: CGFloat {
+        guard let c = self.usingColorSpace(.sRGB) else { return 1 }
+
+        func channel(_ v: CGFloat) -> CGFloat {
+            v <= 0.04045 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4)
+        }
+
+        return 0.2126 * channel(c.redComponent)
+             + 0.7152 * channel(c.greenComponent)
+             + 0.0722 * channel(c.blueComponent)
     }
 }
