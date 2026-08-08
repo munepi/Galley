@@ -66,7 +66,10 @@ enum PageColorMode: Int, CaseIterable {
     /// 紙の色。乗算合成で白い紙をこの色に着色する。反転モードでは使わない。
     ///
     /// いずれも黒インクに対する WCAG コントラスト比が AAA (7:1) を大きく上回る。
-    /// Sepia 11.6:1 / Orange 13.4:1 / Gray 13.9:1。
+    /// Sepia 17.8:1 / Orange 18.7:1 / Gray 14.7:1。
+    ///
+    /// 乗算合成では黒インクが黒のまま残るため、比は紙色の相対輝度 L だけで
+    /// (L + 0.05) / 0.05 と決まる。AAA (7:1) の条件は L >= 0.30。
     var paperColor: NSColor? {
         switch self {
         case .sepia:  return NSColor(srgbRed: 0xF4/255.0, green: 0xEC/255.0, blue: 0xD8/255.0, alpha: 1)
