@@ -171,12 +171,17 @@ struct GalleyApp {
         // ページの配色 (アクセシビリティ)
         let pageColorItem = NSMenuItem(title: "Page Color", action: nil, keyEquivalent: "")
         let pageColorMenu = NSMenu(title: "Page Color")
-        for mode in PageColorMode.allCases {
-            let item = NSMenuItem(title: mode.menuTitle,
-                                  action: #selector(AppDelegate.changePageColorMode(_:)),
-                                  keyEquivalent: "")
-            item.tag = mode.rawValue
-            pageColorMenu.addItem(item)
+        for (index, group) in PageColorMode.menuGroups.enumerated() {
+            if index > 0 {
+                pageColorMenu.addItem(NSMenuItem.separator())
+            }
+            for mode in group {
+                let item = NSMenuItem(title: mode.menuTitle,
+                                      action: #selector(AppDelegate.changePageColorMode(_:)),
+                                      keyEquivalent: "")
+                item.tag = mode.rawValue
+                pageColorMenu.addItem(item)
+            }
         }
         pageColorItem.submenu = pageColorMenu
         viewMenu.addItem(pageColorItem)

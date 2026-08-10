@@ -44,24 +44,45 @@ import PDFKit
 // ==========================================
 
 enum PageColorMode: Int, CaseIterable {
-    case normal = 0
-    case dark   = 1
-    case sepia  = 2
-    case orange = 3
-    case gray   = 4
+    // raw value は UserDefaults に永続化されるため、既存の値は変更しないこと。
+    case normal   = 0
+    case dark     = 1
+    case sepia    = 2
+    case orange   = 3
+    case gray     = 4
+    case charcoal = 5
+
+    /// メニューでの並び。反転する群と紙を着色するだけの群を区切り線で分ける。
+    static let menuGroups: [[PageColorMode]] = [
+        [.normal],
+        [.dark, .charcoal],
+        [.sepia, .orange, .gray],
+    ]
 
     var menuTitle: String {
         switch self {
-        case .normal: return "Normal"
-        case .dark:   return "Dark"
-        case .sepia:  return "Sepia"
-        case .orange: return "Orange"
-        case .gray:   return "Gray"
+        case .normal:   return "Normal"
+        case .dark:     return "Dark"
+        case .charcoal: return "Charcoal"
+        case .sepia:    return "Sepia"
+        case .orange:   return "Orange"
+        case .gray:     return "Gray"
         }
     }
 
     /// 明暗を入れ替えるモードかどうか。システムの Invert Colors と競合しうる。
-    var invertsContent: Bool { self == .dark }
+    var invertsContent: Bool { self == .dark || self == .charcoal }
+
+    /// 反転モードでの紙の色。`.dark` は PDFKit の既定 (#1E1E1E) に委ねるため nil。
+    ///
+    /// Charcoal の #2C2C2E は Apple のダークグレー・ランプで #1C1C1E の一段上、
+    /// macOS と iOS が浮いた面に使う色。明色インクに対して 11.4:1 で AAA を満たす。
+    var darkPaperColor: NSColor? {
+        switch self {
+        case .charcoal: return NSColor(srgbRed: 0x2C/255.0, green: 0x2C/255.0, blue: 0x2E/255.0, alpha: 1)
+        default: return nil
+        }
+    }
 
     /// 紙の色。乗算合成で白い紙をこの色に着色する。反転モードでは使わない。
     ///
@@ -75,7 +96,7 @@ enum PageColorMode: Int, CaseIterable {
         case .sepia:  return NSColor(srgbRed: 0xF4/255.0, green: 0xEC/255.0, blue: 0xD8/255.0, alpha: 1)
         case .orange: return NSColor(srgbRed: 0xFF/255.0, green: 0xF0/255.0, blue: 0xD9/255.0, alpha: 1)
         case .gray:   return NSColor(srgbRed: 0xD8/255.0, green: 0xD8/255.0, blue: 0xD2/255.0, alpha: 1)
-        case .normal, .dark: return nil
+        case .normal, .dark, .charcoal: return nil
         }
     }
 }
@@ -192,13 +213,17 @@ extension AppDelegate {
                 view.setValue(true, forKey: allowsDarkContentKey)
 
                 if view.responds(to: setDarkPaperSelector) {
-                    // nil を渡すと PDFKit の既定 (#1E1E1E) に戻る
-                    view.setValue(self.darkPaperOverride, forKey: darkPaperKey)
+                    // nil を渡すと PDFKit の既定 (#1E1E1E) に戻る。
+                    // 隠し設定は Dark の微調整用なので Charcoal には効かせない。
+                    let paper = (effective == .dark) ? self.darkPaperOverride
+                                                     : effective.darkPaperColor
+                    view.setValue(paper, forKey: darkPaperKey)
                 }
             } else {
                 // macOS 25 以前へのフォールバック。合成後のピクセルにしか触れないため、
                 // 埋め込み画像も反転する (Classic Invert 相当)。また layer.filters は
                 // 適用前にレイヤ内容を平坦化するため、ズーム時の文字は SPI より粗い。
+                // 紙の濃さも指定できないので、Charcoal は Dark と同じ見え方になる。
                 self.setFilters(self.invertFilters(), on: view)
             }
         } else if let paper = effective.paperColor {
