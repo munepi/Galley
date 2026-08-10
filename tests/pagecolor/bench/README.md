@@ -38,16 +38,36 @@ nothing.
 
 Two workloads are available:
 
-- `-m url` (default) drives Galley through its own `galleypdf://`
-  scheme. No special permissions, but each step reloads the document, so
-  it weighs loading as much as compositing.
-- `-m keys` sends Page Down through System Events, exercising scrolling
-  and compositing directly. Requires Accessibility permission for your
-  terminal.
+- `-m load` (default) launches, waits for the document to render, and
+  reads the process's total CPU time. No special permissions needed.
+  Measures parsing and first-page rendering.
+- `-m keys` additionally sends Page Down through System Events and
+  measures only the scrolling, which is where layer filters and overlays
+  would show up. Requires Accessibility permission for your terminal.
+
+Note what is *not* here: a `galleypdf://` workload. Both builds carry the
+bundle id `com.github.munepi.galley`, so LaunchServices routes those URLs
+— and `open -a` — to whichever copy it has registered, usually the
+installed `/Applications/GalleyPDF.app`. The script launches the
+executable inside the bundle directly instead, which targets the right
+build and yields an exact pid.
 
 RSS matters as much as CPU here. The original worry was that forcing
 `wantsLayer` on the document view would allocate a large backing store
 even when the feature is off; equal memory is what rules that out.
+
+## Result on record
+
+macOS 26.5, M-series, `-m load -n 2`, against a 288-page Japanese book
+PDF (`gihyo-planaidd-print_0.5`):
+
+| build | median CPU | median RSS |
+|---|---|---|
+| baseline `7c7dfee` | 0.67 s | 223.1 MB |
+| current, Page Color = Normal | 0.67 s | 217.3 MB |
+
+Identical CPU, and memory equal within run-to-run variation — in
+particular no extra backing store, which was the specific worry.
 
 ## Reading the result
 
