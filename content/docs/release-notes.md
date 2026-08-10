@@ -34,9 +34,15 @@ Galley checks for updates once a day and can be updated at any time from
 - Every `galleypdf://` endpoint now accepts `background=1`, so a forward
   search never takes focus away from your editor — even when it is what
   launches Galley.
+- **Vim/Neovim (VimTeX)** joins the SyncTeX menu, so `Cmd + Click` in the PDF
+  jumps back into your editor. Forward search has worked since VimTeX v2.18,
+  and this completes the round trip. See
+  [VimTeX]({{< relref "/docs/integration/vimtex" >}}).
 
 ### Changed
 
+- [Rectangular selection]({{< relref "/docs/features/rectangular-selection" >}})
+  reports its dimensions to 0.01 mm, up from 0.1 mm.
 - The disk image now contains `GalleyPDF.app` itself instead of a `.pkg`
   installer. Mount it and drag the app onto the `Applications` shortcut.
 - Updates therefore replace the application in place, and **no longer ask for
@@ -45,6 +51,13 @@ Galley checks for updates once a day and can be updated at any time from
   a first launch works without a network connection.
 - `displayline.bash` has been replaced by `galleypdf displayline`, which takes
   the same arguments without the AppleScript round trip.
+
+### Fixed
+
+- Quitting with the Fonts or XMP subtab open no longer leaves the
+  [Info sidebar]({{< relref "/docs/features/pdf-info-sidebar" >}}) there on the
+  next launch, where a font scan would start up behind a spinner. The sidebar
+  returns to Info instead.
 
 ---
 
