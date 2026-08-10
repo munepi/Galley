@@ -75,11 +75,15 @@ enum PageColorMode: Int, CaseIterable {
 
     /// 反転モードでの紙の色。`.dark` は PDFKit の既定 (#1E1E1E) に委ねるため nil。
     ///
-    /// Charcoal の #2C2C2E は Apple のダークグレー・ランプで #1C1C1E の一段上、
-    /// macOS と iOS が浮いた面に使う色。明色インクに対して 11.4:1 で AAA を満たす。
+    /// Charcoal の #2C2C2B は、Apple のダークグレー・ランプで #1C1C1E の一段上に
+    /// あたる #2C2C2E と同じ明度のまま、色温度だけを暖色側へ振ったもの。
+    /// 明色インクに対して 11.4:1 で AAA を満たす。
+    ///
+    /// 暖色にしているのは、K 版だけで組まれた文書 (ページのほぼ全画素が無彩色)
+    /// を反転すると事実上の白黒反転になり、中性色の紙では当たりが強いため。
     var darkPaperColor: NSColor? {
         switch self {
-        case .charcoal: return NSColor(srgbRed: 0x2C/255.0, green: 0x2C/255.0, blue: 0x2E/255.0, alpha: 1)
+        case .charcoal: return NSColor(srgbRed: 0x2C/255.0, green: 0x2C/255.0, blue: 0x2B/255.0, alpha: 1)
         default: return nil
         }
     }
