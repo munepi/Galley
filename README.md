@@ -38,6 +38,14 @@ brew install --cask munepi/galley/galley
 This installs `GalleyPDF.app` into `/Applications` and puts the bundled
 [`galleypdf`](#command-line-galleypdf) command on your `PATH`.
 
+Homebrew 6 and later only loads casks from non-official taps after you trust
+them. If the install is blocked, trust the cask first and run the install
+again:
+
+~~~bash
+brew trust munepi/galley/galley
+~~~
+
 ### Download Binaries
 
 Pre-compiled Universal Binaries are available under the [Releases](https://github.com/munepi/Galley/releases) section.
