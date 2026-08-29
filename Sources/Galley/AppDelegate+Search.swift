@@ -38,6 +38,9 @@ extension AppDelegate {
 
     private static let searchBarHeight: CGFloat = 36.0
 
+    /// buildCleanedText が取り除く改行文字 (LF, CR, NEL, LS, PS)
+    static let searchLineBreakScalars: Set<UInt32> = [0x0A, 0x0D, 0x85, 0x2028, 0x2029]
+
     // ==========================================
     // 検索バーの生成とウィンドウへの配置
     // ==========================================
@@ -85,8 +88,15 @@ extension AppDelegate {
         nextBtn.isBordered = false
         nextBtn.setContentHuggingPriority(.required, for: .horizontal)
 
+        // --- 大文字小文字を区別するチェックボックス ---
+        let matchCaseCheck = NSButton(checkboxWithTitle: "Match Case", target: self, action: #selector(searchOptionToggleAction(_:)))
+        matchCaseCheck.translatesAutoresizingMaskIntoConstraints = false
+        matchCaseCheck.controlSize = .small
+        matchCaseCheck.font = .systemFont(ofSize: 11)
+        matchCaseCheck.setContentHuggingPriority(.required, for: .horizontal)
+
         // --- 正規表現チェックボックス ---
-        let regexCheck = NSButton(checkboxWithTitle: "Regex", target: self, action: #selector(regexToggleAction(_:)))
+        let regexCheck = NSButton(checkboxWithTitle: "Regex", target: self, action: #selector(searchOptionToggleAction(_:)))
         regexCheck.translatesAutoresizingMaskIntoConstraints = false
         regexCheck.controlSize = .small
         regexCheck.font = .systemFont(ofSize: 11)
@@ -103,6 +113,7 @@ extension AppDelegate {
         bar.addSubview(countLabel)
         bar.addSubview(prevBtn)
         bar.addSubview(nextBtn)
+        bar.addSubview(matchCaseCheck)
         bar.addSubview(regexCheck)
         bar.addSubview(closeBtn)
 
@@ -130,7 +141,10 @@ extension AppDelegate {
             nextBtn.leadingAnchor.constraint(equalTo: prevBtn.trailingAnchor, constant: 2),
             nextBtn.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
 
-            regexCheck.leadingAnchor.constraint(equalTo: nextBtn.trailingAnchor, constant: 12),
+            matchCaseCheck.leadingAnchor.constraint(equalTo: nextBtn.trailingAnchor, constant: 12),
+            matchCaseCheck.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+
+            regexCheck.leadingAnchor.constraint(equalTo: matchCaseCheck.trailingAnchor, constant: 12),
             regexCheck.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
 
             closeBtn.leadingAnchor.constraint(greaterThanOrEqualTo: regexCheck.trailingAnchor, constant: 8),
@@ -143,6 +157,7 @@ extension AppDelegate {
         self.searchField = field
         self.searchMatchCountLabel = countLabel
         self.searchRegexCheckbox = regexCheck
+        self.searchMatchCaseCheckbox = matchCaseCheck
     }
 
     // ==========================================
@@ -223,8 +238,77 @@ extension AppDelegate {
         highlightCurrentMatch()
     }
 
-    @objc func regexToggleAction(_ sender: NSButton) {
+    @objc func searchOptionToggleAction(_ sender: NSButton) {
         performSearch()
+    }
+
+    // ==========================================
+    // メニュー経由の検索ナビゲーション
+    // (Cmd + G / Shift + Cmd + G / Cmd + E)
+    //
+    // 検索バーを閉じるとハイライトも結果も破棄されるため、
+    // 検索語だけ残っている状態では検索を実行し直してから移動する。
+    // ==========================================
+    @objc func findNextAction(_ sender: Any?) {
+        if searchResults.isEmpty {
+            reRunSearchIfPossible()
+            return
+        }
+        searchNextAction(sender)
+    }
+
+    @objc func findPreviousAction(_ sender: Any?) {
+        if searchResults.isEmpty {
+            reRunSearchIfPossible()
+            return
+        }
+        searchPreviousAction(sender)
+    }
+
+    private func reRunSearchIfPossible() {
+        guard let query = searchField?.stringValue,
+              !query.isEmpty else {
+            NSSound.beep()
+            return
+        }
+        performSearch()
+        if searchResults.isEmpty { NSSound.beep() }
+    }
+
+    /// 選択中のテキストを検索語にする (macOS 標準の Use Selection for Find)
+    @objc func useSelectionForFindAction(_ sender: Any?) {
+        let selected = (activePDFView.currentSelection?.string ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !selected.isEmpty else {
+            NSSound.beep()
+            return
+        }
+
+        // 検索バーは表示しないが、フィールドの実体は必要なので生成しておく
+        if searchBarContainer == nil { setupSearchBar() }
+
+        // 選択文字列は行またぎで改行を含みうる。検索側 (buildCleanedText) は
+        // 改行を「空白に置換」ではなく「除去」するので、ここでも同じ扱いにする
+        let normalized = String(selected.unicodeScalars.filter {
+            !AppDelegate.searchLineBreakScalars.contains($0.value)
+        })
+
+        guard !normalized.isEmpty else {
+            NSSound.beep()
+            return
+        }
+
+        searchField?.stringValue = normalized
+        searchRegexCheckbox?.state = .off
+
+        // 他アプリと検索語を共有する (macOS の find pasteboard)
+        let findPasteboard = NSPasteboard(name: .find)
+        findPasteboard.clearContents()
+        findPasteboard.setString(normalized, forType: .string)
+
+        performSearch()
+        if searchResults.isEmpty { NSSound.beep() }
     }
 
     @objc func closeSearchBarAction(_ sender: Any?) {
@@ -242,11 +326,12 @@ extension AppDelegate {
         }
 
         let useRegex = (searchRegexCheckbox?.state == .on)
+        let matchCase = (searchMatchCaseCheckbox?.state == .on)
 
         if useRegex {
-            searchResults = performRegexSearch(query, in: doc)
+            searchResults = performRegexSearch(query, in: doc, matchCase: matchCase)
         } else {
-            searchResults = performCrossLineSearch(query, in: doc)
+            searchResults = performCrossLineSearch(query, in: doc, matchCase: matchCase)
         }
 
         searchCurrentIndex = nearestMatchIndex()
@@ -294,7 +379,7 @@ extension AppDelegate {
         while i < nsString.length {
             let ch = nsString.character(at: i)
             // 改行文字 (LF, CR, NEL, LS, PS) を除去
-            if ch == 0x0A || ch == 0x0D || ch == 0x85 || ch == 0x2028 || ch == 0x2029 {
+            if AppDelegate.searchLineBreakScalars.contains(UInt32(ch)) {
                 i += 1
                 continue
             }
@@ -323,8 +408,10 @@ extension AppDelegate {
     }
 
     /// 通常テキスト検索（行またぎ対応）
-    private func performCrossLineSearch(_ query: String, in doc: PDFDocument) -> [PDFSelection] {
-        let lowerQuery = query.lowercased()
+    private func performCrossLineSearch(_ query: String, in doc: PDFDocument, matchCase: Bool) -> [PDFSelection] {
+        // 大文字小文字を区別しない場合のみ、両辺を小文字に畳んでから突き合わせる。
+        // 畳んでも UTF-16 の長さが変わらないよう、インデックス対応は維持される想定
+        let normalizedQuery = matchCase ? query : query.lowercased()
         var results: [PDFSelection] = []
 
         for i in 0..<doc.pageCount {
@@ -332,17 +419,17 @@ extension AppDelegate {
                   let pageString = page.string else { continue }
 
             let (cleaned, indexMap) = buildCleanedText(from: pageString)
-            let lowerCleaned = cleaned.lowercased() as NSString
-            let queryNS = lowerQuery as NSString
+            let haystack = (matchCase ? cleaned : cleaned.lowercased()) as NSString
+            let queryNS = normalizedQuery as NSString
             let queryLen = queryNS.length
 
             guard queryLen > 0 else { continue }
 
             var searchStart = 0
-            while searchStart + queryLen <= lowerCleaned.length {
-                let range = lowerCleaned.range(of: lowerQuery as String,
-                                               options: [],
-                                               range: NSRange(location: searchStart, length: lowerCleaned.length - searchStart))
+            while searchStart + queryLen <= haystack.length {
+                let range = haystack.range(of: normalizedQuery,
+                                           options: [],
+                                           range: NSRange(location: searchStart, length: haystack.length - searchStart))
                 if range.location == NSNotFound { break }
 
                 if let sel = selectionFromCleanedRange(
@@ -359,8 +446,9 @@ extension AppDelegate {
     }
 
     /// 正規表現検索（行またぎ対応）
-    private func performRegexSearch(_ pattern: String, in doc: PDFDocument) -> [PDFSelection] {
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+    private func performRegexSearch(_ pattern: String, in doc: PDFDocument, matchCase: Bool) -> [PDFSelection] {
+        let options: NSRegularExpression.Options = matchCase ? [] : [.caseInsensitive]
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else {
             updateMatchCountLabel(error: true)
             return []
         }

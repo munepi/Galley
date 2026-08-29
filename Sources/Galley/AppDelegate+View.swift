@@ -78,6 +78,19 @@ extension AppDelegate {
         }
     }
 
+    // ナビゲーション履歴系
+    // 履歴は PDFView ごとに独立しているため、goToPage と同様に表示中のビューだけを動かす。
+    // 裏のビューはリロード時に activePDFView の位置から同期されるので、ここでは触らない。
+    @objc func goBackAction(_ sender: Any?) {
+        guard activePDFView.canGoBack else { return }
+        activePDFView.goBack(sender)
+    }
+
+    @objc func goForwardAction(_ sender: Any?) {
+        guard activePDFView.canGoForward else { return }
+        activePDFView.goForward(sender)
+    }
+
     // 表示モード変更系
     @objc func changeDisplayMode(_ sender: NSMenuItem) {
         let mode: PDFDisplayMode

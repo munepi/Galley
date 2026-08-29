@@ -124,7 +124,28 @@ struct GalleyApp {
         editMenuItem.submenu = editMenu
         editMenu.addItem(withTitle: "Copy", action: #selector(PDFView.copy(_:)), keyEquivalent: "c")
         editMenu.addItem(NSMenuItem.separator())
-        editMenu.addItem(withTitle: "Find...", action: #selector(AppDelegate.toggleSearchBar(_:)), keyEquivalent: "f")
+
+        // Find サブメニュー (Preview.app と同じ構成・同じキー)
+        let findItem = NSMenuItem(title: "Find", action: nil, keyEquivalent: "")
+        let findMenu = NSMenu(title: "Find")
+        findItem.submenu = findMenu
+
+        findMenu.addItem(withTitle: "Find...",
+                         action: #selector(AppDelegate.toggleSearchBar(_:)),
+                         keyEquivalent: "f")
+        findMenu.addItem(withTitle: "Find Next",
+                         action: #selector(AppDelegate.findNextAction(_:)),
+                         keyEquivalent: "g")
+        // 大文字の "G" は Shift + Cmd + G として扱われる
+        findMenu.addItem(withTitle: "Find Previous",
+                         action: #selector(AppDelegate.findPreviousAction(_:)),
+                         keyEquivalent: "G")
+        findMenu.addItem(NSMenuItem.separator())
+        findMenu.addItem(withTitle: "Use Selection for Find",
+                         action: #selector(AppDelegate.useSelectionForFindAction(_:)),
+                         keyEquivalent: "e")
+
+        editMenu.addItem(findItem)
 
         // --- 4. View メニュー (Zoom系 & ページナビゲーション系) ---
         let viewMenu = NSMenu(title: "View")
@@ -199,26 +220,29 @@ struct GalleyApp {
         viewMenu.addItem(NSMenuItem.separator())
 
         // ページナビゲーション系
+        // 1 アクションにつきメニュー項目は 1 つだけにする。項目名が重複すると
+        // システム設定の「Appのショートカット」から一意に指定できなくなるため、
+        // 別バインドが欲しい場合はそちらで割り当ててもらう
         let nextPageItem = NSMenuItem(title: "Next Page", action: #selector(AppDelegate.nextPageAction(_:)), keyEquivalent: " ")
         nextPageItem.keyEquivalentModifierMask = []
-
-        let nextPageAltItem = NSMenuItem(title: "Next Page", action: #selector(AppDelegate.nextPageAction(_:)), keyEquivalent: "j")
-        nextPageAltItem.keyEquivalentModifierMask = [.option]
-        nextPageAltItem.isAlternate = true
-        nextPageAltItem.isHidden = true
 
         let prevPageItem = NSMenuItem(title: "Previous Page", action: #selector(AppDelegate.previousPageAction(_:)), keyEquivalent: " ")
         prevPageItem.keyEquivalentModifierMask = [.shift]
 
-        let prevPageAltItem = NSMenuItem(title: "Previous Page", action: #selector(AppDelegate.previousPageAction(_:)), keyEquivalent: "k")
-        prevPageAltItem.keyEquivalentModifierMask = [.option]
-        prevPageAltItem.isAlternate = true
-        prevPageAltItem.isHidden = true
-
         viewMenu.addItem(nextPageItem)
-        viewMenu.addItem(nextPageAltItem)
         viewMenu.addItem(prevPageItem)
-        viewMenu.addItem(prevPageAltItem)
+
+        viewMenu.addItem(NSMenuItem.separator())
+
+        // ナビゲーション履歴 (Preview.app と同じ Cmd + [ / Cmd + ])
+        // 別バインドが欲しい場合はシステム設定の「Appのショートカット」で
+        // この項目名に割り当ててもらう。項目名が一意である必要があるため、
+        // ここでは意図的にエイリアスを増やしていない
+        let backItem = NSMenuItem(title: "Back", action: #selector(AppDelegate.goBackAction(_:)), keyEquivalent: "[")
+        let forwardItem = NSMenuItem(title: "Forward", action: #selector(AppDelegate.goForwardAction(_:)), keyEquivalent: "]")
+
+        viewMenu.addItem(backItem)
+        viewMenu.addItem(forwardItem)
 
         // --- 5. SyncTeX メニュー ---
         let syncTexMenu = NSMenu(title: "SyncTeX")
@@ -291,6 +315,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var searchField: NSSearchField?
     var searchMatchCountLabel: NSTextField?
     var searchRegexCheckbox: NSButton?
+    var searchMatchCaseCheckbox: NSButton?
     var searchBarVisible: Bool = false
     var searchResults: [PDFSelection] = []
     var searchCurrentIndex: Int = 0
@@ -315,6 +340,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
         if menuItem.action == #selector(changePageColorMode(_:)) {
             return self.validatePageColorMenuItem(menuItem)
+        }
+
+        // ウィンドウ構築前にも validate が走りうるので optional で受ける
+        let viewForValidation: GalleyPDFView? = isShowingA ? pdfViewA : pdfViewB
+
+        // ナビゲーション履歴は行き先がある時だけ有効化
+        if menuItem.action == #selector(goBackAction(_:)) {
+            return viewForValidation?.canGoBack ?? false
+        }
+        if menuItem.action == #selector(goForwardAction(_:)) {
+            return viewForValidation?.canGoForward ?? false
+        }
+
+        // 検索語が無ければ Find Next / Previous は無効
+        if menuItem.action == #selector(findNextAction(_:)) ||
+           menuItem.action == #selector(findPreviousAction(_:)) {
+            return !(self.searchField?.stringValue.isEmpty ?? true)
+        }
+
+        // 選択テキストが無ければ Use Selection for Find は無効
+        if menuItem.action == #selector(useSelectionForFindAction(_:)) {
+            let selected = viewForValidation?.currentSelection?.string ?? ""
+            return !selected.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
 
         // activePDFViewを基準に、現在どのモードになっているかを判定してメニューの✓を制御
