@@ -8,6 +8,9 @@ bookCollapseSection = true
 
 - [Keyboard Shortcuts]({{< relref "shortcuts" >}}) — full table of shortcuts
   and gestures, plus page-navigation and interface notes.
+- [Custom Key Bindings]({{< relref "key-bindings" >}}) — rebind any menu item,
+  including Vim-style navigation, via System Settings, `defaults`, or
+  Karabiner-Elements.
 - [UserDefaults Keys]({{< relref "userdefaults" >}}) — every `defaults write`
   key Galley reads, in one place.
 - [`galleypdf` Command]({{< relref "galleypdf" >}}) — every subcommand,
