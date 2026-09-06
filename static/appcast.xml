@@ -7,6 +7,33 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.5</title>
+      <pubDate>Sun, 06 Sep 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.5</sparkle:shortVersionString>
+      <sparkle:version>191</sparkle:version>
+      <description><![CDATA[
+        <h3>✨ New Features</h3>
+        <ul>
+          <li>Page Color (View &#9656; Page Color) &mdash; recolors the page for comfortable reading. <code>Dark</code> and <code>Charcoal</code> invert the page while leaving embedded photographs positive; <code>Sepia</code>, <code>Orange</code> and <code>Gray</code> tint the paper and leave the ink alone</li>
+          <li>Every preset keeps a WCAG AAA (7:1) contrast ratio, and the change is display-only &mdash; copying, exporting and printing keep the document's original colors</li>
+          <li>Standard macOS find keys: <code>Cmd + G</code> / <code>Shift + Cmd + G</code> step through matches whether or not the search bar is focused, and <code>Cmd + E</code> searches for the current selection</li>
+          <li>A <code>Match Case</code> option in the search bar, applying to plain and regular-expression searches alike</li>
+          <li>Navigation history: <code>Cmd + [</code> / <code>Cmd + ]</code> return to where you were before following a link, a bookmark, a search match or a Forward Search</li>
+        </ul>
+        <h3>🔄 Changes</h3>
+        <ul>
+          <li>The hidden <code>Opt + J</code> / <code>Opt + K</code> page aliases are gone. Every command is now a single, uniquely titled menu item, so any of them can be rebound from System Settings, <code>defaults</code> or Karabiner-Elements</li>
+          <li>Regular-expression search is no longer forced to be case-insensitive; the <code>Match Case</code> checkbox decides</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.5/GalleyPDF_0.5.dmg"
+        sparkle:edSignature="Ng8bO4/9inOlej+t5/bANinI/ujvx0WEW2HYO6IUpy1xyo7qFYaZcU2FgEcDTjkbXrQspH7ai63Ogy5ANgCDBw=="
+        length="8826331"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.4</title>
       <pubDate>Fri, 07 Aug 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
