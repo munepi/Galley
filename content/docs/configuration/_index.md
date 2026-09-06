@@ -18,5 +18,9 @@ configuration files to edit.
 - [Debug Logging]({{< relref "debug-mode" >}}) — stream `os_log` output for
   SyncTeX and reload troubleshooting.
 
+Page colors are chosen from the View menu rather than a `defaults` key; see
+[Page Color]({{< relref "/docs/features/page-color" >}}) for the presets and
+the one hidden preference that tunes them.
+
 For the full list of `defaults` keys, see
 [UserDefaults Reference]({{< relref "/docs/reference/userdefaults" >}}).

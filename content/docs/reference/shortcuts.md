@@ -10,7 +10,8 @@ weight = 10
 | Open File               | `Cmd + O` or `open -a GalleyPDF document.pdf`                                  |
 | Print                   | `Cmd + P`                                                                      |
 | Find                    | `Cmd + F` (toggle search bar)                                                  |
-| Find Next / Previous    | `Enter` / `Shift + Enter` (while search bar is open)                           |
+| Find Next / Previous    | `Cmd + G` / `Shift + Cmd + G` (also `Enter` / `Shift + Enter` while the search bar is focused) |
+| Use Selection for Find  | `Cmd + E`                                                                      |
 | Zoom In / Out           | `Cmd + +` / `Cmd + -`                                                          |
 | Actual Size             | `Cmd + 0`                                                                      |
 | Auto Resize             | `Cmd + _`                                                                      |
@@ -18,9 +19,10 @@ weight = 10
 | Single Page Continuous  | `Shift + Cmd + 1`                                                              |
 | Two Pages               | `Cmd + 2`                                                                      |
 | Two Pages Continuous    | `Shift + Cmd + 2`                                                              |
-| Next Page               | `Space` or `Opt + J`                                                           |
-| Previous Page           | `Shift + Space` or `Opt + K`                                                   |
+| Next Page               | `Space`                                                                        |
+| Previous Page           | `Shift + Space`                                                                |
 | Jump to Page            | Type page number or label (e.g., `123`, `iv`, `cover`)                         |
+| Back / Forward          | `Cmd + [` / `Cmd + ]` (navigation history)                                     |
 | Clear Selection / Cancel| `Esc`                                                                          |
 | Inverse Search          | `Cmd + Click` on PDF                                                           |
 | Character Inspection    | Right-click on selected text                                                   |
@@ -30,6 +32,9 @@ weight = 10
 | Toggle PDF Bookmarks Sidebar | `Cmd + B`                                                                 |
 | Toggle PDF Annotations Sidebar | `Cmd + N`                                                               |
 | Copy Annotation Content | `Cmd + C` (with an Annotations row selected)                                   |
+
+Every one of these is a menu item, and every menu item can be rebound — see
+[Custom Key Bindings]({{< relref "key-bindings" >}}).
 
 ## Page Navigation & Interface Notes
 
@@ -41,5 +46,9 @@ weight = 10
 - Link Preview: hovering over a PDF link for 0.3 s shows a popover with a
   real-size snippet of the target page (internal links) or the URL text
   (external links).
-- Persistence: Galley remembers Display Mode, Book Mode, and RTL settings
-  via `UserDefaults`.
+- Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before
+  following a link, clicking a bookmark or annotation, jumping to a search
+  match, or running a Forward Search — the same keys Preview uses.
+- Persistence: Galley remembers Display Mode, Book Mode, RTL, and
+  [Page Color]({{< relref "/docs/features/page-color" >}}) settings via
+  `UserDefaults`.

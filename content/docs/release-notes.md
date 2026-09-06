@@ -14,6 +14,47 @@ Galley checks for updates once a day and can be updated at any time from
 
 ---
 
+## v0.5
+
+*6 September 2026 —
+[download](https://github.com/munepi/Galley/releases/tag/v0.5)*
+
+### New
+
+- [Page Color]({{< relref "/docs/features/page-color" >}}) under the View menu.
+  Dark and Charcoal invert the page while leaving photographs positive;
+  Sepia, Orange and Gray tint the paper without touching the ink.
+  Every preset keeps a WCAG AAA (7:1) contrast ratio, and the setting is
+  display-only — copying, exporting and printing keep the original colors.
+  With Normal selected nothing is installed in the rendering path, so the
+  feature costs nothing when it is off.
+- Standard macOS find keys: `Cmd + G` and `Shift + Cmd + G` step through
+  matches whether or not the search bar is focused, and `Cmd + E` searches for
+  the current selection and shares it through the system find pasteboard. See
+  [Text Search]({{< relref "/docs/features/text-search" >}}).
+- A Match Case option in the search bar, applying to plain and
+  regular-expression searches alike.
+- Navigation history: `Cmd + [` and `Cmd + ]` return to where you were before
+  following a link, clicking a bookmark or annotation, jumping to a search
+  match, or running a Forward Search — the same keys Preview uses.
+
+### Changed
+
+- The hidden `Opt + J` / `Opt + K` page aliases are gone. Every command is now
+  a single, uniquely titled menu item, which is what lets you rebind any of
+  them yourself — including Vim-style navigation. See
+  [Custom Key Bindings]({{< relref "/docs/reference/key-bindings" >}}).
+- Regular-expression search is no longer forced to be case-insensitive; the
+  Match Case checkbox decides.
+
+### Fixed
+
+- The `.pkg` installer no longer relocates itself onto another copy of the
+  bundle found elsewhere on disk, and no longer skips its payload when that
+  copy is newer. It installs what it carries, into `/Applications`.
+
+---
+
 ## v0.4
 
 *7 August 2026 —
