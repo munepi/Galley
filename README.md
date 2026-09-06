@@ -24,6 +24,7 @@ Galley maintains a strict 1-to-1 correspondence between your TeX source and its 
   * Bookmarks (`Cmd + B`): the document outline, click-to-navigate.
   * Annotations (`Cmd + N`): all annotations with click-to-navigate; `Cmd + C` copies the selected annotation content.
 * Text Search: `Cmd + F` opens an incremental search bar with a match counter, whole-document highlighting, `Match Case` and `Regex` options, and matching across line breaks. `Cmd + G` / `Shift + Cmd + G` step through matches without the search bar focused, and `Cmd + E` searches for the current selection.
+* Page Color: View ▸ Page Color recolors the page for comfortable reading. `Dark` and `Charcoal` invert text and vector art while leaving photographs positive; `Sepia`, `Orange` and `Gray` tint the paper and leave the ink alone. Every preset keeps a WCAG AAA (7:1) contrast ratio, and the change is display-only — copying, exporting and printing keep the document's original colors.
 * Lightweight Rendering: Galley draws only the PDF page itself — no annotation overlays or editing tools — so page rendering stays light even when flipping through pages quickly.
 
 
@@ -37,6 +38,14 @@ brew install --cask munepi/galley/galley
 
 This installs `GalleyPDF.app` into `/Applications` and puts the bundled
 [`galleypdf`](#command-line-galleypdf) command on your `PATH`.
+
+Homebrew 6 and later only loads casks from non-official taps after you trust
+them. If the install is blocked, trust the cask first and run the install
+again:
+
+~~~bash
+brew trust munepi/galley/galley
+~~~
 
 ### Download Binaries
 
@@ -142,12 +151,6 @@ Every endpoint accepts `background=1`, which pairs with `open -g`: Galley shows 
 > [!TIP]
 > **SyncTeX "Column 0" Workaround**
 > Many PDF viewers have a known SyncTeX issue where forward search from the beginning of a line (column 0) incorrectly jumps to the end of the previous line. Galley detects `column=0` and automatically shifts the search target to `line + 1` to avoid this.
-
-> [!WARNING]
-> **Security Note on First Forward Search**
-> The first time you execute a forward search from your editor (e.g., Emacs), macOS will present a security prompt asking for Automation permissions.
-> Please click **OK (Allow)** to grant the necessary AppleEvents permissions. You can later manage this in System Settings > Privacy & Security > Automation.
-
 
 
 ## Configuration
@@ -326,9 +329,33 @@ defaults write com.github.munepi.galley nvimPath "/path/to/your/nvim"
 > Neovim has RPC built in and needs no equivalent setup.
 
 
+### 5. Page Color
+
+View ▸ Page Color recolors the page. It is an accessibility and reading-comfort setting, not a document edit: copying, exporting and printing are untouched, and the choice is remembered in `pageColorMode` across launches.
+
+| Preset | What it does |
+| :--- | :--- |
+| `Normal` | The document as authored. Nothing is installed in the rendering path. |
+| `Dark` | Inverts the page onto PDFKit's dark paper (`#1E1E1E`), the same color Preview uses. |
+| `Charcoal` | The same inversion onto a slightly lighter, slightly warmer paper (`#2C2C2B`). |
+| `Sepia` | Tints the paper `#F4ECD8`. Ink stays black. |
+| `Orange` | Tints the paper `#FFF0D9`. Ink stays black. |
+| `Gray` | Tints the paper `#D8D8D2`. Ink stays black. |
+
+`Dark` and `Charcoal` swap light for dark while preserving hue, so a `hyperref` link stays blue and a red TikZ rule stays red rather than flipping to its complement. On macOS 26 and later, Galley hands the inversion to PDFKit itself — the same facility behind Preview's *Use Dark Appearance for PDF* — which protects embedded raster images, so photographs and screenshots stay positive.
+
+`Sepia`, `Orange` and `Gray` are drawn as a multiply-blended overlay rather than an image filter, so glyphs stay vector-sharp at any zoom level and nothing is inverted. They are the better choice for design-heavy documents.
+
+> [!NOTE]
+> PDFKit decides what to invert by drawing operator, not by intent: anything drawn as text or vector paths is inverted, and only raster images are protected. A pictorial illustration exported from Illustrator is therefore inverted just like a TikZ diagram — Preview behaves identically with the same file. Use `Sepia` or `Gray` for such documents.
+
+On macOS 25 and earlier the SPI does not exist, and Galley falls back to a layer filter. That fallback inverts embedded images as well, cannot set the paper color (so `Charcoal` looks like `Dark`), and rasterizes at the current zoom level. The paper-tinting presets are unaffected.
+
+`Dark` and `Charcoal` are greyed out while System Settings ▸ Accessibility ▸ Display ▸ *Invert colors* is on, so the page is never inverted twice. Toggling that system setting updates the menu without relaunching Galley.
+
 #### Adjusting the Dark Page Color
 
-`Dark` uses the same paper color as Preview (`#1E1E1E`), and `Charcoal` uses `#2C2C2E`. If neither weight suits you, `Dark` can be tuned:
+`Dark` uses the same paper color as Preview (`#1E1E1E`), and `Charcoal` uses `#2C2C2B`. If neither weight suits you, `Dark` can be tuned:
 
 ~~~bash
 defaults write com.github.munepi.galley pageColorDarkPaper "#282828"
@@ -340,7 +367,7 @@ Anything from roughly `#242424` to `#303030` reads as a softer dark; past that t
 > This is an unadvertised preference that rides on a private PDFKit facility, and it exists only because the default suits some readers and not others. It may be removed or stop working in a future release of Galley or of macOS. Nothing else depends on it — if it goes away, `Dark` simply returns to the default paper color.
 
 
-### 5. Debug Logging
+### 6. Debug Logging
 
 Galley emits structured logs via Apple's unified logging system (`os_log`) under the subsystem `com.github.munepi.galley`. Use this to verify SyncTeX coordinate data, inspect reload behavior, or troubleshoot Forward/Inverse Search.
 
@@ -394,7 +421,7 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 * Window Title Info: to keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`).
 * Link Preview: hovering over a PDF link for 0.3 seconds shows a popover with a real-size snippet of the target page (internal links) or the URL text (external links). Clicking a link follows it normally.
 * Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before following a link, clicking a bookmark or annotation, jumping to a search match, or running a Forward Search — the same keys Preview uses.
-* Persistence: Galley automatically remembers your Display Mode, Book Mode, and RTL settings using `UserDefaults`.
+* Persistence: Galley automatically remembers your Display Mode, Book Mode, RTL, and Page Color settings using `UserDefaults`.
 
 ### Custom Key Bindings (Vim-style and others)
 
