@@ -15,11 +15,24 @@ on the screen than the glyph outlines themselves cover. Versions up to v0.5
 switched it off for sharper, thinner text, which is why body text used to look
 lighter in Galley than in Preview.
 
-## Getting the thinner rendering back
+## If you are setting type for print
 
-The thin rendering is the closer match to the bare outlines a high-resolution
-imagesetter would put on paper. If you prefer it, turn smoothing off for Galley
-alone, with the same keys that work for any macOS application:
+Turn smoothing off, and leave it off.
+
+What you then see is the glyph outline as the type designer drew it — the same
+geometry the RIP will image — rather than the outline plus a thickening the OS
+added for screen legibility. That thickening is a fixed amount of ink per edge,
+so it hits small text harder than large, and it flattens the difference between
+neighbouring weights of a family.
+
+With it off, a Light next to a Regular on screen stands in the same relation as
+it will on press, and a heading that looks too heavy on screen really is too
+heavy. For offset work, or proofing against a high-resolution output device,
+this is the setting you want.
+
+## Turning smoothing off
+
+Use the same keys that work for any macOS application:
 
 ```bash
 defaults write com.github.munepi.galley CGFontRenderingFontSmoothingDisabled -bool YES
@@ -44,10 +57,13 @@ defaults delete com.github.munepi.galley AppleFontSmoothing
 
 ## Which one is correct?
 
-Neither. Smoothing off reproduces the outline geometry. Smoothing on is Apple's
-on-screen compensation for the thinning effect of grayscale antialiasing, and
-on a text-only page it happens to land close to what a 600 dpi laser printer's
-binary rasterization produces, before toner spread.
+Away from print work, neither. Smoothing off reproduces the outline geometry.
+Smoothing on is Apple's on-screen compensation for the thinning effect of
+grayscale antialiasing, and on a text-only page it happens to land close to
+what a 600 dpi laser printer's binary rasterization produces, before toner
+spread.
 
-Pick whichever you would rather trust while proofreading — and remember that
-neither is a prediction of what comes off a press.
+So if the office laser is where your pages end up, leaving smoothing on is a
+reasonable stand-in. Neither setting predicts ink on paper, though: dot gain
+and toner spread happen after the geometry is fixed, and no screen setting
+models them.
