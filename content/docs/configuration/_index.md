@@ -15,8 +15,8 @@ configuration files to edit.
   command line for arbitrary editors.
 - [Emacsclient Path]({{< relref "emacsclient-path" >}}) — point Galley at a
   specific `emacsclient` binary.
-- [Text Weight]({{< relref "text-weight" >}}) — font smoothing, and how to get
-  the thinner pre-v0.6 rendering back.
+- [Text Weight]({{< relref "text-weight" >}}) — font smoothing, and why print
+  work wants it off.
 - [Debug Logging]({{< relref "debug-mode" >}}) — stream `os_log` output for
   SyncTeX and reload troubleshooting.
 
