@@ -36,9 +36,10 @@ import Sparkle
 @main
 struct GalleyApp {
     static func main() {
-        // NSApplication.sharedが呼ばれて描画エンジンが起動する「前」に設定
-        UserDefaults.standard.set(0, forKey: "AppleFontSmoothing")
-        UserDefaults.standard.set(true, forKey: "CGFontRenderingFontSmoothingDisabled")
+        // フォントスムージング (AppleFontSmoothing / CGFontRenderingFontSmoothingDisabled)
+        // には触らない。v0.5 までは起動時に無効化していたが、同じ PDFKit を使う
+        // Preview.app より本文が約 2 割薄く見えていたため、OS の既定に合わせた。
+        // 細い表示に戻す方法と、旧版が残した値の消し方は README を参照。
 
         // UserDefaultsの初期値
         UserDefaults.standard.register(defaults: [

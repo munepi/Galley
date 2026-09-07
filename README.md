@@ -367,7 +367,32 @@ Anything from roughly `#242424` to `#303030` reads as a softer dark; past that t
 > This is an unadvertised preference that rides on a private PDFKit facility, and it exists only because the default suits some readers and not others. It may be removed or stop working in a future release of Galley or of macOS. Nothing else depends on it — if it goes away, `Dark` simply returns to the default paper color.
 
 
-### 6. Debug Logging
+### 6. Text Weight (Font Smoothing)
+
+Galley draws pages with the same PDFKit engine as Preview, and since v0.6 it leaves macOS's font smoothing at the system default, so a page looks exactly as it does in Preview. Font smoothing is the slight thickening that macOS applies to every antialiased glyph on screen; measured on a text-only page it puts about a quarter more ink on the screen than the glyph outlines themselves cover. Versions up to v0.5 switched it off for sharper, thinner text, which is why body text used to look lighter in Galley than in Preview.
+
+If you prefer the thinner rendering — it is the closer match to the bare outlines a high-resolution imagesetter would put on paper — turn smoothing off for Galley alone, with the same keys that work for any macOS application:
+
+~~~bash
+defaults write com.github.munepi.galley CGFontRenderingFontSmoothingDisabled -bool YES
+defaults write com.github.munepi.galley AppleFontSmoothing -int 0
+~~~
+
+Relaunch Galley for the change to take effect; the value is read once at startup. Delete both keys to return to the default:
+
+~~~bash
+defaults delete com.github.munepi.galley CGFontRenderingFontSmoothingDisabled
+defaults delete com.github.munepi.galley AppleFontSmoothing
+~~~
+
+> [!NOTE]
+> Neither rendering is "the" correct weight. Smoothing off reproduces the outline geometry; smoothing on is Apple's on-screen compensation for the thinning effect of grayscale antialiasing, and on a text-only page it happens to land close to what a 600 dpi laser printer's binary rasterization produces, before toner spread.
+
+> [!IMPORTANT]
+> Versions up to v0.5 wrote these two keys into Galley's preferences on every launch, and they stay there after upgrading. If text still looks thinner than in Preview after updating, run the two `defaults delete` commands above once and relaunch.
+
+
+### 7. Debug Logging
 
 Galley emits structured logs via Apple's unified logging system (`os_log`) under the subsystem `com.github.munepi.galley`. Use this to verify SyncTeX coordinate data, inspect reload behavior, or troubleshoot Forward/Inverse Search.
 
