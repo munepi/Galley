@@ -10,7 +10,7 @@ disableKinds = ["taxonomy", "term"]
 [params]
   # Latest released version. The landing page reads this, so a release only
   # has to be recorded here.
-  GalleyVersion = "0.5"
+  GalleyVersion = "0.6"
 
   # Follow OS-level dark mode preference
   BookTheme = "auto"
