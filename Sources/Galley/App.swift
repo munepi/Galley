@@ -208,6 +208,10 @@ struct GalleyApp {
         pageColorItem.submenu = pageColorMenu
         viewMenu.addItem(pageColorItem)
 
+        // カラーピッカー (Digital Color Meter 風パネル)。Shift+Cmd+K
+        let colorPickerItem = NSMenuItem(title: "Color Picker", action: #selector(AppDelegate.toggleColorPicker(_:)), keyEquivalent: "K")
+        viewMenu.addItem(colorPickerItem)
+
         viewMenu.addItem(NSMenuItem.separator())
 
         // サイドバー系
@@ -293,6 +297,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var container: NSView!
     var pdfViewA: GalleyPDFView!
     var pdfViewB: GalleyPDFView!
+
+    // --- Color Picker パネル (View ▸ Color Picker / 右クリック) ---
+    var colorPickerController: ColorPickerPanelController?
     var isShowingA = true
     var sidebarController: SidebarController?
 
@@ -341,6 +348,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
         if menuItem.action == #selector(changePageColorMode(_:)) {
             return self.validatePageColorMenuItem(menuItem)
+        }
+
+        if menuItem.action == #selector(toggleColorPicker(_:)) {
+            return self.validateColorPickerMenuItem(menuItem)
         }
 
         // ウィンドウ構築前にも validate が走りうるので optional で受ける
