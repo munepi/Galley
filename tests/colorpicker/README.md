@@ -46,6 +46,15 @@ orientation and crop as the page on screen. Wrong values here mean the
 scanner's user-space coordinates and PDFKit's page coordinates have
 diverged.
 
+## Copy Color as PDF
+
+With the Separation box (x 420–520, y 600–660) locked, Edit ▸ Copy Color as
+PDF (`Option + Cmd + C`) and paste into Illustrator: the object must be a
+64 pt square filled with the spot color `DIC 161s*` (a new spot swatch
+appears in the Swatches panel), not a CMYK approximation. The CMYK red box
+must paste as C 0 M 100 Y 100 K 0. Pasting into a text editor gives the same
+text as Copy Color as Text.
+
 ## What is *not* a bug
 
 - Values under `Dark` / `Charcoal` page colors are unchanged: the picker

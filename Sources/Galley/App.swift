@@ -124,6 +124,13 @@ struct GalleyApp {
         let editMenuItem = NSMenuItem()
         editMenuItem.submenu = editMenu
         editMenu.addItem(withTitle: "Copy", action: #selector(PDFView.copy(_:)), keyEquivalent: "c")
+
+        // Color Picker の読み取り値のコピー (Digital Color Meter と同じキー)
+        let copyColorTextItem = NSMenuItem(title: "Copy Color as Text", action: #selector(AppDelegate.copyColorAsText(_:)), keyEquivalent: "C")
+        let copyColorPDFItem = NSMenuItem(title: "Copy Color as PDF", action: #selector(AppDelegate.copyColorAsPDF(_:)), keyEquivalent: "c")
+        copyColorPDFItem.keyEquivalentModifierMask = [.command, .option]
+        editMenu.addItem(copyColorTextItem)
+        editMenu.addItem(copyColorPDFItem)
         editMenu.addItem(NSMenuItem.separator())
 
         // Find サブメニュー (Preview.app と同じ構成・同じキー)
@@ -352,6 +359,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
         if menuItem.action == #selector(toggleColorPicker(_:)) {
             return self.validateColorPickerMenuItem(menuItem)
+        }
+
+        if menuItem.action == #selector(copyColorAsText(_:)) ||
+           menuItem.action == #selector(copyColorAsPDF(_:)) {
+            return self.validateCopyColorMenuItem(menuItem)
         }
 
         // ウィンドウ構築前にも validate が走りうるので optional で受ける

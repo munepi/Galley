@@ -106,6 +106,24 @@ extension AppDelegate {
         colorPickerController?.showNoPage()
     }
 
+    // MARK: - Edit ▸ Copy Color as Text / PDF (Digital Color Meter と同じ ⇧⌘C / ⌥⌘C)
+
+    @objc func copyColorAsText(_ sender: Any?) {
+        colorPickerController?.copyColorAsText(sender)
+    }
+
+    @objc func copyColorAsPDF(_ sender: Any?) {
+        colorPickerController?.copyColorAsPDF(sender)
+    }
+
+    func validateCopyColorMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        guard isColorPickerActive, let panel = colorPickerController else { return false }
+        if menuItem.action == #selector(copyColorAsPDF(_:)) {
+            return panel.canCopyPDF
+        }
+        return panel.canCopyText
+    }
+
     func validateColorPickerMenuItem(_ menuItem: NSMenuItem) -> Bool {
         menuItem.state = isColorPickerActive ? .on : .off
         // ウィンドウ構築前にも validate が走りうるので optional で受ける
