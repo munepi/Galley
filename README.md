@@ -371,7 +371,10 @@ Anything from roughly `#242424` to `#303030` reads as a softer dark; past that t
 
 Galley draws pages with the same PDFKit engine as Preview, and since v0.6 it leaves macOS's font smoothing at the system default, so a page looks exactly as it does in Preview. Font smoothing is the slight thickening that macOS applies to every antialiased glyph on screen; measured on a text-only page it puts about a quarter more ink on the screen than the glyph outlines themselves cover. Versions up to v0.5 switched it off for sharper, thinner text, which is why body text used to look lighter in Galley than in Preview.
 
-If you prefer the thinner rendering — it is the closer match to the bare outlines a high-resolution imagesetter would put on paper — turn smoothing off for Galley alone, with the same keys that work for any macOS application:
+> [!TIP]
+> If you set type for offset printing, or proof against a high-resolution output device, turn smoothing off and leave it off. What you then see is the glyph outline as the type designer drew it — the same geometry the RIP will image — rather than the outline plus a thickening the OS added for screen legibility. That thickening is a fixed amount of ink per edge, so it hits small text harder than large, and it flattens the difference between neighbouring weights of a family. With it off, a Light next to a Regular on screen stands in the same relation as it will on press, and a heading that looks too heavy on screen really is too heavy.
+
+Turn smoothing off for Galley alone with the same keys that work for any macOS application:
 
 ~~~bash
 defaults write com.github.munepi.galley CGFontRenderingFontSmoothingDisabled -bool YES
@@ -386,7 +389,7 @@ defaults delete com.github.munepi.galley AppleFontSmoothing
 ~~~
 
 > [!NOTE]
-> Neither rendering is "the" correct weight. Smoothing off reproduces the outline geometry; smoothing on is Apple's on-screen compensation for the thinning effect of grayscale antialiasing, and on a text-only page it happens to land close to what a 600 dpi laser printer's binary rasterization produces, before toner spread.
+> Away from print work, neither rendering is "the" correct weight. Smoothing off reproduces the outline geometry; smoothing on is Apple's on-screen compensation for the thinning effect of grayscale antialiasing, and on a text-only page it happens to land close to what a 600 dpi laser printer's binary rasterization produces, before toner spread.
 
 > [!IMPORTANT]
 > Versions up to v0.5 wrote these two keys into Galley's preferences on every launch, and they stay there after upgrading. If text still looks thinner than in Preview after updating, run the two `defaults delete` commands above once and relaunch.
