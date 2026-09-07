@@ -14,6 +14,34 @@ Galley checks for updates once a day and can be updated at any time from
 
 ---
 
+## v0.6
+
+*7 September 2026 —
+[download](https://github.com/munepi/Galley/releases/tag/v0.6)*
+
+### Changed
+
+- Galley no longer switches macOS font smoothing off at launch. Text is drawn
+  at the system default weight, so a page now looks exactly as it does in
+  Preview — the two use the same PDFKit engine, and the smoothing setting was
+  the only thing making Galley's body text look lighter.
+- If you prefer the thinner rendering, it is two `defaults write` commands
+  away. See [Text Weight]({{< relref "/docs/configuration/text-weight" >}}).
+
+### Upgrading
+
+Versions up to v0.5 wrote `AppleFontSmoothing` and
+`CGFontRenderingFontSmoothingDisabled` into Galley's preferences on every
+launch, and upgrading does not remove them. If text still looks thinner than in
+Preview after updating, delete both keys once and relaunch:
+
+```bash
+defaults delete com.github.munepi.galley CGFontRenderingFontSmoothingDisabled
+defaults delete com.github.munepi.galley AppleFontSmoothing
+```
+
+---
+
 ## v0.5
 
 *6 September 2026 —
