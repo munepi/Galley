@@ -92,6 +92,7 @@ extension AppDelegate {
 
         self.updateWindowTitle()
         self.sidebarController?.notifyDocumentChanged(document, url: url)
+        self.colorPickerDocumentDidChange()
 
         startMonitoring(url: url)
 
@@ -210,6 +211,7 @@ extension AppDelegate {
                     Log.file.info("reloadPDF: swap done gen=\(gen) url=\(url.lastPathComponent, privacy: .public)")
                     self.updateWindowTitle()
                     self.sidebarController?.notifyDocumentChanged(self.activePDFView.document, url: url)
+                    self.colorPickerDocumentDidChange()
                 }
                 self.swapWorkItem = swapItem
 

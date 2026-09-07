@@ -86,10 +86,25 @@ class GalleyPDFView: PDFView {
     private var linkPreviewPopover: NSPopover?
     private var hoveredLinkAnnotation: PDFAnnotation?
 
+    // --- Color Picker 用のプロパティ (GalleyPDFView+ColorPicker.swift から使う) ---
+    var colorPickerSampleTimer: Timer?
+    var colorPickerMagnifierScheduled = false
+    var colorPickerLastPage: PDFPage?
+    var colorPickerLastPoint: CGPoint?
+    var colorPickerLastHit: PDFColorHit?
+    /// 右クリック位置 (PDFView 座標)。コンテキストメニューの「Color Picker」で使う
+    var pendingColorPickViewPoint: CGPoint?
+
 
     // マウス操作 (Inverse Search, 矩形選択, リンクジャンプ)
     override func mouseDown(with event: NSEvent) {
         cancelLinkPreview() // クリックされたらプレビューは即座に消す
+
+        // --- Color Picker モード中はクリックでロック / 解除 ---
+        if isColorPickerActive {
+            colorPickerHandleMouseDown(event)
+            return
+        }
 
         // --- 0. Inverse Search (Cmd + Click) ---
         if event.modifierFlags.contains(.command) {
@@ -226,6 +241,12 @@ class GalleyPDFView: PDFView {
         // Escキー (keyCode: 53) が押されたら、もろもろの選択・入力をキャンセルする
 
         if event.keyCode == 53 {
+            // -1. Color Picker パネルが開いていれば閉じる
+            if let appDelegate = NSApp.delegate as? AppDelegate, appDelegate.isColorPickerActive {
+                appDelegate.closeColorPicker()
+                return
+            }
+
             // 0. 検索バーが表示中であれば閉じる
             if let appDelegate = NSApp.delegate as? AppDelegate, appDelegate.searchBarVisible {
                 appDelegate.hideSearchBar()
@@ -289,6 +310,8 @@ class GalleyPDFView: PDFView {
         let leading: CGFloat
         let selectionBounds: NSRect
         let page: PDFPage
+        /// 塗り色 (Color Picker と同じ走査結果から)。取れなければ "Color:  n/a"
+        let colorLines: String
     }
     var pendingInspectionInfo: CharacterInspectionInfo?
 
@@ -297,6 +320,16 @@ class GalleyPDFView: PDFView {
     // ==========================================
     override func menu(for event: NSEvent) -> NSMenu? {
         let menu = super.menu(for: event) ?? NSMenu(title: "")
+
+        // --- Color Picker (選択の有無に関わらず常に出す) ---
+        self.pendingColorPickViewPoint = self.convert(event.locationInWindow, from: nil)
+        let colorPickerItem = NSMenuItem(title: "Color Picker", action: #selector(colorPickerFromContextMenu(_:)), keyEquivalent: "")
+        colorPickerItem.target = self
+        if let icon = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: nil) {
+            colorPickerItem.image = icon
+        }
+        menu.insertItem(NSMenuItem.separator(), at: 0)
+        menu.insertItem(colorPickerItem, at: 0)
 
         guard let selection = self.currentSelection,
               let attrString = selection.attributedString,
@@ -355,13 +388,14 @@ class GalleyPDFView: PDFView {
 
         guard let page = selection.pages.first else { return menu }
         let bounds = selection.bounds(for: page)
+        let colorLines = colorPickerInspectorLines(for: selection, on: page)
 
         self.pendingInspectionInfo = CharacterInspectionInfo(
             charStr: charStr, unicodeStr: unicodeStr, glyphIDStr: glyphIDStr,
             unicodeName: unicodeName, unicodePlane: unicodePlane, unicodeCategory: unicodeCategory,
             fontName: fontName, familyName: familyName, traits: traits,
             pt: pt, mm: mm, q: q, ascent: ascent, descent: descent, leading: leading,
-            selectionBounds: bounds, page: page
+            selectionBounds: bounds, page: page, colorLines: colorLines
         )
 
         let inspectionItem = NSMenuItem(title: "Inspect Character \"\(charStr)\"", action: #selector(showCharacterInspection), keyEquivalent: "")
@@ -370,7 +404,7 @@ class GalleyPDFView: PDFView {
             inspectionItem.image = icon
         }
 
-        menu.insertItem(NSMenuItem.separator(), at: 0)
+        // Color Picker の前に並べる (Inspect Character, Color Picker, ---, 標準項目)
         menu.insertItem(inspectionItem, at: 0)
 
         return menu
@@ -402,6 +436,9 @@ class GalleyPDFView: PDFView {
         Traits: \(info.traits)
         Size:   \(String(format: "%.2f pt", info.pt)) = \(String(format: "%.2f mm", info.mm)) = \(String(format: "%.2f Q", info.q))
         Metric: Asc \(String(format: "%.2f", info.ascent)), Des \(String(format: "%.2f", info.descent)), Ldg \(String(format: "%.2f", info.leading))
+
+        [ Color ]
+        \(info.colorLines)
         """
 
         let displayFont = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
@@ -781,6 +818,12 @@ class GalleyPDFView: PDFView {
     }
 
     override func mouseMoved(with event: NSEvent) {
+        // 0. Color Picker モード中はカーソル下の色を読むだけ (十字カーソル)
+        if isColorPickerActive {
+            colorPickerHandleMouseMoved(event)
+            return
+        }
+
         // 1. まず必ず PDFKit 標準の処理(テキスト上のIビームカーソル化など)を呼ぶ
         super.mouseMoved(with: event)
 
@@ -808,6 +851,9 @@ class GalleyPDFView: PDFView {
     }
 
     override func mouseExited(with event: NSEvent) {
+        if isColorPickerActive {
+            colorPickerHandleMouseExited()
+        }
         resetHoverState()
         super.mouseExited(with: event)
     }

@@ -36,4 +36,5 @@ enum Log {
     static let inverseSearch = Logger(subsystem: "com.github.munepi.galley", category: "inverseSearch")
     static let sidebar = Logger(subsystem: "com.github.munepi.galley", category: "sidebar")
     static let pdfinfo = Logger(subsystem: "com.github.munepi.galley", category: "pdfinfo")
+    static let colorPicker = Logger(subsystem: "com.github.munepi.galley", category: "colorPicker")
 }
