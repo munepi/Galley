@@ -7,6 +7,29 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.6</title>
+      <pubDate>Mon, 07 Sep 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.6</sparkle:shortVersionString>
+      <sparkle:version>195</sparkle:version>
+      <description><![CDATA[
+        <h3>🔄 Changes</h3>
+        <ul>
+          <li>Galley no longer switches macOS font smoothing off at launch. Text is drawn at the system default weight, so a page now looks exactly as it does in Preview &mdash; both use the same PDFKit engine, and the smoothing setting was the only thing making Galley's body text look lighter</li>
+          <li>Prefer the thinner rendering? It is two <code>defaults write</code> commands away; see Text Weight in the documentation</li>
+        </ul>
+        <h3>ℹ️ Upgrading</h3>
+        <ul>
+          <li>Versions up to 0.5 wrote <code>AppleFontSmoothing</code> and <code>CGFontRenderingFontSmoothingDisabled</code> into Galley's preferences on every launch, and updating does not remove them. If text still looks thinner than in Preview, run <code>defaults delete com.github.munepi.galley CGFontRenderingFontSmoothingDisabled</code> and <code>defaults delete com.github.munepi.galley AppleFontSmoothing</code> once, then relaunch</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.6/GalleyPDF_0.6.dmg"
+        sparkle:edSignature="VDGvYdAbt4fXFLAP1G73o0ikJV3m/3wIDHBDJpuZU6Uw7IWQfc4uITu0RXGi+AjB8gd81uzX2f9HwHvuSFSTAA=="
+        length="8846460"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.5</title>
       <pubDate>Sun, 06 Sep 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
