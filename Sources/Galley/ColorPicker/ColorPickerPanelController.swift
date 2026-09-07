@@ -62,10 +62,18 @@ final class ColorPickerPanelController: NSWindowController, NSWindowDelegate {
     private let spaceLabel = NSTextField(labelWithString: "")
     private let notesLabel = NSTextField(labelWithString: "")
     private let positionLabel = NSTextField(labelWithString: "")
-    private let copyButton = NSButton(title: "Copy", target: nil, action: nil)
+    private let copyButton = NSButton(title: "Copy Text", target: nil, action: nil)
+    private let copyPDFButton = NSButton(title: "Copy PDF", target: nil, action: nil)
 
-    /// Copy ボタンで書き出すテキスト
+    /// Copy Text で書き出すテキスト
     private var copyText: String = ""
+    /// Copy PDF で書き出す色 (サンプル値があればそれ)
+    private var copyColor: PDFPaintColor? = nil
+    private var copyColorIsSampled = false
+
+    /// メニューの Copy Color as Text / PDF を有効にしてよいか
+    var canCopyText: Bool { !copyText.isEmpty }
+    var canCopyPDF: Bool { copyColor.map { PDFColorSwatchWriter.prepare($0) != nil } ?? false }
 
     init() {
         let panel = NSPanel(
@@ -137,11 +145,16 @@ final class ColorPickerPanelController: NSWindowController, NSWindowDelegate {
         positionLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
         positionLabel.textColor = .secondaryLabelColor
 
-        copyButton.bezelStyle = .rounded
-        copyButton.controlSize = .small
-        copyButton.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
-        copyButton.target = self
-        copyButton.action = #selector(copyValues(_:))
+        for (button, action) in [(copyButton, #selector(copyColorAsText(_:))),
+                                 (copyPDFButton, #selector(copyColorAsPDF(_:)))] {
+            button.bezelStyle = .rounded
+            button.controlSize = .small
+            button.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+            button.target = self
+            button.action = action
+        }
+        copyButton.toolTip = "Copy the values as text (⇧⌘C)"
+        copyPDFButton.toolTip = "Copy a \(Int(PDFColorSwatchWriter.swatchSize)) pt square filled with this color as vector PDF, color space included (⌥⌘C)"
 
         let swatchRow = NSStackView(views: [swatchView, valuesLabel])
         swatchRow.orientation = .horizontal
@@ -160,7 +173,7 @@ final class ColorPickerPanelController: NSWindowController, NSWindowDelegate {
 
         let spacer = NSView()
         spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        let bottomRow = NSStackView(views: [positionLabel, spacer, copyButton])
+        let bottomRow = NSStackView(views: [positionLabel, spacer, copyButton, copyPDFButton])
         bottomRow.orientation = .horizontal
         bottomRow.alignment = .centerY
         bottomRow.spacing = 8
@@ -204,7 +217,9 @@ final class ColorPickerPanelController: NSWindowController, NSWindowDelegate {
         notesLabel.stringValue = ""
         positionLabel.stringValue = ""
         copyText = ""
+        copyColor = nil
         copyButton.isEnabled = false
+        copyPDFButton.isEnabled = false
     }
 
     func setMagnifier(_ image: NSImage?) {
@@ -306,13 +321,38 @@ final class ColorPickerPanelController: NSWindowController, NSWindowDelegate {
         if !notes.isEmpty { copyLines.append(notes.joined(separator: "; ")) }
         copyText = copyLines.joined(separator: "\n")
         copyButton.isEnabled = true
+        copyColor = displayColor
+        copyColorIsSampled = hit.sample != nil
+        copyPDFButton.isEnabled = canCopyPDF
     }
 
-    @objc private func copyValues(_ sender: Any?) {
+    // MARK: - Copy
+
+    /// 値をテキストでクリップボードへ (Digital Color Meter の ⇧⌘C 相当)
+    @objc func copyColorAsText(_ sender: Any?) {
         guard !copyText.isEmpty else { return }
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(copyText, forType: .string)
+    }
+
+    /// 色で塗った小さな矩形をベクタ PDF でクリップボードへ (色空間定義つき)。
+    /// テキストも一緒に載せるので、PDF を受け取れない貼り先には値の文字列が入る。
+    @objc func copyColorAsPDF(_ sender: Any?) {
+        guard let color = copyColor,
+              let pdf = PDFColorSwatchWriter.pdfData(for: color) else { return }
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        pb.setData(pdf, forType: .pdf)
+        var text = copyText
+        if let note = PDFColorSwatchWriter.prepare(color)?.note {
+            text += "\n(PDF: \(note))"
+        }
+        if copyColorIsSampled {
+            text += "\n(PDF swatch uses the sampled value)"
+        }
+        pb.setString(text, forType: .string)
+        Log.colorPicker.info("copied color as PDF (\(pdf.count) bytes)")
     }
 
     // MARK: - NSWindowDelegate

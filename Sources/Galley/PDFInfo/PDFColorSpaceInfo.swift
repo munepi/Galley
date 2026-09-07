@@ -45,7 +45,7 @@ final class PDFFunction {
         case sampled(data: Data, bitsPerSample: Int, size: [Int], encode: [CGFloat], decode: [CGFloat])
         case exponential(c0: [CGFloat], c1: [CGFloat], n: CGFloat)
         case stitching(functions: [PDFFunction], bounds: [CGFloat], encode: [CGFloat])
-        case postScript
+        case postScript(source: Data)
         case array([PDFFunction])   // 1 入力 → 各関数が 1 出力 (Shading で使われる形)
     }
 
@@ -254,7 +254,9 @@ final class PDFFunction {
                                domain: domain, range: range)
 
         case 4:
-            return PDFFunction(kind: .postScript, domain: domain, range: range)
+            // 評価はしないが、PDF として書き戻せるようにソースは保持する
+            let source = stream.flatMap { CGPDFHelpers.streamData($0) } ?? Data()
+            return PDFFunction(kind: .postScript(source: source), domain: domain, range: range)
 
         default:
             return nil
@@ -563,6 +565,21 @@ struct PDFPaintColor {
         return zip(labels, components).map { "\($0) \(Int(($1 * 255).rounded()))" }.joined(separator: "  ")
     }
 
+    /// Indexed 色空間なら lookup を引いて base 色空間の色に解決する
+    var resolvedIndexedColor: PDFPaintColor? {
+        guard case .indexed(let base, let hival, let lookup) = space, let idxF = components.first else { return nil }
+        let idx = min(max(Int(idxF.rounded()), 0), hival)
+        let n = base.componentCount
+        guard n > 0, (idx + 1) * n <= lookup.count else { return nil }
+        var baseComps: [CGFloat] = (0..<n).map { CGFloat(lookup[idx * n + $0]) / 255.0 }
+        if case .lab(let range) = base, baseComps.count == 3 {
+            baseComps[0] *= 100
+            baseComps[1] = range[0] + baseComps[1] * (range[1] - range[0])
+            baseComps[2] = range[2] + baseComps[2] * (range[3] - range[2])
+        }
+        return PDFPaintColor(space: base, components: baseComps)
+    }
+
     /// Separation / DeviceN の代替色空間での値 (tint 変換を評価)
     var alternateColor: PDFPaintColor? {
         switch space {
@@ -610,18 +627,8 @@ struct PDFPaintColor {
             case 4: return fromCG(CGColorSpaceCreateDeviceCMYK(), comps)
             default: return nil
             }
-        case .indexed(let base, let hival, let lookup):
-            guard let idxF = comps.first else { return nil }
-            let idx = min(max(Int(idxF.rounded()), 0), hival)
-            let n = base.componentCount
-            guard n > 0, (idx + 1) * n <= lookup.count else { return nil }
-            var baseComps: [CGFloat] = (0..<n).map { CGFloat(lookup[idx * n + $0]) / 255.0 }
-            if case .lab(let range) = base, baseComps.count == 3 {
-                baseComps[0] *= 100
-                baseComps[1] = range[0] + baseComps[1] * (range[1] - range[0])
-                baseComps[2] = range[2] + baseComps[2] * (range[3] - range[2])
-            }
-            return PDFPaintColor(space: base, components: baseComps).approximateSRGB(depth: depth + 1)
+        case .indexed:
+            return resolvedIndexedColor?.approximateSRGB(depth: depth + 1)
         case .separation, .deviceN:
             return alternateColor?.approximateSRGB(depth: depth + 1)
         case .pattern(let base):
