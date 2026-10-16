@@ -536,7 +536,7 @@ class GalleyPDFView: PDFView {
         pageInputTimer?.invalidate()
         // 最後の入力から1.0秒経過したら自動的に確定してジャンプ
         pageInputTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
-            self?.commitPageInput()
+            MainActor.assumeIsolated { self?.commitPageInput() }
         }
     }
 
@@ -588,8 +588,10 @@ class GalleyPDFView: PDFView {
             context.duration = 0.3
             self.pageInputHUD?.animator().alphaValue = 0.0
         }, completionHandler: {
-            self.pageInputHUD?.removeFromSuperview()
-            self.pageInputHUD = nil
+            MainActor.assumeIsolated {
+                self.pageInputHUD?.removeFromSuperview()
+                self.pageInputHUD = nil
+            }
         })
     }
 
@@ -872,9 +874,13 @@ class GalleyPDFView: PDFView {
     private func scheduleLinkPreview(for annotation: PDFAnnotation, on page: PDFPage, at pagePoint: CGPoint) {
         cancelLinkPreview()
 
-        // 0.3秒 ホバーしたらプレビューを表示
+        // 0.3秒 ホバーしたらプレビューを表示。
+        // PDFKit objects are not Sendable; both are produced here and consumed
+        // on the main run loop the timer fires on.
+        nonisolated(unsafe) let annotation = annotation
+        nonisolated(unsafe) let page = page
         linkPreviewTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { [weak self] _ in
-            self?.showLinkPreview(for: annotation, on: page, at: pagePoint)
+            MainActor.assumeIsolated { self?.showLinkPreview(for: annotation, on: page, at: pagePoint) }
         }
     }
 

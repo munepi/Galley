@@ -224,7 +224,7 @@ extension AppDelegate {
                                     context.duration = 0.3
                                     dotView.animator().alphaValue = 0.0
                                 }) {
-                                    dotView.removeFromSuperview()
+                                    MainActor.assumeIsolated { dotView.removeFromSuperview() }
                                 }
                             }
                         }
@@ -273,7 +273,7 @@ extension AppDelegate {
                 context.duration = 0.3
                 label.animator().alphaValue = 0.0
             }) {
-                label.removeFromSuperview()
+                MainActor.assumeIsolated { label.removeFromSuperview() }
             }
         }
     }

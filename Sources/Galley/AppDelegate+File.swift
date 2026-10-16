@@ -131,19 +131,21 @@ extension AppDelegate {
 
         self.timer?.invalidate()
         self.timer = Timer.scheduledTimer(withTimeInterval: DelaySettings.pollingInterval, repeats: true) { [weak self] _ in
-            guard let self = self,
-                  let currentModDate = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date),
-                  let lastMod = self.lastUpdate,
-                  currentModDate > lastMod else { return }
+            MainActor.assumeIsolated {
+                guard let self = self,
+                      let currentModDate = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date),
+                      let lastMod = self.lastUpdate,
+                      currentModDate > lastMod else { return }
 
-            self.lastUpdate = currentModDate
-            self.reloadWorkItem?.cancel()
+                self.lastUpdate = currentModDate
+                self.reloadWorkItem?.cancel()
 
-            let workItem = DispatchWorkItem { [weak self] in
-                self?.reloadPDF()
+                let workItem = DispatchWorkItem { [weak self] in
+                    self?.reloadPDF()
+                }
+                self.reloadWorkItem = workItem
+                DispatchQueue.main.asyncAfter(deadline: .now() + DelaySettings.reloadWait, execute: workItem)
             }
-            self.reloadWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + DelaySettings.reloadWait, execute: workItem)
         }
     }
 
