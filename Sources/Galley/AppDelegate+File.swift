@@ -156,11 +156,14 @@ extension AppDelegate {
 
         Log.file.info("reloadPDF: start gen=\(gen) url=\(url.lastPathComponent, privacy: .public)")
 
-        var currentPageIndex = 0
-        var currentPoint = CGPoint.zero
+        let currentPageIndex: Int
+        let currentPoint: CGPoint
         if let dest = activeView.currentDestination, let page = dest.page, let doc = activeView.document {
             currentPageIndex = doc.index(for: page)
             currentPoint = dest.point
+        } else {
+            currentPageIndex = 0
+            currentPoint = .zero
         }
 
         DispatchQueue.global(qos: .userInitiated).async {
