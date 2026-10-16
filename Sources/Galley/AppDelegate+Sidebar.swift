@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import AppKit
+import UniformTypeIdentifiers
 
 extension AppDelegate {
 
@@ -147,7 +148,7 @@ extension AppDelegate {
     private func saveExport(content: String, ext: String, defaultName: String) {
         guard let window = self.window else { return }
         let panel = NSSavePanel()
-        panel.allowedFileTypes = [ext]
+        panel.allowedContentTypes = UTType(filenameExtension: ext).map { [$0] } ?? []
         panel.nameFieldStringValue = defaultName
         panel.canCreateDirectories = true
         panel.beginSheetModal(for: window) { result in

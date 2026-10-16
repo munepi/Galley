@@ -30,6 +30,7 @@
 
 import AppKit
 import PDFKit
+import UniformTypeIdentifiers
 
 // ==========================================
 // AppDelegate の拡張: File メニューおよびファイル管理関連
@@ -46,7 +47,7 @@ extension AppDelegate {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-        panel.allowedFileTypes = ["pdf"]
+        panel.allowedContentTypes = [.pdf]
         if panel.runModal() == .OK, let url = panel.url { self.loadPDF(url: url) }
     }
 
