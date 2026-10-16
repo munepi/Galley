@@ -26,6 +26,8 @@ weight = 10
 | Clear Selection / Cancel| `Esc`                                                                          |
 | Inverse Search          | `Cmd + Click` on PDF                                                           |
 | Character Inspection    | Right-click on selected text                                                   |
+| Color Picker            | `Shift + Cmd + K` or right-click ▸ Color Picker (click to lock / unlock, `Esc` to close) |
+| Copy Color as Text / as PDF | `Shift + Cmd + C` / `Option + Cmd + C` (while the Color Picker is open)    |
 | Measure / Move / Resize Area | `Shift + Drag` (drag inside marquee to move; drag edges/corners to resize) |
 | Copy Selection          | `Cmd + C` (copies as vector PDF)                                               |
 | Toggle PDF Info Sidebar | `Cmd + I`                                                                      |
@@ -51,4 +53,6 @@ Every one of these is a menu item, and every menu item can be rebound — see
   match, or running a Forward Search — the same keys Preview uses.
 - Persistence: Galley remembers Display Mode, Book Mode, RTL, and
   [Page Color]({{< relref "/docs/features/page-color" >}}) settings via
-  `UserDefaults`.
+  `UserDefaults`, and puts the
+  [Color Picker]({{< relref "/docs/features/color-picker" >}}) panel back where
+  you last left it.

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ .Site.Title }} — Lightweight PDF Previewer for TeX/LaTeX</title>
-  <meta name="description" content="A minimalist PDF previewer for TeX/LaTeX on macOS. Auto-reload, SyncTeX forward and inverse search, character inspection, and a custom URL scheme.">
+  <meta name="description" content="A minimalist PDF previewer for TeX/LaTeX on macOS. Auto-reload, SyncTeX forward and inverse search, character inspection, a PDF-native color picker, and a custom URL scheme.">
   <link rel="icon" href="{{ "GalleyPDF.png" | relURL }}">
   <style>
     :root {
@@ -263,6 +263,16 @@
         <div class="icon">&#128269;</div>
         <h3>Character Inspection</h3>
         <p>Right-click selected text for Unicode, font name, family, point size, vertical metrics, and Glyph ID (with CID for CJK).</p>
+      </a>
+      <a class="feature-card" href="{{ "docs/features/color-picker/" | relURL }}">
+        <div class="icon">&#127912;</div>
+        <h3>Color Picker</h3>
+        <p>Read the color under the cursor as the PDF wrote it — DeviceCMYK, Separation, DeviceN — and copy it as vector PDF with the spot color intact.</p>
+      </a>
+      <a class="feature-card" href="{{ "docs/features/page-color/" | relURL }}">
+        <div class="icon">&#127763;</div>
+        <h3>Page Color</h3>
+        <p>Read on a dark page or a tinted paper. Photographs stay positive, and copying and printing keep the original colors.</p>
       </a>
       <a class="feature-card" href="{{ "docs/features/pdf-info-sidebar/" | relURL }}">
         <div class="icon">&#128203;</div>

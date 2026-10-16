@@ -13,6 +13,7 @@ feature is intentionally narrow in scope.
 - [SyncTeX Integration]({{< relref "synctex" >}})
 - [Text Search]({{< relref "text-search" >}})
 - [Character Inspection]({{< relref "character-inspection" >}})
+- [Color Picker]({{< relref "color-picker" >}})
 - [Rectangular Selection & Measurement]({{< relref "rectangular-selection" >}})
 - [Display Modes]({{< relref "display-modes" >}})
 - [Page Color]({{< relref "page-color" >}})

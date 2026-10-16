@@ -7,6 +7,26 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.7</title>
+      <pubDate>Fri, 16 Oct 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.7</sparkle:shortVersionString>
+      <sparkle:version>204</sparkle:version>
+      <description><![CDATA[
+        <h3>✨ New Features</h3>
+        <ul>
+          <li>Color Picker (View &#9656; Color Picker, <code>Shift + Cmd + K</code>, or right-click &#9656; Color Picker) &mdash; a Digital Color Meter-style panel that reports the color under the cursor as the PDF's own values (<code>DeviceCMYK</code>, <code>DeviceGray</code>, <code>Separation</code>, <code>DeviceN</code>, <code>ICCBased</code>), read from the content stream rather than sampled from the screen. Click to lock a reading, click again to release</li>
+          <li>Edit &#9656; Copy Color as Text (<code>Shift + Cmd + C</code>) and Copy Color as PDF (<code>Option + Cmd + C</code>), the same keys as Digital Color Meter. The PDF is a 64&nbsp;pt vector swatch that carries its color space, so Illustrator receives a <code>Separation</code> as a spot swatch</li>
+          <li>Character Inspection now shows the character's fill color as written in the PDF</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.7/GalleyPDF_0.7.dmg"
+        sparkle:edSignature="l4W9TlrKdhF9UPREr6+QiHfJfqSslKLsjIp9LKJskNrBkZHMmu4/zvXoq4BXbIF5x5eV8Xpkdeh1gLdGQ1MBAQ=="
+        length="9402362"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.6</title>
       <pubDate>Mon, 07 Sep 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>

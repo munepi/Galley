@@ -14,6 +14,30 @@ Galley checks for updates once a day and can be updated at any time from
 
 ---
 
+## v0.7
+
+*16 October 2026 —
+[download](https://github.com/munepi/Galley/releases/tag/v0.7)*
+
+### New
+
+- [Color Picker]({{< relref "/docs/features/color-picker" >}}) under the View
+  menu (`Shift + Cmd + K`, or right-click ▸ Color Picker). A Digital Color
+  Meter-style panel that reports the color under the cursor as the PDF's own
+  values — `DeviceCMYK`, `DeviceGray`, `Separation`, `DeviceN`, `ICCBased` —
+  read from the content stream rather than sampled from the screen. Text, fills
+  and strokes are exact, with line width, constant alpha and blend mode; images,
+  shadings and colored patterns fall back to a sample marked `(sampled)`. Click
+  to lock a reading, click again to release.
+- Edit ▸ Copy Color as Text (`Shift + Cmd + C`) and Copy Color as PDF
+  (`Option + Cmd + C`), the same keys Digital Color Meter uses. The PDF is a
+  64 pt vector swatch that carries its color space, so Illustrator receives a
+  `Separation` as a spot swatch and `DeviceCMYK` as exact CMYK values.
+- [Character Inspection]({{< relref "/docs/features/character-inspection" >}})
+  now includes the character's fill color as written in the PDF.
+
+---
+
 ## v0.6
 
 *7 September 2026 —

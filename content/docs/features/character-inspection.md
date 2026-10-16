@@ -11,6 +11,8 @@ Right-click on a selected character in the PDF to inspect, in one popover:
 - Font name (PostScript), family, and traits
 - Point size and vertical metrics
 - Glyph ID — and CID for CJK fonts
+- Fill color, as written in the PDF — the same reading the
+  [Color Picker]({{< relref "color-picker" >}}) gives for that character
 
 This is built for typesetters who need to verify that the right glyph from
 the right font ended up on the page, especially when working with mixed
