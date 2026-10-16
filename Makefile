@@ -8,10 +8,13 @@ CODE_SIGN_IDENTITY ?=
 INSTALLER_CODE_SIGN_IDENTITY ?= 
 
 BUNDLE_NAME := $(APP_NAME).app
-BUILD_PATH := .build/apple/Products/Release/$(APP_NAME)
+# Ask swift where the universal products land instead of hardcoding the
+# layout: Swift 6.4 (Xcode 27) moved them from .build/apple to .build/out.
+BUILD_DIR := $(shell swift build -c release --arch arm64 --arch x86_64 --show-bin-path)
+BUILD_PATH := $(BUILD_DIR)/$(APP_NAME)
 # The galleypdf command. Built as GalleyPDFCLI because the build directory is
 # case-insensitive on APFS and `galleypdf` would collide with `GalleyPDF`.
-CLI_BUILD_PATH := .build/apple/Products/Release/$(APP_NAME)CLI
+CLI_BUILD_PATH := $(BUILD_DIR)/$(APP_NAME)CLI
 CONTENTS_DIR := $(BUNDLE_NAME)/Contents
 MACOS_DIR := $(CONTENTS_DIR)/MacOS
 # Auxiliary executables live under Contents/MacOS per Apple's nested code
