@@ -43,7 +43,7 @@ struct PDFColorSample {
     let color: PDFPaintColor   // .deviceCMYK または .deviceRGB
 }
 
-struct PDFColorHit {
+struct PDFColorHit: Sendable {
     enum Kind {
         case text(character: String?)
         case fill
@@ -129,7 +129,7 @@ struct PDFColorHit {
     }
 }
 
-enum PDFColorHitTester {
+@MainActor enum PDFColorHitTester {
 
     /// ページ座標 `point` の色を求める。`tolerance` はページ座標での許容量
     /// (画面 2px 程度を scaleFactor で割ったもの)。
@@ -420,7 +420,7 @@ enum PDFColorSampler {
 // ==========================================
 // ページごとの走査結果キャッシュ (PDFPage を弱参照キーに)
 // ==========================================
-final class PDFColorScanCache {
+@MainActor final class PDFColorScanCache {
     static let shared = PDFColorScanCache()
 
     private let table = NSMapTable<PDFPage, CGPDFPageColorScanner.ScanResult>.weakToStrongObjects()

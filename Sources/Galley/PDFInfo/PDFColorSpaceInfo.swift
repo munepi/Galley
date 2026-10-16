@@ -40,7 +40,7 @@ import CoreGraphics
 
 /// PDF 関数 (ISO 32000-1 §7.10)。Separation / DeviceN の tint 変換に使う。
 /// Type 4 (PostScript calculator) は評価しない (`evaluate` が nil を返す)。
-final class PDFFunction {
+final class PDFFunction: Sendable {
     enum Kind {
         case sampled(data: Data, bitsPerSample: Int, size: [Int], encode: [CGFloat], decode: [CGFloat])
         case exponential(c0: [CGFloat], c1: [CGFloat], n: CGFloat)
@@ -265,7 +265,7 @@ final class PDFFunction {
 }
 
 /// PDF の色空間 (ISO 32000-1 §8.6)。
-indirect enum PDFColorSpaceInfo {
+indirect enum PDFColorSpaceInfo: Sendable {
     case deviceGray
     case deviceRGB
     case deviceCMYK
@@ -509,7 +509,7 @@ indirect enum PDFColorSpaceInfo {
 }
 
 /// 塗り (または線) の色: 色空間 + 生の成分値 (+ パターン名)。
-struct PDFPaintColor {
+struct PDFPaintColor: Sendable {
     var space: PDFColorSpaceInfo
     var components: [CGFloat]
     var patternName: String? = nil
@@ -651,7 +651,7 @@ struct PDFPaintColor {
 }
 
 /// `scn /P1` で参照されたパターンの付帯情報
-struct PDFPatternInfo {
+struct PDFPatternInfo: Sendable {
     enum Kind { case tiling(colored: Bool), shading(colorSpace: PDFColorSpaceInfo?) }
     let name: String
     let kind: Kind
