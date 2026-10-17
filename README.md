@@ -422,6 +422,7 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 | :--- | :--- |
 | Open File | `Cmd + O` or `open -a GalleyPDF document.pdf` |
 | Print | `Cmd + P` |
+| Quit | Hold `Cmd + Q`, or press it twice (Galley ▸ Warn Before Quitting turns this off) |
 | Find | `Cmd + F` (toggle search bar) |
 | Find Next / Previous | `Cmd + G` / `Shift + Cmd + G` (also `Enter` / `Shift + Enter` while the search bar is focused) |
 | Use Selection for Find | `Cmd + E` |
@@ -452,7 +453,9 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 * Window Title Info: to keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`).
 * Link Preview: hovering over a PDF link for 0.3 seconds shows a popover with a real-size snippet of the target page (internal links) or the URL text (external links). Clicking a link follows it normally.
 * Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before following a link, clicking a bookmark or annotation, jumping to a search match, or running a Forward Search — the same keys Preview uses.
-* Persistence: Galley automatically remembers your Display Mode, Book Mode, RTL, and Page Color settings using `UserDefaults`, and puts the Color Picker panel back where you last left it.
+* Hold to Quit: a quick `Cmd + Q` only shows "Hold ⌘Q to Quit"; keep holding for a second, or press it again while the message is showing, to quit, as in Chrome. This guards the preview against a stray keystroke while you are typing in your editor. Quitting from the menu, the Dock or a script is immediate, and Galley ▸ Warn Before Quitting restores the immediate `Cmd + Q`.
+* No `Cmd + W`: Galley has a single window, so closing it quits the app. File ▸ Close is therefore left without a key; if you want one, bind it yourself as described in [Custom Key Bindings](#custom-key-bindings-vim-style-and-others), e.g. `defaults write com.github.munepi.galley NSUserKeyEquivalents -dict-add "Close" "@w"`.
+* Persistence: Galley automatically remembers your Display Mode, Book Mode, RTL, Page Color, and Warn Before Quitting settings using `UserDefaults`, and puts the Color Picker panel back where you last left it.
 
 ### Custom Key Bindings (Vim-style and others)
 
