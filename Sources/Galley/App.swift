@@ -272,13 +272,29 @@ struct GalleyApp {
         syncTexMenu.addItem(NSMenuItem.separator())
         syncTexMenu.addItem(customItem)
 
+        // --- 6. Window メニュー ---
+        // NSApp.windowsMenu に登録すると、AppKit が Fill / Center / Move & Resize などの
+        // タイル項目と View ▸ Enter Full Screen を自動挿入する。これが無いと
+        // Fn + Ctrl + 矢印や Fn + F などの OS 標準操作が届かない。
+        // ウィンドウは 1 枚なので、同時に挿入されるタブ関連の項目は出さない
+        NSWindow.allowsAutomaticWindowTabbing = false
+        let windowMenu = NSMenu(title: "Window")
+        let windowMenuItem = NSMenuItem()
+        windowMenuItem.submenu = windowMenu
+        windowMenu.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        windowMenu.addItem(withTitle: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: "")
+        windowMenu.addItem(NSMenuItem.separator())
+        windowMenu.addItem(withTitle: "Bring All to Front", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: "")
+
         mainMenu.addItem(appMenuItem)
         mainMenu.addItem(fileMenuItem)
         mainMenu.addItem(editMenuItem)
         mainMenu.addItem(viewMenuItem)
         mainMenu.addItem(syncTexMenuItem)
+        mainMenu.addItem(windowMenuItem)
 
         app.mainMenu = mainMenu
+        app.windowsMenu = windowMenu
         app.setActivationPolicy(.regular)
         app.run()
     }
