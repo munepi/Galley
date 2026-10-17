@@ -446,6 +446,9 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 | Toggle PDF Info Sidebar | `Cmd + I` |
 | Toggle PDF Bookmarks Sidebar | `Cmd + B` |
 | Toggle PDF Annotations Sidebar | `Cmd + N` |
+| Enter / Exit Full Screen | macOS standard (View ▸ Enter Full Screen, `Fn + F`) |
+| Minimize | `Cmd + M` |
+| Window Tiling | macOS standard (Window ▸ Move & Resize, `Fn + Ctrl + Arrow keys`) |
 
 ### Page Navigation & Interface Notes
 * Direct Jump: when you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly. The input auto-commits after 1 second of inactivity.
