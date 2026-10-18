@@ -336,68 +336,26 @@ defaults write com.github.munepi.galley nvimPath "/path/to/your/nvim"
 
 ### 5. Page Color
 
-View ▸ Page Color recolors the page. It is an accessibility and reading-comfort setting, not a document edit: copying, exporting and printing are untouched, and the choice is remembered in `pageColorMode` across launches.
+View ▸ Page Color recolors the page for reading comfort: `Dark` and `Charcoal` invert text and vector art onto a dark paper while leaving photographs positive (macOS 26 and later), and `Sepia`, `Orange` and `Gray` tint the paper without touching the ink. Every preset keeps a WCAG AAA (7:1) contrast ratio. The change is display-only — copying, exporting and printing keep the document's colors — and `Dark` / `Charcoal` are disabled while the system's *Invert colors* is on.
 
-| Preset | What it does |
-| :--- | :--- |
-| `Normal` | The document as authored. Nothing is installed in the rendering path. |
-| `Dark` | Inverts the page onto PDFKit's dark paper (`#1E1E1E`), the same color Preview uses. |
-| `Charcoal` | The same inversion onto a slightly lighter, slightly warmer paper (`#2C2C2B`). |
-| `Sepia` | Tints the paper `#F4ECD8`. Ink stays black. |
-| `Orange` | Tints the paper `#FFF0D9`. Ink stays black. |
-| `Gray` | Tints the paper `#D8D8D2`. Ink stays black. |
-
-`Dark` and `Charcoal` swap light for dark while preserving hue, so a `hyperref` link stays blue and a red TikZ rule stays red rather than flipping to its complement. On macOS 26 and later, Galley hands the inversion to PDFKit itself — the same facility behind Preview's *Use Dark Appearance for PDF* — which protects embedded raster images, so photographs and screenshots stay positive.
-
-`Sepia`, `Orange` and `Gray` are drawn as a multiply-blended overlay rather than an image filter, so glyphs stay vector-sharp at any zoom level and nothing is inverted. They are the better choice for design-heavy documents.
-
-> [!NOTE]
-> PDFKit decides what to invert by drawing operator, not by intent: anything drawn as text or vector paths is inverted, and only raster images are protected. A pictorial illustration exported from Illustrator is therefore inverted just like a TikZ diagram — Preview behaves identically with the same file. Use `Sepia` or `Gray` for such documents.
-
-On macOS 25 and earlier the SPI does not exist, and Galley falls back to a layer filter. That fallback inverts embedded images as well, cannot set the paper color (so `Charcoal` looks like `Dark`), and rasterizes at the current zoom level. The paper-tinting presets are unaffected.
-
-`Dark` and `Charcoal` are greyed out while System Settings ▸ Accessibility ▸ Display ▸ *Invert colors* is on, so the page is never inverted twice. Toggling that system setting updates the menu without relaunching Galley.
-
-#### Adjusting the Dark Page Color
-
-`Dark` uses the same paper color as Preview (`#1E1E1E`), and `Charcoal` uses `#2C2C2B`. If neither weight suits you, `Dark` can be tuned:
-
-~~~bash
-defaults write com.github.munepi.galley pageColorDarkPaper "#282828"
-~~~
-
-Anything from roughly `#242424` to `#303030` reads as a softer dark; past that the page starts to look washed out rather than dark. Delete the key to return to the default. Colors whose relative luminance exceeds 0.10 are ignored, so that light text keeps a WCAG AAA (7:1) contrast ratio against the page. `Charcoal` is unaffected by this preference.
-
-> [!NOTE]
-> This is an unadvertised preference that rides on a private PDFKit facility, and it exists only because the default suits some readers and not others. It may be removed or stop working in a future release of Galley or of macOS. Nothing else depends on it — if it goes away, `Dark` simply returns to the default paper color.
+Presets, platform differences, and the hidden `pageColorDarkPaper` preference: [Page Color](https://munepi.github.io/Galley/docs/features/page-color/).
 
 
 ### 6. Text Weight (Font Smoothing)
 
-Galley draws pages with the same PDFKit engine as Preview, and since v0.6 it leaves macOS's font smoothing at the system default, so a page looks exactly as it does in Preview. Font smoothing is the slight thickening that macOS applies to every antialiased glyph on screen; measured on a text-only page it puts about a quarter more ink on the screen than the glyph outlines themselves cover. Versions up to v0.5 switched it off for sharper, thinner text, which is why body text used to look lighter in Galley than in Preview.
-
-> [!TIP]
-> If you set type for offset printing, or proof against a high-resolution output device, turn smoothing off and leave it off. What you then see is the glyph outline as the type designer drew it — the same geometry the RIP will image — rather than the outline plus a thickening the OS added for screen legibility. That thickening is a fixed amount of ink per edge, so it hits small text harder than large, and it flattens the difference between neighbouring weights of a family. With it off, a Light next to a Regular on screen stands in the same relation as it will on press, and a heading that looks too heavy on screen really is too heavy.
-
-Turn smoothing off for Galley alone with the same keys that work for any macOS application:
+Since v0.6, Galley leaves macOS font smoothing at the system default, so text looks as it does in Preview. If you set type for print, turn it off for Galley alone: you then see the glyph outlines at the weight the RIP will image, without the thickening the OS adds for screen legibility.
 
 ~~~bash
 defaults write com.github.munepi.galley CGFontRenderingFontSmoothingDisabled -bool YES
 defaults write com.github.munepi.galley AppleFontSmoothing -int 0
 ~~~
 
-Relaunch Galley for the change to take effect; the value is read once at startup. Delete both keys to return to the default:
-
-~~~bash
-defaults delete com.github.munepi.galley CGFontRenderingFontSmoothingDisabled
-defaults delete com.github.munepi.galley AppleFontSmoothing
-~~~
-
-> [!NOTE]
-> Away from print work, neither rendering is "the" correct weight. Smoothing off reproduces the outline geometry; smoothing on is Apple's on-screen compensation for the thinning effect of grayscale antialiasing, and on a text-only page it happens to land close to what a 600 dpi laser printer's binary rasterization produces, before toner spread.
+Relaunch to apply; `defaults delete` both keys to go back.
 
 > [!IMPORTANT]
-> Versions up to v0.5 wrote these two keys into Galley's preferences on every launch, and they stay there after upgrading. If text still looks thinner than in Preview after updating, run the two `defaults delete` commands above once and relaunch.
+> Versions up to v0.5 wrote these two keys on every launch, and they survive an upgrade. If text still looks thinner than in Preview, delete both keys once and relaunch.
+
+Why the weights differ and when each is right: [Text Weight](https://munepi.github.io/Galley/docs/configuration/text-weight/).
 
 
 ### 7. Debug Logging
@@ -467,105 +425,19 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 
 ### Custom Key Bindings (Vim-style and others)
 
-Galley deliberately ships only standard macOS shortcuts and does not implement modal or Vim-like key handling. Single letters without modifiers are already reserved: typing `iv` or `cover` jumps to that page label, so `h`, `j`, `k`, `l`, `n` and `g` cannot double as commands without breaking direct page jumps.
+Galley ships only standard macOS shortcuts. Bare letters are reserved for typing page labels (`iv`, `cover`), so there is no modal or Vim-like mode — but every command is a uniquely titled menu item, so you can bind your own keys:
 
-Instead, every command is a menu item with a unique title, so you can bind whatever keys you like. There are three ways to do it, and which one you want depends on whether your binding uses a modifier key.
+1. System Settings ▸ Keyboard ▸ Keyboard Shortcuts ▸ App Shortcuts, for any binding with a modifier.
+2. `defaults`, the same thing from the shell. Modifiers are `@` Command, `~` Option, `^` Control, `$` Shift; relaunch Galley afterwards.
 
-#### 1. System Settings (any binding with a modifier)
+   ~~~bash
+   defaults write com.github.munepi.galley NSUserKeyEquivalents -dict-add "Next Page" "~j"
+   ~~~
 
-System Settings ▸ Keyboard ▸ Keyboard Shortcuts ▸ App Shortcuts ▸ `+`, choose GalleyPDF, and type the menu item title exactly as it appears in the menu bar (for example `Next Page`, `Back`, `Find Next`). Submenu items are addressed by their own title, not by a path.
+   This *replaces* the item's built-in key rather than adding one.
+3. Karabiner-Elements, for bare keys such as `/` or `h` `j` `k` `l`, or to keep the built-in keys as well.
 
-#### 2. `defaults` (the same thing, scriptable)
-
-App Shortcuts are stored as an `NSUserKeyEquivalents` dictionary in the app's preference domain. Galley's bundle identifier is `com.github.munepi.galley`. Modifiers are written as symbols: `@` Command, `~` Option, `^` Control, `$` Shift.
-
-```bash
-defaults write com.github.munepi.galley NSUserKeyEquivalents -dict "Next Page" "~j" "Previous Page" "~k" "Back" "~h" "Forward" "~l"
-```
-
-```bash
-defaults read com.github.munepi.galley NSUserKeyEquivalents
-```
-
-```bash
-defaults delete com.github.munepi.galley NSUserKeyEquivalents
-```
-
-`-dict` writes the whole dictionary at once, discarding any bindings already stored. To add a single binding to an existing set, use `-dict-add` — note that it accepts exactly one key/value pair per invocation, so repeat the command rather than chaining pairs.
-
-```bash
-defaults write com.github.munepi.galley NSUserKeyEquivalents -dict-add "Find Next" "~n"
-```
-
-Relaunch Galley for the change to take effect; run `killall cfprefsd` first if it does not. Titles must match exactly, including the ASCII ellipsis in items such as `Find...`.
-
-Note that `NSUserKeyEquivalents` *replaces* a menu item's key equivalent rather than adding to it. Binding `Next Page` to `~j` removes `Space`, and binding `Back` to `~h` removes `Cmd + [`. If you want to keep both, use the next option.
-
-#### 3. Karabiner-Elements (bare single keys, or keeping the built-in keys)
-
-App Shortcuts cannot bind a key without a modifier, so bare `/` or `h` `j` `k` `l` need a remapper. Map them onto Galley's existing modifier shortcuts rather than sending bare letters — a bare letter is swallowed by the page-label input. Scoping the rule to Galley's bundle identifier keeps the rest of your system untouched, and unlike `defaults`, the built-in keys keep working.
-
-Save the following as `~/.config/karabiner/assets/complex_modifications/galley.json`, then enable it from Karabiner-Elements ▸ Complex Modifications.
-
-```json
-{
-  "title": "Galley",
-  "rules": [
-    {
-      "description": "Galley: Opt+hjkl navigation, / for find",
-      "manipulators": [
-        {
-          "type": "basic",
-          "from": { "key_code": "j", "modifiers": { "mandatory": ["option"] } },
-          "to": [{ "key_code": "spacebar" }],
-          "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.github\\.munepi\\.galley$"] }]
-        },
-        {
-          "type": "basic",
-          "from": { "key_code": "k", "modifiers": { "mandatory": ["option"] } },
-          "to": [{ "key_code": "spacebar", "modifiers": ["left_shift"] }],
-          "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.github\\.munepi\\.galley$"] }]
-        },
-        {
-          "type": "basic",
-          "from": { "key_code": "h", "modifiers": { "mandatory": ["option"] } },
-          "to": [{ "key_code": "open_bracket", "modifiers": ["left_command"] }],
-          "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.github\\.munepi\\.galley$"] }]
-        },
-        {
-          "type": "basic",
-          "from": { "key_code": "l", "modifiers": { "mandatory": ["option"] } },
-          "to": [{ "key_code": "close_bracket", "modifiers": ["left_command"] }],
-          "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.github\\.munepi\\.galley$"] }]
-        },
-        {
-          "type": "basic",
-          "from": { "key_code": "slash" },
-          "to": [{ "key_code": "f", "modifiers": ["left_command"] }],
-          "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.github\\.munepi\\.galley$"] }]
-        }
-      ]
-    }
-  ]
-}
-```
-
-#### Vim equivalents
-
-| Vim | Galley |
-| :--- | :--- |
-| `j` / `k`, `Ctrl-F` / `Ctrl-B` | `Space` / `Shift + Space` (`Next Page` / `Previous Page`) |
-| `Ctrl-E` / `Ctrl-Y` | arrow keys |
-| `{N}G`, `:{N}` | type the page number or label directly |
-| `Ctrl-O` / `Ctrl-I` | `Cmd + [` / `Cmd + ]` (`Back` / `Forward`) |
-| `/` | `Cmd + F` (`Find...`) |
-| `n` / `N` | `Cmd + G` / `Shift + Cmd + G` (`Find Next` / `Find Previous`) |
-| `*` | `Cmd + E` (`Use Selection for Find`) |
-| `:noh` | `Esc` |
-| `ignorecase` / `smartcase` | `Match Case` checkbox in the search bar |
-| `\v` | `Regex` checkbox in the search bar |
-
-Galley has no equivalent for `Ctrl-D` / `Ctrl-U`: a half screen is not a meaningful unit in a PDF, since it changes with the zoom level. Use `Next Page` / `Previous Page` instead. `gg` and `G` are likewise absent — typing a page label already jumps directly, so there is nothing left for them to do.
+A ready-made Karabiner rule and a Vim-to-Galley equivalence table: [Custom Key Bindings](https://munepi.github.io/Galley/docs/reference/key-bindings/).
 
 
 ## Roadmap: The "Galley Pro" Ambitions
