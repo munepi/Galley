@@ -52,7 +52,11 @@ struct GalleyApp {
             "vimPath": "",
             "nvimPath": "",
             "customEditorCommand": "",
-            "warnBeforeQuitting": true
+            "warnBeforeQuitting": true,
+            // Color Picker: 値の表示モード、シミュレーションプロファイル (ICC のパス。空 = 既定)、TAC 上限 (%)
+            ColorDisplaySettings.displayModeKey: ColorDisplayMode.native.rawValue,
+            InstalledProfileCatalog.userDefaultsKey: "",
+            ColorDisplaySettings.tacLimitKey: 300
         ])
 
         let app = NSApplication.shared
@@ -328,6 +332,8 @@ struct GalleyApp {
 
     // --- Color Picker パネル (View ▸ Color Picker / 右クリック) ---
     var colorPickerController: ColorPickerPanelController?
+    /// Color Picker の表示モード・シミュレーションプロファイル (パネルの有無に関わらず文書ごとに更新)
+    lazy var colorDisplaySettings = ColorDisplaySettings()
     var isShowingA = true
     var sidebarController: SidebarController?
 

@@ -46,6 +46,52 @@ orientation and crop as the page on screen. Wrong values here mean the
 scanner's user-space coordinates and PDFKit's page coordinates have
 diverged.
 
+## Display modes and separations (both PDFs)
+
+Open the panel and lock the CMYK red box (x 60–160, y 600–660 on page 1 of
+`colorpicker-test.pdf`). Switch `Display`:
+
+| Display | Expected |
+| --- | --- |
+| Native Values | `C 0% M 100% Y 100% K 0%` |
+| sRGB / Display P3 / Adobe RGB | three 0–1 values plus a 0–255 line; the header reads `sRGB ← DeviceCMYK via <profile>` |
+| L\*a\*b\* | `L 48.8 a +79.2 b +55.5` with Japan Color 2001 Coated (Generic CMYK would give L 47.8) |
+| Simulation CMYK | same as native for CMYK ink |
+
+The `Separations` column always lists Cyan, Magenta, Yellow, Black and
+`DIC 161s*` (the page's only spot color) with the current plate values and
+`TAC`:
+
+| Element | Expected plates |
+| --- | --- |
+| CMYK red box | M 100, Y 100, TAC 200% |
+| Gray 50% box | Black 50, TAC 50% (DeviceGray lands on K only) |
+| Spot 50% box | `DIC 161s*` 50, process 0, TAC 50% |
+| Rich black box | 60/40/40/100, TAC 240% |
+| RGB blue box | `≈` converted plates (C ≈87, M ≈54 under Japan Color 2001 Coated), `≈ TAC` |
+| CMYK JPEG | plates as sampled, no `≈` |
+| RGB JPEG | `≈` converted plates |
+
+## Output intent (`colorpicker-x1a.pdf`)
+
+Built with `\usepackage[x-1a]{pdfx}` (three pdflatex runs; `colorpicker-x1a.xmpdata`
+supplies the title). It embeds FOGRA39L Coated from TeX Live's `colorprofiles`
+as `/OutputIntents`; it deliberately keeps RGB objects, so it is not a
+conforming PDF/X-1a. Expectations:
+
+- The `Simulate` popup reads `Document: FOGRA39L Coated` and is disabled;
+  the Info sidebar's Features section shows `Output Intent: FOGRA39L Coated (GTS_PDFX, ICC N=4)`.
+- Opening `colorpicker-test.pdf` afterwards re-enables the popup with the
+  profile you picked last (Japan Color 2001 Coated on a fresh install when it
+  is installed, otherwise Generic CMYK).
+- Row 1 boxes (y 600–660): DeviceGray 0 → Black 100, TAC 100%; Gray 50% →
+  Black 50; RGB blue → `≈` C 82 M 59; RGB black → `≈` 84/78/42/97, TAC 301%
+  flagged `⚠︎ > 300%` (compare with the DeviceGray 0 box next to it).
+- Row 2 boxes (y 520–580): CMYK red 0/100/100/0; rich black 60/40/40/100,
+  TAC 240%; spot 100% and 50% on the `DIC 161s*` plate only.
+- With `Display` on Simulation CMYK, DeviceGray 0 shows `K 100%` (not a
+  converted rich black), RGB black shows the converted rich black.
+
 ## Copy Color as PDF
 
 With the Separation box (x 420–520, y 600–660) locked, Edit ▸ Copy Color as

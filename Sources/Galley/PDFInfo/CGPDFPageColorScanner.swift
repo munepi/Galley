@@ -175,12 +175,64 @@ enum CGPDFPageColorScanner {
         case shading(ShadingObject)
     }
 
+    /// ページ内の特色版 (Separation / DeviceN の 1 成分)
+    struct SpotPlate: Sendable {
+        let name: String
+        let space: PDFColorSpaceInfo
+        let componentIndex: Int
+    }
+
     /// 走査結果 (描画順)。NSMapTable の値にするためクラス。
     final class ScanResult {
         var inks: [InkObject] = []
         var operatorCount = 0
         var completed = false
         var inlineImageOperators: [String] = []   // BI/ID/EI のどれが届いたか (診断用)
+        /// cs/CS や画像・シェーディングで解決した色空間 (出現順)。塗られていない版も分版リストに載せる
+        var seenSpaces: [PDFColorSpaceInfo] = []
+
+        /// ページ内の特色版 (出現順・名前で一意)。プロセス色名と All/None は除く。
+        lazy var spotPlates: [SpotPlate] = {
+            var out: [SpotPlate] = []
+            var seen = Set<String>()
+            func collect(_ space: PDFColorSpaceInfo, depth: Int = 0) {
+                guard depth < 6 else { return }
+                switch space {
+                case .separation(let name, _, _):
+                    add(name, space, 0)
+                case .deviceN(let names, _, _):
+                    for (i, n) in names.enumerated() { add(n, space, i) }
+                case .indexed(let base, _, _):
+                    collect(base, depth: depth + 1)
+                case .pattern(let base):
+                    if let b = base { collect(b, depth: depth + 1) }
+                default:
+                    break
+                }
+            }
+            func add(_ name: String, _ space: PDFColorSpaceInfo, _ index: Int) {
+                let excluded = ["Cyan", "Magenta", "Yellow", "Black", "All", "None"]
+                guard !excluded.contains(name), !seen.contains(name) else { return }
+                seen.insert(name)
+                out.append(SpotPlate(name: name, space: space, componentIndex: index))
+            }
+            func collectColor(_ c: PDFPaintColor) {
+                collect(c.space)
+                if let p = c.pattern, case .shading(let cs) = p.kind, let s = cs { collect(s) }
+            }
+            for s in seenSpaces { collect(s) }
+            for ink in inks {
+                switch ink {
+                case .path(let po): collectColor(po.color)
+                case .text(let t): collectColor(t.fill); collectColor(t.stroke)
+                case .image(let io): if let cs = io.colorSpace { collect(cs) }; collectColor(io.fill)
+                case .shading(let so): if let cs = so.colorSpace { collect(cs) }
+                }
+            }
+            return out
+        }()
+
+        var spotPlateNames: [String] { spotPlates.map { $0.name } }
     }
 
     // MARK: - Graphics state
@@ -557,6 +609,7 @@ enum CGPDFPageColorScanner {
             guard let obj = operands(s).last else { return }
             let cs = CGPDFScannerGetContentStream(s)
             let space = PDFColorSpaceInfo.parse(obj, in: cs) ?? .unknown(name(obj) ?? "?")
+            result.seenSpaces.append(space)
             let color = PDFPaintColor(space: space, components: space.initialComponents)
             if stroke { gs.stroke = color } else { gs.fill = color }
         }
