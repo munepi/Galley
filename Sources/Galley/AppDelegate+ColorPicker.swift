@@ -52,7 +52,7 @@ extension AppDelegate {
     /// パネルを開く。`viewPoint` (PDFView 座標) が渡されればその点を直ちに読む。
     func openColorPicker(from view: GalleyPDFView?, viewPoint: CGPoint?) {
         if colorPickerController == nil {
-            let controller = ColorPickerPanelController()
+            let controller = ColorPickerPanelController(settings: colorDisplaySettings)
             controller.onClose = { [weak self] in
                 self?.colorPickerDidClose()
             }
@@ -64,6 +64,7 @@ extension AppDelegate {
             v?.colorPickerResetState()
         }
         controller.setLocked(false)
+        colorDisplaySettings.scanInstalledProfiles()
         controller.showWindow(nil)
         controller.window?.orderFront(nil)
 
@@ -95,9 +96,14 @@ extension AppDelegate {
     }
 
     /// 文書が差し替わった (loadPDF / reloadPDF)。ページオブジェクトが変わるので
-    /// ロックを解除し、キャッシュを捨てる。パネルは開いたまま。
-    func colorPickerDocumentDidChange() {
+    /// ロックを解除し、キャッシュを捨てる。出力インテントはパネルが閉じていても更新する。
+    func colorPickerDocumentDidChange(_ document: PDFDocument?) {
         PDFColorScanCache.shared.flush()
+        let intents = document.map { CGPDFOutputIntentExtractor.extract(from: $0) } ?? []
+        colorDisplaySettings.setDocumentIntents(intents)
+        if let cmyk = colorDisplaySettings.documentIntent {
+            Log.colorPicker.info("output intent: \(cmyk.displayName, privacy: .public) (\(cmyk.subtype, privacy: .public))")
+        }
         guard isColorPickerActive else { return }
         for v in [pdfViewA, pdfViewB] {
             v?.colorPickerResetState()

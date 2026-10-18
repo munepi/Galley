@@ -49,6 +49,10 @@ extension GalleyPDFView {
         return (NSApp.delegate as? AppDelegate)?.colorPickerController
     }
 
+    private var colorDisplaySettings: ColorDisplaySettings? {
+        return (NSApp.delegate as? AppDelegate)?.colorDisplaySettings
+    }
+
     /// ロック状態はパネルが唯一の持ち主 (PDFView は A/B の 2 枚あるため)
     var colorPickerLocked: Bool {
         return colorPickerPanel?.isLocked ?? false
@@ -121,7 +125,8 @@ extension GalleyPDFView {
         colorPickerLastHit = hit
 
         let pageIndex = self.document?.index(for: page)
-        panel.update(hit: hit, pageLabel: page.label, pageIndex: pageIndex, point: pagePoint)
+        let spots = PDFColorScanCache.shared.result(for: page)?.spotPlates ?? []
+        panel.update(hit: hit, pageSpots: spots, pageLabel: page.label, pageIndex: pageIndex, point: pagePoint)
 
         scheduleMagnifierRedraw()
 
@@ -164,7 +169,8 @@ extension GalleyPDFView {
         }
         colorPickerLastHit = hit
         let pageIndex = self.document?.index(for: page)
-        colorPickerPanel?.update(hit: hit, pageLabel: page.label, pageIndex: pageIndex, point: point)
+        let spots = PDFColorScanCache.shared.result(for: page)?.spotPlates ?? []
+        colorPickerPanel?.update(hit: hit, pageSpots: spots, pageLabel: page.label, pageIndex: pageIndex, point: point)
     }
 
     // MARK: - Character inspector support
@@ -193,7 +199,16 @@ extension GalleyPDFView {
         if let sc = hit.strokeColor {
             lines.append("Stroke: \(sc.space.displayName) \(sc.formattedComponents)")
         }
-        if let c = hit.swatchColor {
+        if let settings = colorDisplaySettings {
+            let sim = settings.simulationSpace
+            if let c = PDFColorReadout.sRGB(of: hit, simulation: sim) {
+                lines.append("sRGB:   ≈ \(PDFPaintColor.hexString(c))")
+            }
+            if let p = PDFColorReadout.plates(hit, pageSpots: [], simulation: sim, simulationName: settings.simulationName) {
+                let plates = p.plates.map { "\($0.name.prefix(1)) \(PDFColorReadout.formatTAC($0.fraction))" }.joined(separator: " ")
+                lines.append("Plates: \(p.isApproximate ? "≈ " : "")\(plates)  TAC \(PDFColorReadout.formatTAC(p.tac))")
+            }
+        } else if let c = hit.swatchColor {
             lines.append("sRGB:   ≈ \(PDFPaintColor.hexString(c))")
         }
         if hit.alpha < 1 {

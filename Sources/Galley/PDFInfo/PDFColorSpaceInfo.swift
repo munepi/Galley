@@ -591,54 +591,13 @@ struct PDFPaintColor: Sendable {
         }
     }
 
-    /// 近似 sRGB (スウォッチ・hex 表示用)。カラーマネジメント経由の近似値。
-    func approximateSRGB(depth: Int = 0) -> NSColor? {
-        guard depth < 6 else { return nil }
-        let comps = components
-
-        func fromCG(_ cs: CGColorSpace?, _ c: [CGFloat]) -> NSColor? {
-            guard let cs = cs, cs.numberOfComponents == c.count else { return nil }
-            let cg = CGColor(colorSpace: cs, components: c + [1.0])
-            return cg.flatMap { NSColor(cgColor: $0) }?.usingColorSpace(.sRGB)
-        }
-
-        switch space {
-        case .deviceGray, .calGray:
-            return fromCG(CGColorSpaceCreateDeviceGray(), comps)
-        case .deviceRGB, .calRGB:
-            return fromCG(CGColorSpaceCreateDeviceRGB(), comps)
-        case .deviceCMYK:
-            return fromCG(CGColorSpaceCreateDeviceCMYK(), comps)
-        case .lab(let range):
-            let white: [CGFloat] = [0.9505, 1.0, 1.089]
-            let cs = CGColorSpace(labWhitePoint: white, blackPoint: nil, range: range)
-            return fromCG(cs, comps)
-        case .iccBased(let n, let alternate, let iccData):
-            if let data = iccData, let cs = CGColorSpace(iccData: data as CFData), cs.numberOfComponents == comps.count,
-               let c = fromCG(cs, comps) {
-                return c
-            }
-            if let alt = alternate {
-                return PDFPaintColor(space: alt, components: comps).approximateSRGB(depth: depth + 1)
-            }
-            switch n {
-            case 1: return fromCG(CGColorSpaceCreateDeviceGray(), comps)
-            case 3: return fromCG(CGColorSpaceCreateDeviceRGB(), comps)
-            case 4: return fromCG(CGColorSpaceCreateDeviceCMYK(), comps)
-            default: return nil
-            }
-        case .indexed:
-            return resolvedIndexedColor?.approximateSRGB(depth: depth + 1)
-        case .separation, .deviceN:
-            return alternateColor?.approximateSRGB(depth: depth + 1)
-        case .pattern(let base):
-            if let b = base, !comps.isEmpty {
-                return PDFPaintColor(space: b, components: comps).approximateSRGB(depth: depth + 1)
-            }
-            return nil
-        case .unknown:
-            return nil
-        }
+    /// 近似 sRGB (Generic CMYK 経由)。Color Picker は PDFColorReadout.sRGB(of:simulation:) で
+    /// シミュレーションプロファイル経由の値を使う。
+    func approximateSRGB() -> NSColor? {
+        guard let cg = cgColor(cmyk: CGColorSpaceCreateDeviceCMYK()),
+              let dst = CGColorSpace(name: CGColorSpace.sRGB),
+              let converted = PDFColorReadout.convert(cg, to: dst) else { return nil }
+        return NSColor(cgColor: converted)
     }
 
     static func hexString(_ color: NSColor) -> String {

@@ -230,6 +230,24 @@ enum PDFDocumentInfoBuilder {
             rows.append(.keyValue(key: "Tagged PDF", value: yn(isTaggedPDF(cg))))
             rows.append(.keyValue(key: "AcroForm", value: yn(hasAcroForm(cg))))
             rows.append(.keyValue(key: "JavaScript", value: yn(hasJavaScript(cg))))
+
+            // /OutputIntents (PDF/X, PDF/A の出力条件)
+            let intents = CGPDFOutputIntentExtractor.extract(from: cg)
+            if intents.isEmpty {
+                rows.append(.keyValue(key: "Output Intent", value: "No"))
+            } else {
+                for intent in intents {
+                    var value = intent.displayName
+                    var details: [String] = [intent.subtype]
+                    if intent.profileData == nil {
+                        details.append("profile not embedded")
+                    } else if let n = intent.components {
+                        details.append("ICC N=\(n)")
+                    }
+                    value += " (" + details.joined(separator: ", ") + ")"
+                    rows.append(.keyValue(key: "Output Intent", value: value))
+                }
+            }
         }
 
         return InfoSection(id: .features, title: "Features", rows: rows)
