@@ -271,7 +271,7 @@ class GalleyPDFView: PDFView {
         // Command, Control, Option などの修飾キーが押されている場合は、
         // ページジャンプの入力とはみなさず、通常のショートカット処理へ譲る
         if event.modifierFlags.intersection([.command, .control, .option]).isEmpty == false {
-            super.keyDown(with: event)
+            keyDownTurningPageIfStuck(with: event)
             return
         }
 
@@ -286,8 +286,10 @@ class GalleyPDFView: PDFView {
             }
         }
 
-        // スペースキー（ページ送り）など、対象外のキーはPDFKitに処理させる
-        super.keyDown(with: event)
+        // スペースキー（ページ送り）など、対象外のキーはPDFKitに処理させる。
+        // macOS 27 のPDFKitは非連続モードでページ送りに失敗することがあるので、
+        // 結果を確認して必要なら自前でページを送る (GalleyPDFView+Paging.swift)。
+        keyDownTurningPageIfStuck(with: event)
     }
 
 
