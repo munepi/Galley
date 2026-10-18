@@ -320,7 +320,8 @@ extension AppDelegate {
         Self.apply(self.pageColorMode, to: view)
     }
 
-    @objc func accessibilityDisplayOptionsChanged(_ notification: Notification) {
+    // Delivered on whatever thread posts it, so stay nonisolated and hop to main below.
+    @objc nonisolated func accessibilityDisplayOptionsChanged(_ notification: Notification) {
         DispatchQueue.main.async {
             self.applyPageColorMode(self.pageColorMode)
         }

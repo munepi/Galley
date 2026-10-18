@@ -8,7 +8,7 @@ Galley maintains a strict 1-to-1 correspondence between your TeX source and its 
 
 ## System Requirements
 
-* OS: macOS 11.0 (Big Sur) or later.
+* OS: macOS 12.0 (Monterey) or later.
 * Architecture: Universal Binary (native support for both Apple Silicon and Intel Macs).
 
 ## Key Features

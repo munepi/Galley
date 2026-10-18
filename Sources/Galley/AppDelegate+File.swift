@@ -30,6 +30,7 @@
 
 import AppKit
 import PDFKit
+import UniformTypeIdentifiers
 
 // ==========================================
 // AppDelegate の拡張: File メニューおよびファイル管理関連
@@ -46,7 +47,7 @@ extension AppDelegate {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-        panel.allowedFileTypes = ["pdf"]
+        panel.allowedContentTypes = [.pdf]
         if panel.runModal() == .OK, let url = panel.url { self.loadPDF(url: url) }
     }
 
@@ -130,19 +131,21 @@ extension AppDelegate {
 
         self.timer?.invalidate()
         self.timer = Timer.scheduledTimer(withTimeInterval: DelaySettings.pollingInterval, repeats: true) { [weak self] _ in
-            guard let self = self,
-                  let currentModDate = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date),
-                  let lastMod = self.lastUpdate,
-                  currentModDate > lastMod else { return }
+            MainActor.assumeIsolated {
+                guard let self = self,
+                      let currentModDate = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date),
+                      let lastMod = self.lastUpdate,
+                      currentModDate > lastMod else { return }
 
-            self.lastUpdate = currentModDate
-            self.reloadWorkItem?.cancel()
+                self.lastUpdate = currentModDate
+                self.reloadWorkItem?.cancel()
 
-            let workItem = DispatchWorkItem { [weak self] in
-                self?.reloadPDF()
+                let workItem = DispatchWorkItem { [weak self] in
+                    self?.reloadPDF()
+                }
+                self.reloadWorkItem = workItem
+                DispatchQueue.main.asyncAfter(deadline: .now() + DelaySettings.reloadWait, execute: workItem)
             }
-            self.reloadWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + DelaySettings.reloadWait, execute: workItem)
         }
     }
 
@@ -155,11 +158,14 @@ extension AppDelegate {
 
         Log.file.info("reloadPDF: start gen=\(gen) url=\(url.lastPathComponent, privacy: .public)")
 
-        var currentPageIndex = 0
-        var currentPoint = CGPoint.zero
+        let currentPageIndex: Int
+        let currentPoint: CGPoint
         if let dest = activeView.currentDestination, let page = dest.page, let doc = activeView.document {
             currentPageIndex = doc.index(for: page)
             currentPoint = dest.point
+        } else {
+            currentPageIndex = 0
+            currentPoint = .zero
         }
 
         DispatchQueue.global(qos: .userInitiated).async {

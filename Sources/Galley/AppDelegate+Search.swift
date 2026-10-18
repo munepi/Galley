@@ -210,7 +210,7 @@ extension AppDelegate {
             context.allowsImplicitAnimation = true
             self.searchBarContainer?.superview?.layoutSubtreeIfNeeded()
         }, completionHandler: {
-            self.clearSearchHighlights()
+            MainActor.assumeIsolated { self.clearSearchHighlights() }
         })
 
         searchBarVisible = false

@@ -195,7 +195,8 @@ func dispatch(_ request: Request, to appURL: URL) {
     configuration.activates = !request.background
 
     let semaphore = DispatchSemaphore(value: 0)
-    var dispatchError: Error?
+    // Written once in the completion handler, read only after the semaphore wait.
+    nonisolated(unsafe) var dispatchError: Error?
     NSWorkspace.shared.open([url], withApplicationAt: appURL, configuration: configuration) { _, error in
         dispatchError = error
         semaphore.signal()

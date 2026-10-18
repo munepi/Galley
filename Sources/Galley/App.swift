@@ -28,14 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import SwiftUI
 import AppKit
 import PDFKit
 import Sparkle
 
 @main
 struct GalleyApp {
-    static func main() {
+    @MainActor static func main() {
         // フォントスムージング (AppleFontSmoothing / CGFontRenderingFontSmoothingDisabled)
         // には触らない。v0.5 までは起動時に無効化していたが、同じ PDFKit を使う
         // Preview.app より本文が約 2 割薄く見えていたため、OS の既定に合わせた。
@@ -306,7 +305,7 @@ struct GalleyApp {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
+@MainActor class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     var window: NSWindow?
 
     // Sparkle updater controller.
@@ -467,10 +466,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         let queryItems = components?.queryItems ?? []
 
         // パラメータを辞書形式に変換
-        var params: [String: String] = [:]
-        for item in queryItems {
-            params[item.name] = item.value
-        }
+        let params = queryItems.reduce(into: [String: String]()) { $0[$1.name] = $1.value }
 
         // background=1 は URL を配送した `open -g` と対になる指定。
         // 起動そのものがこの URL で誘発された場合に備え、非同期ブロックの外で立てる。

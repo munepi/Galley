@@ -129,7 +129,7 @@ extension GalleyPDFView {
         colorPickerSampleTimer = nil
         if hit.needsSampling {
             colorPickerSampleTimer = Timer.scheduledTimer(withTimeInterval: 0.08, repeats: false) { [weak self] _ in
-                self?.performColorSampling()
+                MainActor.assumeIsolated { self?.performColorSampling() }
             }
         }
     }

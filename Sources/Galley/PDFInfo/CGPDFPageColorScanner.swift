@@ -247,7 +247,8 @@ enum CGPDFPageColorScanner {
 
     // MARK: - Operator table (shared; callbacks are static and capture nothing)
 
-    private static let operatorTable: CGPDFOperatorTableRef? = {
+    // Built once and never mutated; the opaque pointer cannot be marked Sendable.
+    nonisolated(unsafe) private static let operatorTable: CGPDFOperatorTableRef? = {
         guard let table = CGPDFOperatorTableCreate() else { return nil }
         typealias CB = @convention(c) (CGPDFScannerRef, UnsafeMutableRawPointer?) -> Void
         func set(_ name: String, _ cb: CB) {
