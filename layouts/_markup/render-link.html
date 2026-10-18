@@ -1,0 +1,17 @@
+{{- /*
+  Overrides themes/hugo-book/layouts/_markup/render-link.html.
+
+  Same output as the theme, plus a trailing ↗ on links that leave the site
+  (http/https to a host other than baseURL's). The arrow is aria-hidden so
+  screen readers do not announce it, and a word joiner (U+2060) keeps it on
+  the same line as the last word of the link text.
+*/ -}}
+{{- $destination := .Destination -}}
+{{- if .Page.Site.Params.BookPortableLinks -}}
+  {{- $destination = partial "docs/links/portable-link" . -}}
+{{- end -}}
+{{- $url := urls.Parse .Destination -}}
+{{- $siteHost := (urls.Parse site.BaseURL).Host -}}
+{{- $isExternal := and (in (slice "http" "https") $url.Scheme) (ne $url.Host $siteHost) -}}
+<a href="{{ $destination | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ if $isExternal }} class="external"{{ end }}>{{ .Text | safeHTML }}{{ if $isExternal }}&#x2060;<span class="external-mark" aria-hidden="true">↗</span>{{ end }}</a>
+{{- /**/ -}}
