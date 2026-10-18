@@ -462,6 +462,7 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 * Hold to Quit: a quick `Cmd + Q` only shows "Hold ⌘Q to Quit"; keep holding for a second, or press it again while the message is showing, to quit, as in Chrome. This guards the preview against a stray keystroke while you are typing in your editor. Quitting from the menu, the Dock or a script is immediate, and Galley ▸ Warn Before Quitting restores the immediate `Cmd + Q`.
 * No `Cmd + W`: Galley has a single window, so closing it quits the app. File ▸ Close is therefore left without a key; if you want one, bind it yourself as described in [Custom Key Bindings](#custom-key-bindings-vim-style-and-others), e.g. `defaults write com.github.munepi.galley NSUserKeyEquivalents -dict-add "Close" "@w"`.
 * Persistence: Galley automatically remembers your Display Mode, Book Mode, RTL, Page Color, and Warn Before Quitting settings using `UserDefaults`, and puts the Color Picker panel back where you last left it, with its display mode and simulation profile.
+* macOS 27 and Single Page / Two Pages: PDFKit on macOS 27 stops turning the page on `Space`, `Page Down`, `Page Up` and the arrow keys in the non-continuous display modes whenever its scroll view carries a content inset, which is the case under a full-size title bar like Galley's (Skim is affected the same way). Galley 0.8 and later detect the stuck key and turn the page themselves; the continuous modes and the mouse were never affected.
 
 ### Custom Key Bindings (Vim-style and others)
 

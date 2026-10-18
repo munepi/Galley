@@ -11,6 +11,16 @@ BUNDLE_NAME := $(APP_NAME).app
 # Ask swift where the universal products land instead of hardcoding the
 # layout: Swift 6.4 (Xcode 27) moved them from .build/apple to .build/out.
 BUILD_DIR := $(shell swift build -c release --arch arm64 --arch x86_64 --show-bin-path)
+
+# Deployment target; keep in sync with Package.swift and Info.plist.in.
+MACOS_MIN := 12.0
+# Swift 6.4's SwiftPM (Xcode 27) stamps LC_BUILD_VERSION's sdk field with the
+# deployment target instead of the SDK it linked against, so AppKit and PDFKit
+# would treat the app as a macOS 12-era binary (legacy controls, legacy
+# behaviours). Hand the real SDK version to the linker ourselves and verify the
+# stamp after linking.
+SDK_VERSION := $(shell xcrun --sdk macosx --show-sdk-version)
+SWIFT_LINK_FLAGS := -Xlinker -platform_version -Xlinker macos -Xlinker $(MACOS_MIN) -Xlinker $(SDK_VERSION)
 BUILD_PATH := $(BUILD_DIR)/$(APP_NAME)
 # The galleypdf command. Built as GalleyPDFCLI because the build directory is
 # case-insensitive on APFS and `galleypdf` would collide with `GalleyPDF`.
@@ -81,11 +91,23 @@ Info.plist: Info.plist.in version
 
 .PHONY: nativebuild
 nativebuild:
-	swift build -c release
+	swift build -c release $(SWIFT_LINK_FLAGS)
+	$(MAKE) check-sdk-stamp BUILD_PATH=$$(swift build -c release --show-bin-path)/$(APP_NAME)
 
 .PHONY: build
 build:
-	swift build -c release --arch arm64 --arch x86_64
+	swift build -c release --arch arm64 --arch x86_64 $(SWIFT_LINK_FLAGS)
+	$(MAKE) check-sdk-stamp
+
+# Fail loudly if the linker did not record the SDK we built against.
+.PHONY: check-sdk-stamp
+check-sdk-stamp:
+	@for arch in $$(lipo -archs $(BUILD_PATH)); do \
+	  sdk=$$(otool -arch $$arch -l $(BUILD_PATH) | awk '/LC_BUILD_VERSION/ {f=1} f && /^ *sdk / {print $$2; exit}'); \
+	  if [ "$$sdk" != "$(SDK_VERSION)" ]; then \
+	    echo "error: $(BUILD_PATH) ($$arch) is stamped with sdk $$sdk, expected $(SDK_VERSION)"; exit 1; \
+	  fi; \
+	done; echo "LC_BUILD_VERSION sdk $(SDK_VERSION) OK: $(BUILD_PATH)"
 
 .PHONY: app
 app $(APP_NAME).app: build $(APP_NAME).icns Info.plist
