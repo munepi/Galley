@@ -5,12 +5,57 @@ weight = 55
 
 # Release Notes
 
-Every release is a Universal Binary requiring macOS 11 (Big Sur) or later,
-signed with a Developer ID and notarized by Apple.
+Every release is a Universal Binary, signed with a Developer ID and notarized
+by Apple. Galley 0.8 and later require macOS 12 (Monterey) or later; earlier
+releases require macOS 11 (Big Sur).
 
 Galley checks for updates once a day and can be updated at any time from
 **Galley ▸ Check for Updates…**. Installed through Homebrew? `brew upgrade
 --cask galley` gets you to the same build.
+
+---
+
+## v0.8
+
+*19 October 2026 —
+[download](https://github.com/munepi/Galley/releases/tag/v0.8)*
+
+### New
+
+- The [Color Picker]({{< relref "/docs/features/color-picker" >}}) learns
+  to read like a prepress tool:
+  - A `Display` popup re-expresses the reading as sRGB, Display P3,
+    Adobe RGB (1998), L\*a\*b\* or Simulation CMYK.
+  - A `Simulate` popup picks the CMYK used for those conversions: the
+    document's own output intent when it is a PDF/X, otherwise an installed
+    CMYK profile of your choice (Japan Color 2001 Coated by default when
+    installed, Generic CMYK otherwise).
+  - A separations readout lists the process plates and every spot color on
+    the page, with total area coverage. Values over 300 % are flagged; the
+    limit is `colorPickerTACLimit`.
+- The [Info sidebar]({{< relref "/docs/features/pdf-info-sidebar" >}})
+  lists the document's output intents under Features.
+- A Window menu, so macOS window tiling, full screen and `Cmd + M` work as in
+  any other app ([#12](https://github.com/munepi/Galley/issues/12)).
+- Hold `Cmd + Q` to quit, as in Chrome: a quick press only shows a reminder,
+  so a stray keystroke while typing in your editor no longer closes the
+  preview. Galley ▸ Warn Before Quitting turns it off ([#13](https://github.com/munepi/Galley/issues/13)).
+- File ▸ Close, without a key. Galley has one window, so closing it quits;
+  bind `Cmd + W` yourself if you want it. See
+  [Custom Key Bindings]({{< relref "/docs/reference/key-bindings" >}}).
+
+### Changed
+
+- Galley now requires macOS 12 (Monterey) or later. Xcode 27's macOS SDK no
+  longer builds for macOS 11, so this release will not be offered to Macs
+  still on Big Sur.
+
+### Fixed
+
+- On macOS 27, `Space`, `Page Down`, `Page Up` and the arrow keys stopped
+  turning the page in Single Page and Two Pages modes. This is a PDFKit
+  regression that Skim shares; Galley now detects the stuck key and turns the
+  page itself ([#14](https://github.com/munepi/Galley/issues/14)).
 
 ---
 
