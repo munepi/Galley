@@ -7,6 +7,36 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.8</title>
+      <pubDate>Mon, 19 Oct 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.8</sparkle:shortVersionString>
+      <sparkle:version>227</sparkle:version>
+      <description><![CDATA[
+        <h3>✨ New Features</h3>
+        <ul>
+          <li>Color Picker: a <code>Display</code> popup re-expresses the reading as sRGB, Display P3, Adobe RGB (1998), L*a*b* or Simulation CMYK; a <code>Simulate</code> popup picks the CMYK profile (the document's PDF/X output intent first, otherwise one you choose); and a separations readout lists the process and spot plates with total area coverage, flagged over 300&nbsp;%</li>
+          <li>The Info sidebar lists the document's output intents under Features</li>
+          <li>A Window menu, so macOS window tiling, full screen and <code>Cmd + M</code> work</li>
+          <li>Hold <code>Cmd + Q</code> to quit, as in Chrome &mdash; a quick press only shows a reminder. Galley &#9656; Warn Before Quitting turns it off</li>
+          <li>File &#9656; Close, without a key; bind <code>Cmd + W</code> yourself if you want it</li>
+        </ul>
+        <h3>🔄 Changes</h3>
+        <ul>
+          <li>Galley now requires macOS 12 (Monterey) or later</li>
+        </ul>
+        <h3>🐛 Fixes</h3>
+        <ul>
+          <li>On macOS 27, <code>Space</code>, <code>Page Down</code>, <code>Page Up</code> and the arrow keys turn the page again in Single Page and Two Pages modes</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.8/GalleyPDF_0.8.dmg"
+        sparkle:edSignature="O8Kx/Us6QY8tpQLlxLOUim7ybNxbGJ6KGaaT2qPBHqobbrTS+nZc6oILOJm7KOk7enzyjvbmzuAOaoDoZ8pyBg=="
+        length="9080673"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.7</title>
       <pubDate>Fri, 16 Oct 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>

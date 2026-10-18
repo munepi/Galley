@@ -9,6 +9,7 @@ weight = 10
 |-------------------------|--------------------------------------------------------------------------------|
 | Open File               | `Cmd + O` or `open -a GalleyPDF document.pdf`                                  |
 | Print                   | `Cmd + P`                                                                      |
+| Quit                    | Hold `Cmd + Q`, or press it twice (Galley ▸ Warn Before Quitting turns this off) |
 | Find                    | `Cmd + F` (toggle search bar)                                                  |
 | Find Next / Previous    | `Cmd + G` / `Shift + Cmd + G` (also `Enter` / `Shift + Enter` while the search bar is focused) |
 | Use Selection for Find  | `Cmd + E`                                                                      |
@@ -34,6 +35,9 @@ weight = 10
 | Toggle PDF Bookmarks Sidebar | `Cmd + B`                                                                 |
 | Toggle PDF Annotations Sidebar | `Cmd + N`                                                               |
 | Copy Annotation Content | `Cmd + C` (with an Annotations row selected)                                   |
+| Enter / Exit Full Screen | macOS standard (View ▸ Enter Full Screen, `Fn + F`)                           |
+| Minimize                | `Cmd + M`                                                                      |
+| Window Tiling           | macOS standard (Window ▸ Move & Resize, `Fn + Ctrl + Arrow keys`)             |
 
 Every one of these is a menu item, and every menu item can be rebound — see
 [Custom Key Bindings]({{< relref "key-bindings" >}}).
@@ -51,8 +55,21 @@ Every one of these is a menu item, and every menu item can be rebound — see
 - Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before
   following a link, clicking a bookmark or annotation, jumping to a search
   match, or running a Forward Search — the same keys Preview uses.
-- Persistence: Galley remembers Display Mode, Book Mode, RTL, and
-  [Page Color]({{< relref "/docs/features/page-color" >}}) settings via
-  `UserDefaults`, and puts the
+- Hold to Quit: a quick `Cmd + Q` only shows "Hold ⌘Q to Quit"; keep holding
+  for a second, or press it again while the message is showing, to quit — as
+  in Chrome. It guards the preview against a stray keystroke while you type in
+  your editor. Quitting from the menu, the Dock or a script is immediate, and
+  Galley ▸ Warn Before Quitting restores the immediate `Cmd + Q`.
+- No `Cmd + W`: Galley has a single window, so closing it quits the app.
+  File ▸ Close is left without a key; bind one yourself if you want it, as
+  shown in [Custom Key Bindings]({{< relref "key-bindings" >}}).
+- macOS 27 and Single Page / Two Pages: PDFKit on macOS 27 stops turning the
+  page on `Space`, `Page Down`, `Page Up` and the arrow keys in the
+  non-continuous modes whenever its scroll view carries a content inset, as it
+  does under Galley's full-size title bar (Skim is affected the same way).
+  Galley 0.8 and later detect the stuck key and turn the page themselves.
+- Persistence: Galley remembers Display Mode, Book Mode, RTL,
+  [Page Color]({{< relref "/docs/features/page-color" >}}) and Warn Before
+  Quitting via `UserDefaults`, and puts the
   [Color Picker]({{< relref "/docs/features/color-picker" >}}) panel back where
-  you last left it.
+  you last left it, with its display mode and simulation profile.

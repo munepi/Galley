@@ -59,6 +59,70 @@ stream. For those, Galley waits until the cursor rests, rasterizes the spot
 and reports what it finds, marked `(sampled)`. A CMYK image is sampled in a
 CMYK context, so its values round-trip rather than passing through RGB.
 
+## Display: other color spaces
+
+The `Display` popup re-expresses the reading the way Digital Color Meter's
+"Display in …" menu does:
+
+| Display | Shows |
+|---------|-------|
+| Native Values | The values as written in the PDF (the default) |
+| sRGB, Display P3, Adobe RGB (1998) | Three 0–1 values plus a 0–255 line |
+| L\*a\*b\* | L, a, b |
+| Simulation CMYK | The CMYK that the simulation profile would print |
+
+Anything other than Native Values is a conversion, and the panel says so in a
+header such as `sRGB ← DeviceCMYK via Japan Color 2001 Coated`. CMYK goes
+through the simulation profile, so a `DeviceCMYK` red gets the Lab it would
+really print at, and an RGB black shows how rich it would come out. In
+Simulation CMYK, `DeviceGray` and `DeviceCMYK` are shown as they are — a
+`DeviceGray` 0 is K 100, not a converted rich black.
+
+Conversions use relative colorimetric intent with black point compensation.
+
+## Simulate: which CMYK
+
+The simulation profile is chosen in this order:
+
+1. The document's `/OutputIntents` profile, when it has a CMYK one — a PDF/X
+   file, typically. The `Simulate` popup then reads
+   `Document: FOGRA39L Coated` (or whatever the file declares) and is
+   disabled, because the file has already said what it is for.
+2. Otherwise, the profile you pick from the popup. Galley lists the CMYK
+   output profiles installed in the ColorSync folders (system, `/Library`,
+   your `~/Library`) and Adobe's shared profile folder. Your choice is
+   remembered.
+3. On a fresh install, Japan Color 2001 Coated when it is installed, and
+   Generic CMYK otherwise.
+
+A non-CMYK intent, such as the sRGB intent of a PDF/A file, is listed as
+`Document: … (not CMYK, not used)` and never used as a CMYK simulation. The
+[Info sidebar]({{< relref "pdf-info-sidebar" >}}) lists the document's output
+intents under Features.
+
+## Separations and TAC
+
+Below the reading, an Acrobat-style column lists the process plates and every
+spot color on the page, with the plate values under the cursor and the total
+area coverage:
+
+| Under the cursor | Plates |
+|------------------|--------|
+| `DeviceCMYK` C 0 M 100 Y 100 K 0 | Magenta 100, Yellow 100 — TAC 200% |
+| `DeviceGray` 50% | Black 50 — TAC 50% |
+| `Separation "DIC 161s*"` Tint 50% | `DIC 161s*` 50, process plates 0 — TAC 50% |
+| `DeviceRGB` blue | `≈` converted plates, `≈ TAC` |
+
+`DeviceGray` lands on the K plate only, `Separation` and `DeviceN` on their
+own plates, and RGB and Lab are converted through the simulation profile and
+marked `≈`. A TAC over the limit is flagged, e.g. `TAC 301%  ⚠︎ > 300%`,
+which is where an RGB black converted through FOGRA39 lands. The limit is
+300 % by default:
+
+```bash
+defaults write com.github.munepi.galley colorPickerTACLimit 350
+```
+
 ## Locking a reading
 
 Click the page to lock the panel on the current reading; the title changes to
@@ -70,7 +134,7 @@ reading came from no longer exists.
 
 | Menu item | Shortcut | Puts on the clipboard |
 |-----------|----------|------------------------|
-| Edit ▸ Copy Color as Text | `Shift + Cmd + C` | The reading as plain text: values with the color space, what was hit and where, and any notes |
+| Edit ▸ Copy Color as Text | `Shift + Cmd + C` | The reading as plain text: values with the color space, the converted values and separations when shown, what was hit and where, and any notes |
 | Edit ▸ Copy Color as PDF | `Option + Cmd + C` | A 64 pt square filled with the color, as vector PDF |
 
 The two keys are the ones Digital Color Meter uses for the same jobs. The
@@ -96,7 +160,8 @@ colors.
 > - Soft masks (`SMask` in an ExtGState). Constant alpha is reported; a
 >   gradient mask is not.
 > - Overprint (`OP`, `op`, `OPM`). A K 100 that overprints reads as plain
->   K 100; check overprint settings in a preflight tool.
+>   K 100, and the separations column shows the topmost object's plates as if
+>   everything knocked out; check overprint settings in a preflight tool.
 > - Annotations — link borders, form widgets and the like. Over one with no
 >   ink beneath it, the panel says `annotation here (not scanned)`.
 > - Optional-content visibility. Content on a hidden layer is still reported

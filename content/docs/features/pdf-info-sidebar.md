@@ -27,7 +27,12 @@ The Info panel groups metadata into sections rendered as a key/value list:
 - Pages — page count and the MediaBox / CropBox / TrimBox / BleedBox /
   ArtBox of the current page.
 - Features — high-level capabilities such as Tagged PDF, Linearized,
-  AcroForm, JavaScript, and embedded files.
+  AcroForm, JavaScript, and embedded files, plus one `Output Intent` line per
+  `/OutputIntents` entry, e.g.
+  `Output Intent: FOGRA39L Coated (GTS_PDFX, ICC N=4)`, or `No` when there
+  is none; an intent without an embedded profile says so. The
+  [Color Picker]({{< relref "color-picker" >}}) uses a CMYK intent as its
+  simulation profile.
 - Fonts — embedded fonts scanned via `CGPDFDocument`. The scan walks
   inherited page resources and Form XObjects to match `pdffonts` coverage,
   reporting BaseFont, Type, Embedded, Subset, and Encoding for each font.

@@ -20,11 +20,17 @@ All settings live under the `com.github.munepi.galley` domain.
 | `displaysRTL`          | Boolean | Right-To-Left spreads, for 縦書き and other right-bound documents. |
 | `pageColorMode`        | Integer | Page Color preset: `0` Normal (default), `1` Dark, `2` Sepia, `3` Orange, `4` Gray, `5` Charcoal. Set from View ▸ Page Color. See [Page Color]({{< relref "/docs/features/page-color" >}}). |
 | `pageColorDarkPaper`   | String  | Hidden override for the Dark paper color, as `#RRGGBB`. Values whose relative luminance exceeds 0.10 are ignored. Unset by default; does not affect Charcoal. |
+| `warnBeforeQuitting`   | Boolean | Hold `Cmd + Q` to quit (default `true`). Set from Galley ▸ Warn Before Quitting; `false` makes `Cmd + Q` quit at once. |
+| `colorPickerDisplayMode` | String | The Color Picker's `Display` popup: `native` (default), `sRGB`, `displayP3`, `adobeRGB`, `lab` or `simulationCMYK`. See [Color Picker]({{< relref "/docs/features/color-picker" >}}). |
+| `colorPickerSimulationProfilePath` | String | Path of the CMYK ICC profile picked in the `Simulate` popup. Empty (default) means Japan Color 2001 Coated when installed, otherwise Generic CMYK. A document's CMYK output intent takes precedence. |
+| `colorPickerTACLimit`  | Integer | Total area coverage, in percent, above which the separations readout is flagged. Default `300`. |
 | `AppleFontSmoothing`   | Integer | Not Galley's own key, but read from its domain: `0` turns macOS font smoothing off for Galley alone. Unset by default since v0.6. See [Text Weight]({{< relref "/docs/configuration/text-weight" >}}). |
 | `CGFontRenderingFontSmoothingDisabled` | Boolean | The companion key to the above; set both together. |
 
-The display and page-color keys are written whenever you change the
-corresponding View menu item, which is why your choices survive a restart.
+The display, page-color and quit keys are written whenever you change the
+corresponding menu item, and the Color Picker keys whenever you change its
+popups, which is why your choices survive a restart. `colorPickerTACLimit`
+has no control in the panel; set it with `defaults write`.
 
 The two font-smoothing keys are the exception: they belong to macOS, not to
 Galley, and Galley no longer writes them. Versions up to v0.5 set them on every

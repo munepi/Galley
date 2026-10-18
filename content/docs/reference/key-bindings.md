@@ -49,6 +49,13 @@ rather than chaining pairs.
 defaults write com.github.munepi.galley NSUserKeyEquivalents -dict-add "Find Next" "~n"
 ```
 
+File ▸ Close ships without a key, because Galley has a single window and
+closing it quits the app. If you want `Cmd + W` anyway:
+
+```bash
+defaults write com.github.munepi.galley NSUserKeyEquivalents -dict-add "Close" "@w"
+```
+
 Relaunch Galley for the change to take effect; run `killall cfprefsd` first if
 it does not. Titles must match exactly, including the ASCII ellipsis in items
 such as `Find...`.
