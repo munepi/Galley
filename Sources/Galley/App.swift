@@ -51,7 +51,8 @@ struct GalleyApp {
             "vimtexFlavor": "auto",
             "vimPath": "",
             "nvimPath": "",
-            "customEditorCommand": ""
+            "customEditorCommand": "",
+            "warnBeforeQuitting": true
         ])
 
         let app = NSApplication.shared
@@ -77,13 +78,18 @@ struct GalleyApp {
         appMenu.addItem(checkForUpdatesItem)
         appMenu.addItem(NSMenuItem.separator())
 
-        appMenu.addItem(withTitle: "Quit Galley", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        // Chrome と同じく ⌘Q は長押しで終了 (AppDelegate+Quit.swift)。このトグルで即終了に戻せる
+        appMenu.addItem(withTitle: "Warn Before Quitting", action: #selector(AppDelegate.toggleWarnBeforeQuitting(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: "Quit Galley", action: #selector(AppDelegate.quitAction(_:)), keyEquivalent: "q")
 
         // --- 2. File メニュー ---
         let fileMenu = NSMenu(title: "File")
         let fileMenuItem = NSMenuItem()
         fileMenuItem.submenu = fileMenu
         fileMenu.addItem(withTitle: "Open PDF file...", action: #selector(AppDelegate.openDocument(_:)), keyEquivalent: "o")
+        // 単一ウィンドウなので閉じる＝終了。誤操作を避けるため既定キーは付けず、
+        // 欲しい人は App Shortcuts で "Close" に ⌘W を割り当てる (Issue #13)
+        fileMenu.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "")
         fileMenu.addItem(NSMenuItem.separator())
 
         // Export サブメニュー
@@ -271,13 +277,29 @@ struct GalleyApp {
         syncTexMenu.addItem(NSMenuItem.separator())
         syncTexMenu.addItem(customItem)
 
+        // --- 6. Window メニュー ---
+        // NSApp.windowsMenu に登録すると、AppKit が Fill / Center / Move & Resize などの
+        // タイル項目と View ▸ Enter Full Screen を自動挿入する。これが無いと
+        // Fn + Ctrl + 矢印や Fn + F などの OS 標準操作が届かない。
+        // ウィンドウは 1 枚なので、同時に挿入されるタブ関連の項目は出さない
+        NSWindow.allowsAutomaticWindowTabbing = false
+        let windowMenu = NSMenu(title: "Window")
+        let windowMenuItem = NSMenuItem()
+        windowMenuItem.submenu = windowMenu
+        windowMenu.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        windowMenu.addItem(withTitle: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: "")
+        windowMenu.addItem(NSMenuItem.separator())
+        windowMenu.addItem(withTitle: "Bring All to Front", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: "")
+
         mainMenu.addItem(appMenuItem)
         mainMenu.addItem(fileMenuItem)
         mainMenu.addItem(editMenuItem)
         mainMenu.addItem(viewMenuItem)
         mainMenu.addItem(syncTexMenuItem)
+        mainMenu.addItem(windowMenuItem)
 
         app.mainMenu = mainMenu
+        app.windowsMenu = windowMenu
         app.setActivationPolicy(.regular)
         app.run()
     }
@@ -308,6 +330,10 @@ struct GalleyApp {
     var colorPickerController: ColorPickerPanelController?
     var isShowingA = true
     var sidebarController: SidebarController?
+
+    // --- Hold ⌘Q to Quit の HUD (AppDelegate+Quit.swift) ---
+    var quitHUD: NSPanel?
+    var quitHUDHideWorkItem: DispatchWorkItem?
 
     var activePDFView: GalleyPDFView { isShowingA ? pdfViewA : pdfViewB }
     var hiddenPDFView: GalleyPDFView { isShowingA ? pdfViewB : pdfViewA }
@@ -358,6 +384,11 @@ struct GalleyApp {
 
         if menuItem.action == #selector(toggleColorPicker(_:)) {
             return self.validateColorPickerMenuItem(menuItem)
+        }
+
+        if menuItem.action == #selector(toggleWarnBeforeQuitting(_:)) {
+            menuItem.state = warnsBeforeQuitting ? .on : .off
+            return true
         }
 
         if menuItem.action == #selector(copyColorAsText(_:)) ||
