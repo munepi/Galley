@@ -179,7 +179,7 @@ extension AppDelegate {
                 panel.animator().alphaValue = 0.0
             }) {
                 // フェード中にもう一度 ⌘Q が押されたら表示し直されているので消さない
-                if panel.alphaValue == 0.0 { panel.orderOut(nil) }
+                MainActor.assumeIsolated { if panel.alphaValue == 0.0 { panel.orderOut(nil) } }
             }
         }
         quitHUDHideWorkItem = item
