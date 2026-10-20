@@ -4,7 +4,7 @@ Galley is a lightweight PDF previewer for macOS, designed with TeX/LaTeX authors
 
 ## The Core Philosophy: 1-to-1 Correspondence
 
-Galley maintains a strict 1-to-1 correspondence between your TeX source and its PDF output. It enforces a single-window policy — one source, one PDF, one window — so that SyncTeX operations always target the correct context without ambiguity.
+Galley maintains a strict 1-to-1 correspondence between your TeX source and its PDF output. It enforces a single-window policy (one source, one PDF, one window), so that SyncTeX operations always target the correct context without ambiguity.
 
 ## System Requirements
 
@@ -18,7 +18,7 @@ Galley maintains a strict 1-to-1 correspondence between your TeX source and its 
   * Forward Search: jump from your editor to the corresponding position in the PDF, highlighted with a fading red dot centered in the window.
   * Inverse Search: `Cmd + Click` anywhere in the PDF to jump back to the source line in your editor. Supports Emacs, Visual Studio Code, Vim/Neovim (VimTeX), and custom editors via CLI.
 * Character Inspection: right-click a selected character to view its Unicode code point, name, plane, general category, embedded font name (PostScript), family, traits, point size (pt / mm / Q), vertical metrics (ascent / descent / leading), Glyph ID (with CID notation for CJK), and the fill color as written in the PDF.
-* Color Picker: View ▸ Color Picker (`Shift + Cmd + K`) reads the color under the cursor from the content stream and shows it as the PDF wrote it — `DeviceCMYK`, `Separation "DIC 161s*"`, `DeviceN`, `ICCBased` — rather than as a screen sample.
+* Color Picker: View ▸ Color Picker (`Shift + Cmd + K`) reads the color under the cursor from the content stream and shows it as the PDF wrote it (`DeviceCMYK`, `Separation "DIC 161s*"`, `DeviceN`, `ICCBased`) rather than as a screen sample.
   * Display: re-express the value as sRGB, Display P3, Adobe RGB, L\*a\*b\* or Simulation CMYK, using the document's output intent (PDF/X) or a CMYK profile you choose.
   * Separations: per-plate values for the process and spot colors on the page, with total area coverage (TAC) flagged over 300 %.
   * Copy Color as Text (`Shift + Cmd + C`) or as a 64 pt vector PDF swatch (`Option + Cmd + C`) that keeps spot colors spot.
@@ -29,8 +29,8 @@ Galley maintains a strict 1-to-1 correspondence between your TeX source and its 
   * Bookmarks (`Cmd + B`): the document outline, click-to-navigate.
   * Annotations (`Cmd + N`): all annotations with click-to-navigate; `Cmd + C` copies the selected annotation content.
 * Text Search: `Cmd + F` opens an incremental search bar with a match counter, whole-document highlighting, `Match Case` and `Regex` options, and matching across line breaks. `Cmd + G` / `Shift + Cmd + G` step through matches without the search bar focused, and `Cmd + E` searches for the current selection.
-* Page Color: View ▸ Page Color recolors the page for comfortable reading. `Dark` and `Charcoal` invert text and vector art while leaving photographs positive; `Sepia`, `Orange` and `Gray` tint the paper and leave the ink alone. Every preset keeps a WCAG AAA (7:1) contrast ratio, and the change is display-only — copying, exporting and printing keep the document's original colors.
-* Lightweight Rendering: Galley draws only the PDF page itself — no annotation overlays or editing tools — so page rendering stays light even when flipping through pages quickly.
+* Page Color: View ▸ Page Color recolors the page for comfortable reading. `Dark` and `Charcoal` invert text and vector art while leaving photographs positive; `Sepia`, `Orange` and `Gray` tint the paper and leave the ink alone. Every preset keeps a WCAG AAA (7:1) contrast ratio, and the change is display-only: copying, exporting and printing keep the document's original colors.
+* Lightweight Rendering: Galley draws only the PDF page itself (no annotation overlays or editing tools), so page rendering stays light even when flipping through pages quickly.
 
 
 ## Installation
@@ -86,9 +86,9 @@ The `galleypdf` command is a thin front end over that same scheme, so both route
 
 ### Command Line (`galleypdf`)
 
-`galleypdf` ships inside the application bundle at `GalleyPDF.app/Contents/MacOS/bin/galleypdf` — the same layout Emacs uses for `emacsclient`.
+`galleypdf` ships inside the application bundle at `GalleyPDF.app/Contents/MacOS/bin/galleypdf`, the same layout Emacs uses for `emacsclient`.
 
-Homebrew puts it on your `PATH` for you. If you installed from the disk image, pick whichever of these you prefer — both keep working across updates, because they point into the bundle rather than at a copy:
+Homebrew puts it on your `PATH` for you. If you installed from the disk image, pick whichever of these you prefer; both keep working across updates, because they point into the bundle rather than at a copy:
 
 ~~~bash
 # Add the bundle's bin directory to PATH (no administrator rights needed)
@@ -336,7 +336,7 @@ defaults write com.github.munepi.galley nvimPath "/path/to/your/nvim"
 
 ### 5. Page Color
 
-View ▸ Page Color recolors the page for reading comfort: `Dark` and `Charcoal` invert text and vector art onto a dark paper while leaving photographs positive (macOS 26 and later), and `Sepia`, `Orange` and `Gray` tint the paper without touching the ink. Every preset keeps a WCAG AAA (7:1) contrast ratio. The change is display-only — copying, exporting and printing keep the document's colors — and `Dark` / `Charcoal` are disabled while the system's *Invert colors* is on.
+View ▸ Page Color recolors the page for reading comfort: `Dark` and `Charcoal` invert text and vector art onto a dark paper while leaving photographs positive (macOS 26 and later), and `Sepia`, `Orange` and `Gray` tint the paper without touching the ink. Every preset keeps a WCAG AAA (7:1) contrast ratio. The change is display-only (copying, exporting and printing keep the document's colors), and `Dark` / `Charcoal` are disabled while the system's *Invert colors* is on.
 
 Presets, platform differences, and the hidden `pageColorDarkPaper` preference: [Page Color](https://munepi.github.io/Galley/docs/features/page-color/).
 
@@ -417,7 +417,7 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 * Direct Jump: when you type a page number or label without any modifier keys, a minimalist HUD will appear at the bottom to guide your jump instantly. The input auto-commits after 1 second of inactivity.
 * Window Title Info: to keep the interface zero-distraction, the title bar dynamically displays `<FileName> - Page <label> (<physical>/<total>)` (e.g., `document.pdf - Page iv (4/120)`).
 * Link Preview: hovering over a PDF link for 0.3 seconds shows a popover with a real-size snippet of the target page (internal links) or the URL text (external links). Clicking a link follows it normally.
-* Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before following a link, clicking a bookmark or annotation, jumping to a search match, or running a Forward Search — the same keys Preview uses.
+* Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before following a link, clicking a bookmark or annotation, jumping to a search match, or running a Forward Search, the same keys Preview uses.
 * Hold to Quit: a quick `Cmd + Q` only shows "Hold ⌘Q to Quit"; keep holding for a second, or press it again while the message is showing, to quit, as in Chrome. This guards the preview against a stray keystroke while you are typing in your editor. Quitting from the menu, the Dock or a script is immediate, and Galley ▸ Warn Before Quitting restores the immediate `Cmd + Q`.
 * No `Cmd + W`: Galley has a single window, so closing it quits the app. File ▸ Close is therefore left without a key; if you want one, bind it yourself as described in [Custom Key Bindings](#custom-key-bindings-vim-style-and-others), e.g. `defaults write com.github.munepi.galley NSUserKeyEquivalents -dict-add "Close" "@w"`.
 * Persistence: Galley automatically remembers your Display Mode, Book Mode, RTL, Page Color, and Warn Before Quitting settings using `UserDefaults`, and puts the Color Picker panel back where you last left it, with its display mode and simulation profile.
@@ -425,7 +425,7 @@ Alternatively, open Console.app, select your Mac under *Devices*, and filter by 
 
 ### Custom Key Bindings (Vim-style and others)
 
-Galley ships only standard macOS shortcuts. Bare letters are reserved for typing page labels (`iv`, `cover`), so there is no modal or Vim-like mode — but every command is a uniquely titled menu item, so you can bind your own keys:
+Galley ships only standard macOS shortcuts. Bare letters are reserved for typing page labels (`iv`, `cover`), so there is no modal or Vim-like mode, but every command is a uniquely titled menu item, so you can bind your own keys:
 
 1. System Settings ▸ Keyboard ▸ Keyboard Shortcuts ▸ App Shortcuts, for any binding with a modifier.
 2. `defaults`, the same thing from the shell. Modifiers are `@` Command, `~` Option, `^` Control, `$` Shift; relaunch Galley afterwards.
@@ -445,7 +445,7 @@ A ready-made Karabiner rule and a Vim-to-Galley equivalence table: [Custom Key B
 Galley is currently a focused, lightweight viewer. The following features are under consideration or in early exploration:
 
 ### 1. Universal SyncTeX Bridge: `pandoc-synctex`
-A bidirectional synchronization bridge between structured text formats and Galley. By leveraging ASTs (like Pandoc's `+sourcepos`) and custom Lua filters, this would enable Forward/Inverse Search from the PDF back to sources in formats such as Typst, SATySFi, Vivliostyle (VFM), AsciiDoc, and Re:VIEW.
+A bidirectional synchronization bridge between structured text formats and Galley. By using ASTs (like Pandoc's `+sourcepos`) and custom Lua filters, this would enable Forward/Inverse Search from the PDF back to sources in formats such as Typst, SATySFi, Vivliostyle (VFM), AsciiDoc, and Re:VIEW.
 
 ### 2. Hybrid Rendering Engine & Typography Inspector (Poppler + HarfBuzz + FreeType)
 Apple's `PDFKit` is optimized for screen rendering and does not expose all print-related data. A hybrid backend using C++ libraries could provide:
