@@ -39,12 +39,12 @@ weight = 10
 | Minimize                | `Cmd + M`                                                                      |
 | Window Tiling           | macOS standard (Window ▸ Move & Resize, `Fn + Ctrl + Arrow keys`)             |
 
-Every one of these is a menu item, and every menu item can be rebound — see
+Every one of these is a menu item, and every menu item can be rebound; see
 [Custom Key Bindings]({{< relref "key-bindings" >}}).
 
 ## Page Navigation & Interface Notes
 
-- Direct Jump: type a page number or label without modifier keys — a
+- Direct Jump: type a page number or label without modifier keys, and a
   minimalist HUD appears at the bottom. Input auto-commits after 1 second of
   inactivity.
 - Window Title: displays `<FileName> - Page <label> (<physical>/<total>)`
@@ -54,9 +54,9 @@ Every one of these is a menu item, and every menu item can be rebound — see
   (external links).
 - Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before
   following a link, clicking a bookmark or annotation, jumping to a search
-  match, or running a Forward Search — the same keys Preview uses.
+  match, or running a Forward Search, the same keys Preview uses.
 - Hold to Quit: a quick `Cmd + Q` only shows "Hold ⌘Q to Quit"; keep holding
-  for a second, or press it again while the message is showing, to quit — as
+  for a second, or press it again while the message is showing, to quit, as
   in Chrome. It guards the preview against a stray keystroke while you type in
   your editor. Quitting from the menu, the Dock or a script is immediate, and
   Galley ▸ Warn Before Quitting restores the immediate `Cmd + Q`.

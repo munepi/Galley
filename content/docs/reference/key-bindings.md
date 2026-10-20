@@ -41,8 +41,8 @@ defaults delete com.github.munepi.galley NSUserKeyEquivalents
 ```
 
 `-dict` writes the whole dictionary at once, discarding any bindings already
-stored. To add a single binding to an existing set, use `-dict-add` — note that
-it accepts exactly one key/value pair per invocation, so repeat the command
+stored. To add a single binding to an existing set, use `-dict-add`. It accepts
+exactly one key/value pair per invocation, so repeat the command
 rather than chaining pairs.
 
 ```bash
@@ -69,7 +69,7 @@ option.
 
 App Shortcuts cannot bind a key without a modifier, so bare `/` or
 `h` `j` `k` `l` need a remapper. Map them onto Galley's existing modifier
-shortcuts rather than sending bare letters — a bare letter is swallowed by the
+shortcuts rather than sending bare letters: a bare letter is swallowed by the
 page-label input. Scoping the rule to Galley's bundle identifier keeps the rest
 of your system untouched, and unlike `defaults`, the built-in keys keep
 working.
@@ -138,6 +138,6 @@ from Karabiner-Elements ▸ Complex Modifications.
 
 Galley has no equivalent for `Ctrl-D` / `Ctrl-U`: a half screen is not a
 meaningful unit in a PDF, since it changes with the zoom level. Use
-`Next Page` / `Previous Page` instead. `gg` and `G` are likewise absent —
+`Next Page` / `Previous Page` instead. `gg` and `G` are likewise absent:
 typing a page label already jumps directly, so there is nothing left for them
 to do.

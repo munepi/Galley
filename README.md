@@ -4,7 +4,7 @@ Source for <https://munepi.github.io/Galley/>.
 
 This branch (`site`) holds the Hugo source. Pushes to `site` are built and
 published by the [Deploy site](.github/workflows/deploy.yml) GitHub Actions
-workflow via the GitHub Pages artifact mechanism — there is no separate
+workflow via the GitHub Pages artifact mechanism: there is no separate
 "built output" branch.
 
 ## One-time setup

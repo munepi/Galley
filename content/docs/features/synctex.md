@@ -17,7 +17,7 @@ Galley implements both directions of SyncTeX:
 
 Forward Search is invoked through the [`galleypdf://` URL
 scheme]({{< relref "/docs/integration/url-scheme" >}}), so it works with any
-editor that can `open` a URL — including AUCTeX, YaTeX, LaTeX Workshop, and
+editor that can `open` a URL, including AUCTeX, YaTeX, LaTeX Workshop, and
 hand-rolled build scripts.
 
 See:

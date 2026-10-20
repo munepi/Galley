@@ -48,4 +48,4 @@ the place of `open`:
 The full path matters here: Visual Studio Code launched from the Dock does
 not inherit your shell's `PATH`, so a bare `galleypdf` may not resolve. On an
 Intel Mac, or with a symlink of your own, point it wherever your `galleypdf`
-lives — `galleypdf --app-path` confirms which bundle it talks to.
+lives; `galleypdf --app-path` confirms which bundle it talks to.

@@ -11,7 +11,7 @@ under consideration or in early exploration.
 ## 1. Universal SyncTeX Bridge: `pandoc-synctex`
 
 A bidirectional synchronization bridge between structured text formats and
-Galley. By leveraging ASTs (like Pandoc's `+sourcepos`) and custom Lua
+Galley. By using ASTs (like Pandoc's `+sourcepos`) and custom Lua
 filters, enabling Forward / Inverse Search from Typst, SATySFi, Vivliostyle
 (VFM), AsciiDoc, and Re:VIEW sources.
 
@@ -46,7 +46,7 @@ Viewer control landed in v0.4 as the
 PDF, jumping to a page, reloading, and SyncTeX forward search all work from
 the terminal today.
 
-What remains is the half that has to answer back — preflight, export and
+What remains is the half that has to answer back: preflight, export and
 imposition need to return results, not just fire an action. The groundwork is
 there: `galleypdf` is a compiled client, so it can send the Apple Event
 itself and wait for the reply, which costs about three milliseconds more than

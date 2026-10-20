@@ -19,8 +19,8 @@ lighter in Galley than in Preview.
 
 Turn smoothing off, and leave it off.
 
-What you then see is the glyph outline as the type designer drew it — the same
-geometry the RIP will image — rather than the outline plus a thickening the OS
+What you then see is the glyph outline as the type designer drew it, the same
+geometry the RIP will image, rather than the outline plus a thickening the OS
 added for screen legibility. That thickening is a fixed amount of ink per edge,
 so it hits small text harder than large, and it flattens the difference between
 neighbouring weights of a family.

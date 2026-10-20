@@ -34,7 +34,7 @@ has no control in the panel; set it with `defaults write`.
 
 The two font-smoothing keys are the exception: they belong to macOS, not to
 Galley, and Galley no longer writes them. Versions up to v0.5 set them on every
-launch, so they may still be sitting in your preferences after an upgrade —
+launch, so they may still be sitting in your preferences after an upgrade;
 `defaults delete` both to be rid of them.
 
 For debug logging, see [Debug Logging]({{< relref "/docs/configuration/debug-mode" >}}) — logs are emitted via `os_log`, no `UserDefaults` key required.

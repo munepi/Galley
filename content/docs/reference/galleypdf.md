@@ -6,8 +6,8 @@ weight = 30
 # `galleypdf`
 
 `galleypdf` drives a running Galley from the shell: open a PDF, jump to a
-page, force a reload, or run a SyncTeX forward search. It is optional — Galley
-is a complete application without it — and exists for people who script their
+page, force a reload, or run a SyncTeX forward search. It is optional (Galley
+is a complete application without it) and exists for people who script their
 builds or wire Galley into an editor.
 
 ## Getting the command
@@ -15,7 +15,7 @@ builds or wire Galley into an editor.
 Homebrew puts `galleypdf` on your `PATH` when you install the cask. If you
 installed from the disk image, the command is inside the bundle at
 `GalleyPDF.app/Contents/MacOS/bin/galleypdf`. Pick whichever of these suits
-you — both keep working across updates, because they point into the bundle
+you; both keep working across updates, because they point into the bundle
 rather than at a copy of the binary:
 
 ```bash
@@ -61,7 +61,7 @@ galleypdf --app-path | --version | --help
 
 Relative paths are resolved against the working directory. Paths containing
 spaces or non-ASCII characters need no quoting beyond what your shell already
-requires — percent-encoding is handled for you.
+requires; percent-encoding is handled for you.
 
 ## Examples
 
@@ -122,7 +122,7 @@ and it means the command and the application can never drift out of step.
 
 Apple's bundle layout puts executable code under `Contents/MacOS`, so that is
 where it goes. The `bin/` subdirectory is not decoration: on a
-case-insensitive filesystem — the macOS default — `Contents/MacOS/galleypdf`
+case-insensitive filesystem (the macOS default) `Contents/MacOS/galleypdf`
 and `Contents/MacOS/GalleyPDF` are the same path, and the helper would
 silently overwrite the application binary.
 
@@ -147,13 +147,13 @@ prompt appears.
 ### What this makes possible later
 
 The URL scheme is not one-way. `kAEGetURL` carries a reply slot, and Galley's
-handler already receives one — the forward-search handler fills it in today.
+handler already receives one; the forward-search handler fills it in today.
 What discards the reply is `open(1)`, which returns the moment the event is
 dispatched.
 
 Because `galleypdf` is a compiled program rather than a wrapper around
 `open`, it can send the event itself and wait for the answer. Measured on an
 already-running Galley, waiting for a reply costs about three milliseconds
-more than not waiting. Commands that need to report something back — page
-counts, font audits, preflight results — can therefore be added without
+more than not waiting. Commands that need to report something back (page
+counts, font audits, preflight results) can therefore be added without
 changing how the command talks to the application.

@@ -21,7 +21,7 @@ The chevron buttons beside the field do the same as `Enter` and
 `Shift + Enter`. A counter to their left shows which match you are on; it
 reads `Not found` when there is nothing to jump to.
 
-`Cmd + G` and `Shift + Cmd + G` work whether or not the search bar is open.
+`Cmd + G` and `Shift + Cmd + G` work whether the search bar is open.
 Closing the bar discards the highlighting, so the first `Cmd + G` afterwards
 re-runs the last query and lands on the first match at or after the page you
 are on.
@@ -46,13 +46,13 @@ artefact of layout rather than anything you wrote.
 ## Case sensitivity
 
 Search is case-insensitive by default. Tick **Match Case** in the search bar to
-require an exact match — the equivalent of turning off Vim's `ignorecase`. The
+require an exact match, the equivalent of turning off Vim's `ignorecase`. The
 setting applies to plain and regular-expression searches alike.
 
 ## Regular expressions
 
 Tick **Regex** in the search bar to treat the query as a regular expression.
-The syntax is `NSRegularExpression` — that is, ICU.
+The syntax is that of `NSRegularExpression` (ICU).
 
 ```
 \d+\.\d+          section numbers such as 2.3

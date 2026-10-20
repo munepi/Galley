@@ -5,7 +5,7 @@ weight = 50
 
 # Lightweight Rendering
 
-Galley draws only the PDF page itself — no annotation overlays, no editing
+Galley draws only the PDF page itself: no annotation overlays, no editing
 tools, no toolbars stacked over the canvas. As a result, page rendering
 stays light even when you flip through pages quickly.
 

@@ -19,7 +19,7 @@ arranged. Your choice is remembered across launches.
 
 View ▸ Book Mode changes where the spread starts. Off, pages pair up as
 1–2, 3–4, and so on. On, page 1 sits alone as the cover and the spreads become
-2–3, 4–5 — which is how the sheets actually fall in a bound book.
+2–3, 4–5, which is how the sheets actually fall in a bound book.
 
 Turn it on whenever you are proofing something that will be printed and bound;
 it puts the same pages side by side that the reader will see.

@@ -7,7 +7,7 @@ weight = 35
 
 View ▸ Color Picker (`Shift + Cmd + K`) opens a small floating panel in the
 manner of Digital Color Meter. Move the cursor over the page and it reports the
-color of whatever is drawn underneath — not as a screen sample, but as the
+color of whatever is drawn underneath, not as a screen sample but as the
 values written in the PDF itself:
 
 ```
@@ -75,7 +75,7 @@ Anything other than Native Values is a conversion, and the panel says so in a
 header such as `sRGB ← DeviceCMYK via Japan Color 2001 Coated`. CMYK goes
 through the simulation profile, so a `DeviceCMYK` red gets the Lab it would
 really print at, and an RGB black shows how rich it would come out. In
-Simulation CMYK, `DeviceGray` and `DeviceCMYK` are shown as they are — a
+Simulation CMYK, `DeviceGray` and `DeviceCMYK` are shown as they are: a
 `DeviceGray` 0 is K 100, not a converted rich black.
 
 Conversions use relative colorimetric intent with black point compensation.
@@ -84,8 +84,8 @@ Conversions use relative colorimetric intent with black point compensation.
 
 The simulation profile is chosen in this order:
 
-1. The document's `/OutputIntents` profile, when it has a CMYK one — a PDF/X
-   file, typically. The `Simulate` popup then reads
+1. The document's `/OutputIntents` profile, when it has a CMYK one (a PDF/X
+   file, typically). The `Simulate` popup then reads
    `Document: FOGRA39L Coated` (or whatever the file declares) and is
    disabled, because the file has already said what it is for.
 2. Otherwise, the profile you pick from the popup. Galley lists the CMYK
@@ -142,7 +142,7 @@ panel's Copy Text and Copy PDF buttons do the same.
 
 Copy Color as PDF carries the color space definition with it. Paste into
 Illustrator and a `Separation` arrives as a spot swatch under its own name,
-and `DeviceCMYK` arrives as the exact CMYK values — not as an RGB
+and `DeviceCMYK` arrives as the exact CMYK values, not as an RGB
 approximation of either. Pasting into a text editor gives the same text as
 Copy Color as Text.
 

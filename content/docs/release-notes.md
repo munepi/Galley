@@ -69,7 +69,7 @@ Galley checks for updates once a day and can be updated at any time from
 - [Color Picker]({{< relref "/docs/features/color-picker" >}}) under the View
   menu (`Shift + Cmd + K`, or right-click ▸ Color Picker). A Digital Color
   Meter-style panel that reports the color under the cursor as the PDF's own
-  values — `DeviceCMYK`, `DeviceGray`, `Separation`, `DeviceN`, `ICCBased` —
+  values (`DeviceCMYK`, `DeviceGray`, `Separation`, `DeviceN`, `ICCBased`)
   read from the content stream rather than sampled from the screen. Text, fills
   and strokes are exact, with line width, constant alpha and blend mode; images,
   shadings and colored patterns fall back to a sample marked `(sampled)`. Click
@@ -92,7 +92,7 @@ Galley checks for updates once a day and can be updated at any time from
 
 - Galley no longer switches macOS font smoothing off at launch. Text is drawn
   at the system default weight, so a page now looks exactly as it does in
-  Preview — the two use the same PDFKit engine, and the smoothing setting was
+  Preview; the two use the same PDFKit engine, and the smoothing setting was
   the only thing making Galley's body text look lighter.
 - If you prefer the thinner rendering, it is two `defaults write` commands
   away. See [Text Weight]({{< relref "/docs/configuration/text-weight" >}}).
@@ -122,24 +122,24 @@ defaults delete com.github.munepi.galley AppleFontSmoothing
   Dark and Charcoal invert the page while leaving photographs positive;
   Sepia, Orange and Gray tint the paper without touching the ink.
   Every preset keeps a WCAG AAA (7:1) contrast ratio, and the setting is
-  display-only — copying, exporting and printing keep the original colors.
+  display-only: copying, exporting and printing keep the original colors.
   With Normal selected nothing is installed in the rendering path, so the
   feature costs nothing when it is off.
 - Standard macOS find keys: `Cmd + G` and `Shift + Cmd + G` step through
-  matches whether or not the search bar is focused, and `Cmd + E` searches for
+  matches whether the search bar is focused, and `Cmd + E` searches for
   the current selection and shares it through the system find pasteboard. See
   [Text Search]({{< relref "/docs/features/text-search" >}}).
 - A Match Case option in the search bar, applying to plain and
   regular-expression searches alike.
 - Navigation history: `Cmd + [` and `Cmd + ]` return to where you were before
   following a link, clicking a bookmark or annotation, jumping to a search
-  match, or running a Forward Search — the same keys Preview uses.
+  match, or running a Forward Search, the same keys Preview uses.
 
 ### Changed
 
 - The hidden `Opt + J` / `Opt + K` page aliases are gone. Every command is now
   a single, uniquely titled menu item, which is what lets you rebind any of
-  them yourself — including Vim-style navigation. See
+  them yourself, including Vim-style navigation. See
   [Custom Key Bindings]({{< relref "/docs/reference/key-bindings" >}}).
 - Regular-expression search is no longer forced to be case-insensitive; the
   Match Case checkbox decides.
@@ -170,7 +170,7 @@ defaults delete com.github.munepi.galley AppleFontSmoothing
   [`galleypdf://open`]({{< relref "/docs/integration/url-scheme" >}}), with an
   optional `page` parameter.
 - Every `galleypdf://` endpoint now accepts `background=1`, so a forward
-  search never takes focus away from your editor — even when it is what
+  search never takes focus away from your editor, even when it is what
   launches Galley.
 - **Vim/Neovim (VimTeX)** joins the SyncTeX menu, so `Cmd + Click` in the PDF
   jumps back into your editor. Forward search has worked since VimTeX v2.18,
@@ -207,7 +207,7 @@ defaults delete com.github.munepi.galley AppleFontSmoothing
 ### New
 
 - [PDF Info sidebar]({{< relref "/docs/features/pdf-info-sidebar" >}}) with
-  five panels — Info (Document Info, PDF/X, PDF/A, PDF/UA, Security, Pages,
+  five panels: Info (Document Info, PDF/X, PDF/A, PDF/UA, Security, Pages,
   Features), Fonts (a `CGPDFDocument` scan walking inherited page resources
   and Form XObjects), XMP (the raw packet parsed into sections), Bookmarks
   (click-to-navigate), and Annotations (click-to-navigate, `Cmd + C` copies

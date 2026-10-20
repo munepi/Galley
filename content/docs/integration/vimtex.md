@@ -12,7 +12,7 @@ Galley support. Add the following to your `vimrc` or `init.vim`:
 let g:vimtex_view_method = 'galley'
 ```
 
-That is the whole configuration — VimTeX drives the
+That is the whole configuration: VimTeX drives the
 [`galleypdf://` URL scheme]({{< relref "url-scheme" >}}) for you.
 
 Run `:VimtexView` to execute Forward Search (default mapping:

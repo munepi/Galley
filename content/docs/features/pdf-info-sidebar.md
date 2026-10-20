@@ -6,7 +6,7 @@ weight = 60
 # PDF Info Sidebar
 
 Galley exposes a left-hand inspector with five views, each toggled from the
-View menu. The sidebar is read-only — it never modifies the PDF — and is
+View menu. The sidebar is read-only (it never modifies the PDF) and is
 designed for proofreading, preflight, and metadata audits.
 
 | Panel       | Shortcut  | Purpose                                                                 |

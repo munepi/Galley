@@ -5,7 +5,7 @@ weight = 47
 
 # Page Color
 
-View ▸ Page Color recolors the page for comfortable reading — a dark page for
+View ▸ Page Color recolors the page for comfortable reading: a dark page for
 a dark room, a tinted paper for a long proofreading session. It is a viewing
 setting, not a document edit: copying, exporting and printing all keep the
 document's original colors, and your choice is remembered across launches.
@@ -27,8 +27,8 @@ paper, which is why the tints are as pale as they are.
 These two swap light for dark while preserving hue, so a `hyperref` link stays
 blue and a red TikZ rule stays red rather than flipping to its complement.
 
-On macOS 26 and later, Galley hands the inversion to PDFKit itself — the same
-facility behind Preview's *Use Dark Appearance for PDF* — which protects
+On macOS 26 and later, Galley hands the inversion to PDFKit itself, the same
+facility behind Preview's *Use Dark Appearance for PDF*, which protects
 embedded raster images. Photographs and screenshots stay positive while the
 text around them turns light.
 
@@ -41,7 +41,7 @@ neutral paper. Charcoal warms the paper a little to take the edge off.
 > PDFKit classifies by drawing operator, not by intent: raster images are
 > protected, and anything drawn as text or vector paths is inverted. A pictorial
 > illustration exported from Illustrator is therefore inverted just like a TikZ
-> diagram — Preview behaves identically with the same file. For design-heavy
+> diagram; Preview behaves identically with the same file. For design-heavy
 > documents, reach for Sepia or Gray instead; those never invert anything.
 
 On macOS 25 and earlier that facility does not exist, and Galley falls back to
@@ -53,7 +53,7 @@ level rather than staying vector.
 
 The paper tints are drawn as a multiply-blended overlay rather than an image
 filter, so glyph outlines stay vector-sharp however far you zoom in, and
-nothing is inverted — only the white of the paper takes the color.
+nothing is inverted; only the white of the paper takes the color.
 
 ## System Invert Colors
 
@@ -79,7 +79,7 @@ unaffected by this preference.
 > This is an unadvertised preference riding on a private PDFKit facility, and it
 > exists only because the default suits some readers and not others. It may be
 > removed or stop working in a future release of Galley or of macOS. Nothing else
-> depends on it — if it goes away, Dark simply returns to the default paper
+> depends on it; if it goes away, Dark simply returns to the default paper
 > color.
 
 ## Cost when off
