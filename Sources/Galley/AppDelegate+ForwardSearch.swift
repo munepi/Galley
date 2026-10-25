@@ -114,38 +114,25 @@ extension AppDelegate {
             if let node = synctex_scanner_next_result(scanner) {
                 let pageIndex = synctex_node_page(node) - 1
 
-                let rawX = CGFloat(synctex_node_h(node))
-                let rawY = CGFloat(synctex_node_v(node))
-
                 if let document = self.activePDFView.document,
                    let page = document.page(at: Int(pageIndex)) {
 
                     let bounds = page.bounds(for: .cropBox)
 
-                    // 1. DVI unit (sp) -> TeX point (pt) への変換
-                    let texPtX = rawX / 65536.0
-                    let texPtY = rawY / 65536.0
+                    // 1. ページ左上原点の PDF point (bp) を取得する
+                    // Unit / Magnification / X・Y Offset は SyncTeX パーサ側で反映済み。
+                    // pdfTeX 系 (Offset:0) は座標に 1 inch の原点を含み、DVI 経由
+                    // (Offset:4736287) は含まないため、固定値の加算では片方がずれる (#17)
+                    let absolutePDFX = CGFloat(synctex_node_visible_h(node))
+                    let absolutePDFY = CGFloat(synctex_node_visible_v(node))
 
-                    // 2. TeX point (72.27 pt/inch) -> PDF point (72.0 pt/inch) への変換
-                    let pdfOffsetX = texPtX * (72.0 / 72.27)
-                    let pdfOffsetY = texPtY * (72.0 / 72.27)
-
-                    // 3. TeXの原点オフセット（左上から 1 inch, 1 inch の位置が原点）を加算
-                    // 1 inch = 72.0 PDF points
-                    let absolutePDFX = pdfOffsetX + 72.0
-                    let absolutePDFY = pdfOffsetY + 72.0
-
-                    // 4. PDFKitの座標系（左下原点）にY軸を反転させる
+                    // 2. PDFKitの座標系（左下原点）にY軸を反転させる
                     // bounds.maxY は用紙全体の高さ（例: A4判なら約842）
-                    let finalPdfX = absolutePDFX
-                    let finalPdfY = bounds.maxY - absolutePDFY
-
-                    let flippedY = finalPdfY
-                    let pdfX = finalPdfX
+                    let pdfX = absolutePDFX
+                    let flippedY = bounds.maxY - absolutePDFY
 
                     let detailMessage = """
                     Page: \(pageIndex + 1)
-                    Raw (sp): Y=\(String(format: "%.0f", rawY))
                     Absolute PDF: X=\(String(format: "%.1f", absolutePDFX)), Y=\(String(format: "%.1f", absolutePDFY))
                     Flipped Y: \(String(format: "%.1f", flippedY))
                     Bounds height: \(String(format: "%.1f", bounds.maxY))
