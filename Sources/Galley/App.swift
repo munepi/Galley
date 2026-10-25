@@ -53,6 +53,7 @@ struct GalleyApp {
             "nvimPath": "",
             "customEditorCommand": "",
             "warnBeforeQuitting": true,
+            ReadingPositionDefaults.key: true,
             // Color Picker: 値の表示モード、シミュレーションプロファイル (ICC のパス。空 = 既定)、TAC 上限 (%)
             ColorDisplaySettings.displayModeKey: ColorDisplayMode.native.rawValue,
             InstalledProfileCatalog.userDefaultsKey: "",
@@ -204,6 +205,10 @@ struct GalleyApp {
         viewMenu.addItem(bookModeItem)
         viewMenu.addItem(rtlItem)
 
+        // 開き直したときに前回のページ・位置・倍率へ戻す (AppDelegate+ReadingPosition.swift)
+        let restorePositionItem = NSMenuItem(title: "Restore Last Position", action: #selector(AppDelegate.toggleRestoreLastPosition(_:)), keyEquivalent: "")
+        viewMenu.addItem(restorePositionItem)
+
         viewMenu.addItem(NSMenuItem.separator())
 
         // ページの配色 (アクセシビリティ)
@@ -336,6 +341,8 @@ struct GalleyApp {
     lazy var colorDisplaySettings = ColorDisplaySettings()
     var isShowingA = true
     var sidebarController: SidebarController?
+    /// 文書ごとの最後の表示位置 (AppDelegate+ReadingPosition.swift)
+    lazy var readingPositionStore = ReadingPositionStore()
 
     // --- Hold ⌘Q to Quit の HUD (AppDelegate+Quit.swift) ---
     var quitHUD: NSPanel?
@@ -394,6 +401,11 @@ struct GalleyApp {
 
         if menuItem.action == #selector(toggleWarnBeforeQuitting(_:)) {
             menuItem.state = warnsBeforeQuitting ? .on : .off
+            return true
+        }
+
+        if menuItem.action == #selector(toggleRestoreLastPosition(_:)) {
+            menuItem.state = restoresLastPosition ? .on : .off
             return true
         }
 
@@ -491,8 +503,11 @@ struct GalleyApp {
                 // 外部から PDF を開く
                 // 例: open "galleypdf://open?pdfpath=/path/to/main.pdf&page=3"
                 guard let pdfPath = params["pdfpath"], !pdfPath.isEmpty else { break }
-                self.loadPDF(url: URL(fileURLWithPath: pdfPath).absoluteURL, activate: !background)
-                if let pageStr = params["page"], let page = Int(pageStr) {
+                // page の指定は前回の位置より優先する
+                let page = params["page"].flatMap { Int($0) }
+                self.loadPDF(url: URL(fileURLWithPath: pdfPath).absoluteURL, activate: !background,
+                             restorePosition: page == nil)
+                if let page {
                     self.goToPage(page)
                 }
 
@@ -597,5 +612,8 @@ struct GalleyApp {
 
     func applicationWillTerminate(_ notification: Notification) {
         sidebarController?.prepareForTermination()
+        // ウィンドウを閉じた場合も単一ウィンドウなのでここを通る
+        recordReadingPosition()
+        readingPositionStore.saveIfNeeded()
     }
 }

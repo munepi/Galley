@@ -71,7 +71,7 @@ extension AppDelegate {
         if let pPath = pdfPath {
             let url = URL(fileURLWithPath: pPath).absoluteURL
             if self.fileURL?.path != url.path {
-                self.loadPDF(url: url, activate: !background)
+                self.loadPDF(url: url, activate: !background, restorePosition: false)
             }
         }
         guard let currentPDFPath = self.fileURL?.path else { return }

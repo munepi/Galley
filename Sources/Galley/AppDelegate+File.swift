@@ -53,9 +53,11 @@ extension AppDelegate {
 
     func application(_ sender: NSApplication, openFile filename: String) -> Bool {
         let url = URL(fileURLWithPath: filename).absoluteURL
-        self.fileURL = url
 
+        // 起動前は applicationDidFinishLaunching に任せる。起動後に fileURL を先に書き換えると、
+        // loadPDF が記録する離れる文書の位置が新しいパスに付いてしまう
         guard self.pdfViewA != nil else {
+            self.fileURL = url
             return true
         }
 
@@ -67,7 +69,9 @@ extension AppDelegate {
     /// PDF を読み込む。
     /// - Parameter activate: `false` を渡すと Galley をフォアグラウンドに出さない
     ///   （`open -g "galleypdf://open?...&background=1"` 用）。
-    func loadPDF(url: URL, activate: Bool = true) {
+    /// - Parameter restorePosition: `false` を渡すと前回の表示位置に戻さない
+    ///   （Forward Search や `galleypdf open --page` のように、呼び出し側が行き先を決める場合）。
+    func loadPDF(url: URL, activate: Bool = true, restorePosition: Bool = true) {
         if let modal = NSApp.modalWindow, modal is NSOpenPanel {
             NSApp.stopModal()
             modal.close()
@@ -80,6 +84,10 @@ extension AppDelegate {
         self.swapWorkItem?.cancel()
         self.swapWorkItem = nil
 
+        // 離れる文書の位置を記録する (fileURL を書き換える前に)
+        self.recordReadingPosition()
+        self.readingPositionStore.saveIfNeeded()
+
         // In-flight な reloadPDF の非同期処理を無効化するための世代トークン
         self.loadGeneration &+= 1
         let gen = self.loadGeneration
@@ -90,6 +98,9 @@ extension AppDelegate {
         Log.file.info("loadPDF: gen=\(gen) url=\(url.lastPathComponent, privacy: .public)")
 
         self.activePDFView.document = document
+        if restorePosition {
+            self.restoreReadingPosition(url: url, document: document)
+        }
 
         self.updateWindowTitle()
         self.sidebarController?.notifyDocumentChanged(document, url: url)
