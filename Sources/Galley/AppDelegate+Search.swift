@@ -371,24 +371,23 @@ extension AppDelegate {
     /// ページテキストから改行を除去し、元テキストへのインデックスマッピングを返す
     /// - Returns: (改行除去済みテキスト, cleanedIndex → originalIndex のマッピング配列)
     private func buildCleanedText(from pageString: String) -> (String, [Int]) {
-        var cleaned = ""
-        var indexMap: [Int] = []  // cleaned の各文字位置 → 元テキストの utf16 offset
+        // UTF-16 のコードユニット単位で組み立てる。U+1D439 (𝐹) のような BMP 外の文字は
+        // サロゲートペアになり、片割れを UnicodeScalar にはできない (newtxmath などの数式フォント, #18)
+        var cleaned: [unichar] = []
+        var indexMap: [Int] = []  // cleaned の各 utf16 offset → 元テキストの utf16 offset
 
         let nsString = pageString as NSString
-        var i = 0
-        while i < nsString.length {
+        cleaned.reserveCapacity(nsString.length)
+        indexMap.reserveCapacity(nsString.length)
+        for i in 0..<nsString.length {
             let ch = nsString.character(at: i)
             // 改行文字 (LF, CR, NEL, LS, PS) を除去
-            if AppDelegate.searchLineBreakScalars.contains(UInt32(ch)) {
-                i += 1
-                continue
-            }
-            cleaned.append(Character(UnicodeScalar(ch)!))
+            if AppDelegate.searchLineBreakScalars.contains(UInt32(ch)) { continue }
+            cleaned.append(ch)
             indexMap.append(i)
-            i += 1
         }
 
-        return (cleaned, indexMap)
+        return (NSString(characters: cleaned, length: cleaned.count) as String, indexMap)
     }
 
     /// cleaned テキスト上のマッチ範囲を、元テキスト上の NSRange に変換して PDFSelection を生成
