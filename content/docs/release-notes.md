@@ -15,6 +15,33 @@ Galley checks for updates once a day and can be updated at any time from
 
 ---
 
+## v0.9
+
+*25 October 2026 —
+[download](https://github.com/munepi/Galley/releases/tag/v0.9)*
+
+### New
+
+- Galley reopens each PDF where you left it: the same page, position on the
+  page and zoom, after you open another PDF or quit. The record follows a file
+  that has been moved or renamed, and is ignored when the page count has
+  changed, so a recompile that reflowed the document opens at page 1 as
+  before. A Forward Search and `galleypdf open --page` always win.
+  View ▸ Restore Last Position turns it off. See
+  [UserDefaults Keys]({{< relref "/docs/reference/userdefaults" >}}) for
+  where the records are kept ([#15](https://github.com/munepi/Galley/issues/15)).
+
+### Fixed
+
+- Forward Search landed about five lines too low, and an inch too far right,
+  for PDFs produced directly by pdfTeX, XeTeX or LuaTeX. Galley added the
+  TeX origin of one inch to coordinates that already contained it. It now
+  reads SyncTeX's own visible coordinates, which are correct for direct PDF
+  output and for the DVI route (`latex` or `platex` with `dvipdfmx`) alike
+  ([#17](https://github.com/munepi/Galley/issues/17)).
+
+---
+
 ## v0.8
 
 *19 October 2026 —
