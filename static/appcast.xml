@@ -7,6 +7,28 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.9</title>
+      <pubDate>Sun, 25 Oct 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.9</sparkle:shortVersionString>
+      <sparkle:version>233</sparkle:version>
+      <description><![CDATA[
+        <h3>✨ New Features</h3>
+        <ul>
+          <li>Galley reopens each PDF where you left it: the same page, position on the page and zoom, after you open another PDF or quit. The record follows a moved or renamed file and is ignored when the page count has changed, so a reflowed document opens at page 1. A Forward Search and <code>galleypdf open --page</code> always win. View &#9656; Restore Last Position turns it off</li>
+        </ul>
+        <h3>🐛 Fixes</h3>
+        <ul>
+          <li>Forward Search no longer lands about five lines too low, and an inch too far right, in PDFs produced directly by pdfTeX, XeTeX or LuaTeX. Galley now reads SyncTeX's own visible coordinates, which are right for direct PDF output and the DVI route alike</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.9/GalleyPDF_0.9.dmg"
+        sparkle:edSignature="gVz7dx8r79wZnaVhGZiSAv2drcJ7YENjv1LF+qtPAwUCcG3eW31buvu8769BgMpbUyTXYnft9gcAoDjVydLpDw=="
+        length="9235369"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.8</title>
       <pubDate>Mon, 19 Oct 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
