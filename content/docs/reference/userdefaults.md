@@ -20,12 +20,21 @@ All settings live under the `com.github.munepi.galley` domain.
 | `displaysRTL`          | Boolean | Right-To-Left spreads, for 縦書き and other right-bound documents. |
 | `pageColorMode`        | Integer | Page Color preset: `0` Normal (default), `1` Dark, `2` Sepia, `3` Orange, `4` Gray, `5` Charcoal. Set from View ▸ Page Color. See [Page Color]({{< relref "/docs/features/page-color" >}}). |
 | `pageColorDarkPaper`   | String  | Hidden override for the Dark paper color, as `#RRGGBB`. Values whose relative luminance exceeds 0.10 are ignored. Unset by default; does not affect Charcoal. |
+| `restoreLastPosition`  | Boolean | Reopen each PDF at the page, position and zoom you left it at (default `true`). Set from View ▸ Restore Last Position; while it is `false`, nothing is recorded or restored, and existing records are kept. |
 | `warnBeforeQuitting`   | Boolean | Hold `Cmd + Q` to quit (default `true`). Set from Galley ▸ Warn Before Quitting; `false` makes `Cmd + Q` quit at once. |
 | `colorPickerDisplayMode` | String | The Color Picker's `Display` popup: `native` (default), `sRGB`, `displayP3`, `adobeRGB`, `lab` or `simulationCMYK`. See [Color Picker]({{< relref "/docs/features/color-picker" >}}). |
 | `colorPickerSimulationProfilePath` | String | Path of the CMYK ICC profile picked in the `Simulate` popup. Empty (default) means Japan Color 2001 Coated when installed, otherwise Generic CMYK. A document's CMYK output intent takes precedence. |
 | `colorPickerTACLimit`  | Integer | Total area coverage, in percent, above which the separations readout is flagged. Default `300`. |
 | `AppleFontSmoothing`   | Integer | Not Galley's own key, but read from its domain: `0` turns macOS font smoothing off for Galley alone. Unset by default since v0.6. See [Text Weight]({{< relref "/docs/configuration/text-weight" >}}). |
 | `CGFontRenderingFontSmoothingDisabled` | Boolean | The companion key to the above; set both together. |
+
+The last positions themselves are not `UserDefaults` keys. They live in one
+binary property list,
+`~/Library/Application Support/com.github.munepi.galley/ReadingPositions.plist`,
+never next to your PDFs. It holds the 2,000 most recently used documents and
+is written only when you leave a document or quit, not on every page turn.
+Files larger than 512 MB are tracked by path alone, without a content hash.
+Delete the file to forget every position.
 
 The display, page-color and quit keys are written whenever you change the
 corresponding menu item, and the Color Picker keys whenever you change its

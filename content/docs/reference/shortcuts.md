@@ -55,6 +55,14 @@ Every one of these is a menu item, and every menu item can be rebound; see
 - Navigation History: `Cmd + [` / `Cmd + ]` return to where you were before
   following a link, clicking a bookmark or annotation, jumping to a search
   match, or running a Forward Search, the same keys Preview uses.
+- Last Position: reopening a PDF, after opening another one or after
+  quitting, brings back the page, the position on it and the zoom you left it
+  at. Galley finds the record by the file's path and, for a file that has
+  since been moved or renamed, by a SHA-256 of its contents. If the page count
+  has changed (a recompile that reflowed the document, or a different file
+  under the same name), it opens at page 1 as before. A Forward Search and
+  `galleypdf open --page` always take precedence. View ▸ Restore Last Position
+  turns this off.
 - Hold to Quit: a quick `Cmd + Q` only shows "Hold ⌘Q to Quit"; keep holding
   for a second, or press it again while the message is showing, to quit, as
   in Chrome. It guards the preview against a stray keystroke while you type in
@@ -69,7 +77,7 @@ Every one of these is a menu item, and every menu item can be rebound; see
   does under Galley's full-size title bar (Skim is affected the same way).
   Galley 0.8 and later detect the stuck key and turn the page themselves.
 - Persistence: Galley remembers Display Mode, Book Mode, RTL,
-  [Page Color]({{< relref "/docs/features/page-color" >}}) and Warn Before
-  Quitting via `UserDefaults`, and puts the
+  [Page Color]({{< relref "/docs/features/page-color" >}}), Restore Last
+  Position and Warn Before Quitting via `UserDefaults`, and puts the
   [Color Picker]({{< relref "/docs/features/color-picker" >}}) panel back where
   you last left it, with its display mode and simulation profile.
