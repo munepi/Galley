@@ -362,6 +362,20 @@ struct GalleyApp {
     // 起動完了時の強制アクティベーションを抑止するためのフラグ。
     var launchedInBackground = false
 
+    // applicationDidFinishLaunching より前に届いた Apple Event の処理。
+    // クラッシュ後の再起動では「ウィンドウを再度開きますか」のモーダル中に main キューが回り、
+    // PDFView の生成前に loadPDF が走ってしまう (#18)
+    var pendingLaunchActions: [@MainActor () -> Void] = []
+
+    /// 起動完了後なら次の runloop で、起動前なら applicationDidFinishLaunching の最後で実行する
+    func performWhenLaunched(_ action: @escaping @MainActor () -> Void) {
+        if pdfViewA == nil {
+            pendingLaunchActions.append(action)
+        } else {
+            DispatchQueue.main.async { action() }
+        }
+    }
+
     // --- 検索バー用プロパティ ---
     var searchBarContainer: NSView?
     var searchBarTopConstraint: NSLayoutConstraint?
@@ -493,7 +507,7 @@ struct GalleyApp {
             self.launchedInBackground = true
         }
 
-        DispatchQueue.main.async {
+        performWhenLaunched {
             switch host {
             case "reload":
                 // 外部から強制リロード (例: open "galleypdf://reload")
@@ -604,6 +618,10 @@ struct GalleyApp {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
+
+        let actions = pendingLaunchActions
+        pendingLaunchActions = []
+        actions.forEach { $0() }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

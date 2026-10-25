@@ -52,7 +52,13 @@ extension AppDelegate {
         let pdfPath = event.paramDescriptor(forKeyword: AEKeyword(0x70646650))?.stringValue
         let srcPath = event.paramDescriptor(forKeyword: AEKeyword(0x73726346))?.stringValue
 
-        self.processForwardSearch(line: line, column: nil, pdfPath: pdfPath, srcPath: srcPath)
+        if self.pdfViewA == nil {
+            self.performWhenLaunched {
+                self.processForwardSearch(line: line, column: nil, pdfPath: pdfPath, srcPath: srcPath)
+            }
+        } else {
+            self.processForwardSearch(line: line, column: nil, pdfPath: pdfPath, srcPath: srcPath)
+        }
         replyEvent.setDescriptor(NSAppleEventDescriptor(string: "OK"), forKeyword: keyDirectObject)
     }
 
