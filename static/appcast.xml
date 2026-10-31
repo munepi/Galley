@@ -7,6 +7,25 @@
     <link>https://munepi.github.io/Galley/appcast.xml</link>
     <description>Most recent updates to Galley.</description>
     <item>
+      <title>Version 0.10</title>
+      <pubDate>Sat, 31 Oct 2026 12:00:00 +0900</pubDate>
+      <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+      <sparkle:shortVersionString>0.10</sparkle:shortVersionString>
+      <sparkle:version>237</sparkle:version>
+      <description><![CDATA[
+        <h3>🐛 Fixes</h3>
+        <ul>
+          <li>Searching no longer crashes Galley when the PDF contains a character outside the Basic Multilingual Plane, such as the math italic letters (U+1D439 and friends) that <code>newtxmath</code> and other Unicode-aware math fonts put in the text layer</li>
+          <li>A Forward Search or a <code>galleypdf://</code> URL that arrives while Galley is still launching, for example when an editor relaunches it after a crash, now waits until launch has finished instead of crashing it again</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/munepi/Galley/releases/download/v0.10/GalleyPDF_0.10.dmg"
+        sparkle:edSignature="cDLQW7q6ziN97FbS24TsRYfoidUuC74U3UYNRkGsng2q5pVkhAbPrKY759aL615puz05cASw3FIJdS831kNTAA=="
+        length="9236876"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Version 0.9</title>
       <pubDate>Sun, 25 Oct 2026 12:00:00 +0900</pubDate>
       <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
