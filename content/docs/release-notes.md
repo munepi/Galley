@@ -15,6 +15,25 @@ Galley checks for updates once a day and can be updated at any time from
 
 ---
 
+## v0.10
+
+*31 October 2026 —
+[download](https://github.com/munepi/Galley/releases/tag/v0.10)*
+
+### Fixed
+
+- Searching crashed Galley when the PDF contained a character outside the
+  Basic Multilingual Plane, such as the math italic letters (𝐹 = U+1D439)
+  that `newtxmath` and other Unicode-aware math fonts put in the text layer
+  ([#18](https://github.com/munepi/Galley/issues/18)).
+- A Forward Search or a `galleypdf://` URL that arrived while Galley was
+  still launching crashed it again before the window was set up. This
+  happened when the editor relaunched Galley after a crash, while macOS was
+  asking whether to reopen its windows. Such requests now wait until launch
+  has finished.
+
+---
+
 ## v0.9
 
 *25 October 2026 —
